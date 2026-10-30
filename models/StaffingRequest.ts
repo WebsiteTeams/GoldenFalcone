@@ -26,7 +26,7 @@ const staffingRequestSchema = new Schema(
     jobDescription: { type: String, maxlength: 3000 },
 
     // Meta
-    referenceNumber: { type: String, trim: true, maxlength: 30, index: true },
+    referenceNumber: { type: String, trim: true, maxlength: 30 },
     consent: { type: Boolean, required: true },
     status: { type: String, enum: staffingStatuses, default: "new" },
     internalNotes: { type: [noteSchema], default: [], select: false },
@@ -36,6 +36,8 @@ const staffingRequestSchema = new Schema(
 
 staffingRequestSchema.index({ status: 1, createdAt: -1 });
 staffingRequestSchema.index({ professionalCategory: 1, location: 1 });
+staffingRequestSchema.index({ referenceNumber: 1 }, { unique: true, sparse: true });
+staffingRequestSchema.index({ location: 1, employmentType: 1, status: 1 });
 
 export type StaffingRequestDoc = InferSchemaType<typeof staffingRequestSchema>;
 

@@ -20,7 +20,6 @@ import {
   orderStatuses,
   PAGE_SIZE,
   publishStatuses,
-  spiceCategoryValues,
   staffingStatuses,
 } from "./constants";
 import {
@@ -85,7 +84,7 @@ export const resources = {
     entity: "staffing request",
     model: StaffingRequest,
     statuses: staffingStatuses,
-    searchFields: ["salonName", "contactName", "location", "phone", "email"],
+    searchFields: ["salonName", "contactName", "location", "phone", "email", "referenceNumber", "professionalCategory"],
     filter: { field: "professionalCategory", values: salonRoles },
     label: (d) => d.salonName,
     updateSchema: staffingUpdateSchema,
@@ -96,10 +95,19 @@ export const resources = {
     entity: "candidate application",
     model: CandidateApplication,
     statuses: candidateStatuses,
-    searchFields: ["fullName", "email", "phone", "location", "preferredWorkLocation"],
+    searchFields: [
+      "fullName",
+      "email",
+      "phone",
+      "location",
+      "preferredWorkLocation",
+      "referenceNumber",
+      "additionalSkills",
+      "customSkills",
+    ],
     filter: { field: "professionalCategory", values: salonRoles },
     label: (d) => d.fullName,
-    hidden: "-cv.storageKey -certificates -trainingCertificates -portfolioImages",
+    hidden: "-cv.storageKey -profilePhoto.storageKey -certificates -trainingCertificates -portfolioImages",
     updateSchema: candidateUpdateSchema,
   },
   orders: {
@@ -197,6 +205,22 @@ export function buildFilter(res: Resource, query: ListQuery) {
     } else if (res.key === "spices") {
       where.category = query.filter;
     }
+  }
+  if (query.location && (res.key === "staffing" || res.key === "candidates")) {
+    const pattern = new RegExp(escapeRegex(query.location), "i");
+    where.$and = [
+      ...((where.$and as AnyDoc[]) ?? []),
+      { $or: [{ location: pattern }, { preferredWorkLocation: pattern }] },
+    ];
+  }
+  if (query.employment && res.key === "staffing") where.employmentType = query.employment;
+  if (query.experience && res.key === "candidates") where.experience = query.experience;
+  if (query.availability && res.key === "candidates") {
+    where.availability = new RegExp(escapeRegex(query.availability), "i");
+  }
+  if (query.skill && res.key === "candidates") {
+    const pattern = new RegExp(escapeRegex(query.skill), "i");
+    where.$and = [...((where.$and as AnyDoc[]) ?? []), { $or: [{ additionalSkills: pattern }, { customSkills: pattern }] }];
   }
   if (query.from || query.to) {
     where.createdAt = {

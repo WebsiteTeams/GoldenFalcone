@@ -266,6 +266,50 @@ export const salonRoles = [
 
 export type SalonRole = (typeof salonRoles)[number];
 
+/** The eight core disciplines presented on the public staffing page. */
+export const salonRoleProfiles = [
+  {
+    name: "Hair Stylist",
+    focus: "Cut · Colour · Finish",
+    text: "Precision cutting, creative colour, blow-dry finishes and client consultation.",
+  },
+  {
+    name: "Beautician",
+    focus: "Skin · Facial · Body",
+    text: "Facials, skin care, waxing, threading and grooming treatments.",
+  },
+  {
+    name: "Makeup Artist",
+    focus: "Bridal · Editorial · HD",
+    text: "Bridal, occasion, HD and airbrush makeup for studio or on-location work.",
+  },
+  {
+    name: "Nail Technician",
+    focus: "Manicure · Art · Extensions",
+    text: "Manicure, pedicure, nail art and extension services with a finish-first approach.",
+  },
+  {
+    name: "Hair Assistant",
+    focus: "Chair-side support",
+    text: "Client care, shampoo rituals, preparation and day-to-day salon support.",
+  },
+  {
+    name: "Salon Receptionist",
+    focus: "Front desk · Bookings",
+    text: "Appointment coordination, billing, client hospitality and reception management.",
+  },
+  {
+    name: "Spa Therapist",
+    focus: "Massage · Wellness",
+    text: "Spa therapies, body massage and wellness treatments delivered with care.",
+  },
+  {
+    name: "Salon Manager",
+    focus: "Team · Operations",
+    text: "Team leadership, service standards, inventory and daily salon operations.",
+  },
+] as const;
+
 export const businessTypes = [
   "Salon",
   "Beauty Parlour",
@@ -290,47 +334,20 @@ export const employmentTypes = [
   "Freelance",
 ] as const;
 
-/** Skill categories shown as checkboxes in the candidate form. */
+/** Skill categories shown as selectable groups in the candidate form. */
 export const skillsByCategory = {
-  "Hair Services": [
-    "Hair cutting",
-    "Hair styling",
-    "Hair colouring",
-    "Hair treatment",
-    "Hair extensions",
-    "Blow dry & finish",
-    "Keratin / smoothing",
+  Hair: [
+    "Hair Cutting",
+    "Hair Styling",
+    "Hair Colouring",
+    "Hair Treatment",
+    "Hair Straightening",
   ],
-  "Makeup & Beauty": [
-    "Bridal makeup",
-    "Party makeup",
-    "Airbrush makeup",
-    "Editorial makeup",
-    "Skin care",
-    "Facial treatments",
-    "Eyebrow threading & shaping",
-  ],
-  "Nail Services": [
-    "Manicure",
-    "Pedicure",
-    "Gel nails",
-    "Nail art",
-    "Acrylic nails",
-  ],
-  "Body & Wellness": [
-    "Waxing",
-    "Threading",
-    "Spa therapy",
-    "Body massage",
-    "Body treatments",
-  ],
-  "Salon Operations": [
-    "Customer handling",
-    "Salon management",
-    "Reception & billing",
-    "Inventory management",
-    "Team coordination",
-  ],
+  Beauty: ["Facial Treatments", "Skin Care", "Waxing", "Threading", "Bridal Services"],
+  Makeup: ["Bridal Makeup", "Party Makeup", "HD Makeup", "Airbrush Makeup"],
+  Nail: ["Manicure", "Pedicure", "Nail Art", "Nail Extensions"],
+  Spa: ["Spa Therapy", "Body Massage", "Wellness Treatments"],
+  Other: ["Customer Handling", "Salon Reception", "Salon Management"],
 } as const;
 
 /** Flat list of all predefined skills */
@@ -338,35 +355,35 @@ export const allSkills = Object.values(skillsByCategory).flat() as string[];
 
 export const staffingFaqs = [
   {
-    q: "Who can request salon staffing through Goldenfalcone?",
-    a: "Any salon, beauty parlour, spa, makeup studio or wellness centre looking to hire qualified beauty professionals can submit a staffing requirement.",
+    q: "How can a salon request staff?",
+    a: "Open the hiring requirement form, share your business details and the role you need, then submit. Our team reviews the requirement and contacts you to discuss the next steps.",
   },
   {
-    q: "What types of professionals can businesses hire?",
-    a: "We recruit for hair stylists, beauticians, makeup artists, nail technicians, hair assistants, salon receptionists, spa therapists, salon managers and more.",
+    q: "What types of salon professionals can I find?",
+    a: "We support hair stylists, beauticians, makeup artists, nail technicians, hair assistants, salon receptionists, spa therapists and salon managers, along with related salon support roles.",
   },
   {
-    q: "Can freshers register as candidates?",
-    a: "Yes. We welcome freshers and entry-level professionals. Simply select 'Fresher' as your experience level and tell us about your training and skills.",
+    q: "Can freshers register?",
+    a: "Yes. Freshers are welcome. Select your experience level, add the skills you have trained in and include any certificates or practice work that show your ability.",
+  },
+  {
+    q: "Is a resume compulsory?",
+    a: "No. A resume is optional, but it helps our team understand your experience and present your profile more clearly. You can also add a short professional introduction.",
   },
   {
     q: "Can candidates upload multiple certificates?",
-    a: "Yes. The candidate registration form allows you to upload your resume, professional certificates, training certificates and portfolio images.",
+    a: "Yes. You can upload a resume, multiple professional or training certificates, and optional portfolio images. Each file is stored privately and can be removed before submitting.",
   },
   {
-    q: "Is resume submission compulsory for candidates?",
-    a: "No. A resume is optional. However, uploading one makes it easier for us to present your profile to suitable salons.",
+    q: "How does Goldenfalcone connect candidates with salons?",
+    a: "Our team reviews both the hiring requirement and candidate profile, identifies potentially suitable matches and coordinates the introduction. We contact both sides before any personal details are shared with a business.",
   },
   {
-    q: "How can a salon submit its hiring requirement?",
-    a: "Click 'Hire Salon Professionals' or go to the form on this page, fill in your business details and the role you need, and submit. Our team will follow up with you.",
+    q: "Does registration guarantee employment?",
+    a: "No. Registration does not guarantee a job, interview or placement. Final interviews, selection and employment terms are decided by the hiring business and the candidate.",
   },
   {
-    q: "Does submitting a candidate profile guarantee a job?",
-    a: "No. Submitting your profile does not guarantee placement or an interview. Goldenfalcone coordinates introductions between salons and candidates, but hiring decisions rest with the salon.",
-  },
-  {
-    q: "How will Goldenfalcone contact candidates and businesses?",
-    a: "We use the mobile number, WhatsApp number and email address provided in your submission to get in touch. Please ensure these details are correct.",
+    q: "How can I update my submitted details?",
+    a: "Contact our team with your reference number and the details you would like to change. For privacy and security, profile and requirement updates are handled by an authorised administrator.",
   },
 ];

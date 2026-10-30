@@ -46,9 +46,7 @@ export function StaffingRequestForm() {
 
   const onSubmit = handleSubmit(async (values) => {
     setState({ status: "idle" });
-    const result = await submitToApi("/api/staffing-requests", JSON.stringify(values), setError, {
-      "Content-Type": "application/json",
-    });
+    const result = await submitToApi("/api/staffing-requests", JSON.stringify(values), setError);
     setState(result);
     if (result.status === "success") reset({ startedAt: Date.now(), website: "", quantity: 1 });
   });

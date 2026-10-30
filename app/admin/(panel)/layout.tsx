@@ -12,8 +12,8 @@ export default async function PanelLayout({ children }: { children: React.ReactN
   const admin = await requireAdmin();
   const [enquiries, staffing, candidates, orders, config] = await Promise.all([
     Enquiry.countDocuments({ status: "new" }),
-    StaffingRequest.countDocuments({ status: "new" }),
-    CandidateApplication.countDocuments({ status: "new" }),
+    StaffingRequest.countDocuments({ status: { $in: ["new", "reviewing"] } }),
+    CandidateApplication.countDocuments({ status: { $in: ["new", "reviewing"] } }),
     SpiceOrder.countDocuments({ status: { $in: ["pending-whatsapp", "enquiry-received"] } }),
     getSiteConfig(),
   ]);

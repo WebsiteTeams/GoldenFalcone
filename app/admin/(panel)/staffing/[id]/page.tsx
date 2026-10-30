@@ -5,6 +5,7 @@ import { Card, DetailList } from "@/components/admin/DetailList";
 import { NotesPanel, type Note } from "@/components/admin/NotesPanel";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { RecordActions } from "@/components/admin/RecordActions";
+import { StaffingMatchWorkbench } from "@/components/admin/StaffingMatchWorkbench";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { isObjectId } from "@/lib/admin/api";
 import { formatDate } from "@/lib/admin/client";
@@ -138,6 +139,12 @@ export default async function StaffingRequestPage({ params }: { params: Promise<
             />
           </Card>
         </div>
+      </div>
+
+      <div className="mt-6">
+        <Card title="Candidate Matching">
+          <StaffingMatchWorkbench staffingId={r._id} compact />
+        </Card>
       </div>
     </>
   );

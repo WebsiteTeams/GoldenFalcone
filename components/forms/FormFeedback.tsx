@@ -5,7 +5,7 @@ import { AlertCircle, CheckCircle2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export type SubmitState = { status: "idle" | "success" | "error"; message?: string };
+export type SubmitState = { status: "idle" | "success" | "error"; message?: string; reference?: string };
 
 export function SubmitButton({ pending, label, pendingLabel = "Sending…" }: { pending: boolean; label: string; pendingLabel?: string }) {
   return (

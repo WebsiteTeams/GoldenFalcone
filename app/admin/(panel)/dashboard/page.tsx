@@ -2,15 +2,20 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Activity,
+  BellRing,
   BriefcaseBusiness,
+  CalendarCheck,
+  ClipboardList,
   FileText,
   GraduationCap,
+  Handshake,
   Inbox,
   Leaf,
   MailOpen,
   MonitorSmartphone,
   ShoppingBag,
-  UserRound,
+  UserCheck,
+  Users,
 } from "lucide-react";
 import { EmptyState } from "@/components/admin/EmptyState";
 import { PageHeader } from "@/components/admin/PageHeader";
@@ -57,7 +62,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
 
   return (
     <>
-      <PageHeader title={`Welcome back, ${firstName}`} description="Live overview of enquiries, catalogue content and staffing activity." />
+      <PageHeader title={`Welcome back, ${firstName}`} description="Live overview of recruitment, enquiries and catalogue activity." />
 
       {denied ? (
         <p role="alert" className="mb-6 rounded-xl border border-gold/40 bg-champagne/25 px-4 py-3 text-sm text-ink/80">
@@ -66,14 +71,21 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
       ) : null}
 
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Spice Orders" value={s.orders.total} hint={`${s.orders.pending} pending confirmation`} href="/admin/orders" icon={ShoppingBag} />
-        <StatCard label="Total Enquiries" value={s.enquiries.total} hint="All website enquiries" href="/admin/enquiries" icon={Inbox} />
-        <StatCard label="New Enquiries" value={s.enquiries.new} hint="Awaiting a first response" href="/admin/enquiries?status=new" icon={MailOpen} />
-        <StatCard label="Published Spices" value={s.spices.published} hint={`${s.spices.draft} in draft`} href="/admin/spices" icon={Leaf} />
+        <StatCard label="Hiring Requests" value={s.staffing.total} hint={`${s.staffing.last30} in the last 30 days`} href="/admin/staffing" icon={ClipboardList} />
+        <StatCard label="Active Vacancies" value={s.staffing.openVacancies} hint={`${s.staffing.open} open requirements`} href="/admin/staffing" icon={BriefcaseBusiness} />
+        <StatCard label="Candidates" value={s.candidates.total} hint={`${s.candidates.new} new profiles`} href="/admin/candidates" icon={Users} />
+        <StatCard label="Active Matches" value={s.matching.active} hint="Candidates in progress" href="/admin/matching" icon={Handshake} />
+      </div>
+
+      <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="New Requests" value={s.staffing.new} hint={`${s.staffing.awaitingReview} awaiting review`} href="/admin/staffing?status=new" icon={Inbox} />
+        <StatCard label="Candidates in Review" value={s.candidates.reviewing} hint={`${s.candidates.shortlisted} shortlisted`} href="/admin/candidates?status=reviewing" icon={UserCheck} />
+        <StatCard label="Interviews Scheduled" value={s.matching.interviews} hint="Across all hiring requests" href="/admin/matching" icon={CalendarCheck} />
+        <StatCard label="Successful Placements" value={s.matching.placements} hint="Candidates selected by a salon" href="/admin/matching" icon={Handshake} />
       </div>
 
       <div className="mt-6 grid gap-6 xl:grid-cols-3">
-        <div className="xl:col-span-2 space-y-6">
+        <div className="space-y-6 xl:col-span-2">
           <Panel title="Recent Spice Orders" href="/admin/orders" linkLabel="View all">
             {s.recentOrders.length ? (
               <ul className="-my-2 divide-y divide-line">
@@ -88,9 +100,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                       </p>
                     </div>
                     <div className="flex items-center gap-3">
-                      <span className="text-sm font-semibold text-forest">
-                        {formatPrice(o.totalAmount, o.currency)}
-                      </span>
+                      <span className="text-sm font-semibold text-forest">{formatPrice(o.totalAmount, o.currency)}</span>
                       <StatusBadge status={o.status} />
                       <Link href={`/admin/orders/${o._id}`} className="text-sm font-medium text-gold-dark hover:text-forest">
                         View<span className="sr-only"> order {o.orderNumber}</span>
@@ -157,49 +167,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
               <EmptyState title="No candidate profiles yet" description="Profiles submitted on the salon staffing page will appear here." />
             )}
           </Panel>
-        </div>
 
-        <Panel title="Staffing Overview" href="/admin/staffing" linkLabel="Manage">
-          <div className="-mx-3 space-y-0.5">
-            <Metric label="Total hiring requirements" value={s.staffing.total} href="/admin/staffing" />
-            <Metric label="New requirements" value={s.staffing.new} href="/admin/staffing?status=new" />
-            <Metric label="Open vacancies" value={s.staffing.openVacancies} href="/admin/staffing" />
-            <Metric label="Total candidates" value={s.candidates.total} href="/admin/candidates" />
-            <Metric label="Candidates under review" value={s.candidates.reviewing} href="/admin/candidates?status=reviewing" />
-            <Metric label="Shortlisted candidates" value={s.candidates.shortlisted} href="/admin/candidates?status=shortlisted" />
-          </div>
-        </Panel>
-
-        <Panel title="Service Overview">
-          <ul className="space-y-4 text-sm">
-            {[
-              { icon: Leaf, label: "Spices catalogue", href: "/admin/spices", text: `${s.spices.published} published · ${s.spices.draft} draft` },
-              { icon: GraduationCap, label: "Mentorship programmes", href: "/admin/mentorship", text: `${s.mentorship.published} published · ${s.mentorship.draft} draft` },
-              { icon: MonitorSmartphone, label: "Digital services", href: "/admin/digital-services", text: `${s.digital.published} published · ${s.digital.draft} draft · ${s.digital.projects} portfolio` },
-              { icon: BriefcaseBusiness, label: "Salon staffing", href: "/admin/staffing", text: `${s.staffing.open} open requests · ${s.candidates.new} new candidates` },
-              {
-                icon: FileText,
-                label: "Website content",
-                href: "/admin/pages",
-                text: s.content.unpublishedChanges ? "Unpublished changes waiting" : s.content.published ? "Published and up to date" : "Using built-in default copy",
-              },
-            ].map(({ icon: Icon, label, href, text }) => (
-              <li key={label}>
-                <Link href={href} className="group flex items-start gap-3">
-                  <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-forest/5 text-emerald">
-                    <Icon aria-hidden className="h-4 w-4" strokeWidth={1.75} />
-                  </span>
-                  <span>
-                    <span className="block font-medium text-ink group-hover:text-gold-dark">{label}</span>
-                    <span className="block text-xs text-muted">{text}</span>
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </Panel>
-
-        <div className="xl:col-span-2">
           <Panel title="Recent Activity">
             {s.recentActivity.length ? (
               <ol className="space-y-4">
@@ -219,6 +187,82 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
             ) : (
               <EmptyState icon={Activity} title="No activity recorded yet" description="Administrator actions such as edits, status changes and publishing are logged here." />
             )}
+          </Panel>
+        </div>
+
+        <div className="space-y-6">
+          <Panel title="Recruitment Pipeline" href="/admin/matching" linkLabel="Open matching">
+            <div className="-mx-3 space-y-0.5">
+              <Metric label="Hiring requests" value={s.staffing.total} href="/admin/staffing" />
+              <Metric label="New requests" value={s.staffing.new} href="/admin/staffing?status=new" />
+              <Metric label="Awaiting review" value={s.staffing.awaitingReview} href="/admin/staffing?status=reviewing" />
+              <Metric label="Open vacancies" value={s.staffing.openVacancies} href="/admin/staffing" />
+              <Metric label="Candidates" value={s.candidates.total} href="/admin/candidates" />
+              <Metric label="Shortlisted candidates" value={s.candidates.shortlisted} href="/admin/candidates?status=shortlisted" />
+              <Metric label="Active matches" value={s.matching.active} href="/admin/matching" />
+              <Metric label="Interviews scheduled" value={s.matching.interviews} href="/admin/matching" />
+              <Metric label="Successful placements" value={s.matching.placements} href="/admin/matching" />
+            </div>
+          </Panel>
+
+          <Panel title="Pending Follow-ups" href="/admin/matching" linkLabel="View matching">
+            {s.matching.pendingFollowUps === 0 ? (
+              <EmptyState icon={BellRing} title="No follow-ups due" description="Follow-up reminders added while contacting candidates or salons will appear here." />
+            ) : (
+              <ul className="-my-2 divide-y divide-line">
+                {s.followUps.map((f) => (
+                  <li key={f._id} className="py-3">
+                    <Link href={`/admin/candidates/${f.candidateId}`} className="group block">
+                      <span className="flex items-center justify-between gap-3">
+                        <span className="min-w-0 font-medium text-forest group-hover:text-gold-dark">{f.candidateName}</span>
+                        <StatusBadge status={f.connectionStatus} />
+                      </span>
+                      <span className="mt-0.5 block truncate text-xs text-muted">
+                        {f.salonName} · follow up {formatDate(f.followUpAt, true)}
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+                {s.matching.pendingFollowUps > s.followUps.length ? (
+                  <li className="pt-3 text-xs text-muted">
+                    +{s.matching.pendingFollowUps - s.followUps.length} more due.{" "}
+                    <Link href="/admin/matching" className="font-medium text-gold-dark hover:text-forest">
+                      Open matching
+                    </Link>
+                  </li>
+                ) : null}
+              </ul>
+            )}
+          </Panel>
+
+          <Panel title="Service Overview">
+            <ul className="space-y-4 text-sm">
+              {[
+                { icon: ShoppingBag, label: "Spice orders", href: "/admin/orders", text: `${s.orders.total} total · ${s.orders.pending} pending` },
+                { icon: MailOpen, label: "Enquiries", href: "/admin/enquiries", text: `${s.enquiries.total} total · ${s.enquiries.new} new` },
+                { icon: Leaf, label: "Spices catalogue", href: "/admin/spices", text: `${s.spices.published} published · ${s.spices.draft} draft` },
+                { icon: GraduationCap, label: "Mentorship programmes", href: "/admin/mentorship", text: `${s.mentorship.published} published · ${s.mentorship.draft} draft` },
+                { icon: MonitorSmartphone, label: "Digital services", href: "/admin/digital-services", text: `${s.digital.published} published · ${s.digital.draft} draft · ${s.digital.projects} portfolio` },
+                {
+                  icon: FileText,
+                  label: "Website content",
+                  href: "/admin/pages",
+                  text: s.content.unpublishedChanges ? "Unpublished changes waiting" : s.content.published ? "Published and up to date" : "Using built-in default copy",
+                },
+              ].map(({ icon: Icon, label, href, text }) => (
+                <li key={label}>
+                  <Link href={href} className="group flex items-start gap-3">
+                    <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-forest/5 text-emerald">
+                      <Icon aria-hidden className="h-4 w-4" strokeWidth={1.75} />
+                    </span>
+                    <span>
+                      <span className="block font-medium text-ink group-hover:text-gold-dark">{label}</span>
+                      <span className="block text-xs text-muted">{text}</span>
+                    </span>
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </Panel>
         </div>
       </div>

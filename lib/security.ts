@@ -48,7 +48,7 @@ export function looksLikeSpam(data: { website?: string; startedAt: number }) {
   return Boolean(data.website) || elapsed < 2500 || elapsed > 1000 * 60 * 60 * 24;
 }
 
-export function json(status: number, body: { ok: boolean; message: string; errors?: Record<string, string> }) {
+export function json(status: number, body: { ok: boolean; message: string; errors?: Record<string, string>; referenceNumber?: string; duplicate?: boolean; data?: unknown }) {
   return NextResponse.json(body, { status });
 }
 

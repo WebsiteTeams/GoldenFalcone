@@ -22,10 +22,11 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     await connectToDatabase();
     // Fetch the candidate with all hidden document fields
     const candidate = await CandidateApplication.findById(id)
-      .select("fullName cv certificates trainingCertificates portfolioImages")
+      .select("fullName cv profilePhoto certificates trainingCertificates portfolioImages")
       .lean<{
         fullName: string;
         cv?: StoredFileDoc;
+        profilePhoto?: StoredFileDoc;
         certificates?: StoredFileDoc[];
         trainingCertificates?: StoredFileDoc[];
         portfolioImages?: StoredFileDoc[];
@@ -36,6 +37,7 @@ export async function GET(request: Request, { params }: { params: Promise<{ id: 
     // Search across all file fields for a matching storageKey
     const allFiles: StoredFileDoc[] = [
       ...(candidate.cv?.storageKey ? [candidate.cv] : []),
+      ...(candidate.profilePhoto?.storageKey ? [candidate.profilePhoto] : []),
       ...(candidate.certificates ?? []),
       ...(candidate.trainingCertificates ?? []),
       ...(candidate.portfolioImages ?? []),

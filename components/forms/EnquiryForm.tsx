@@ -78,7 +78,7 @@ export function EnquiryForm({ variant = "general", defaultService }: EnquiryForm
   const onSubmit = handleSubmit(async (values) => {
     setState({ status: "idle" });
     const result = await submitToApi("/api/enquiries", JSON.stringify(values), setError, {
-      "Content-Type": "application/json",
+      headers: { "Content-Type": "application/json" },
     });
     setState(result);
     if (result.status === "success") reset({ serviceType: fixedService ?? defaultService, startedAt: Date.now(), website: "" });

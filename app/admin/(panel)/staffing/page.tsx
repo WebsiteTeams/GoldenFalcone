@@ -10,7 +10,7 @@ import { staffingStatuses, toOptions } from "@/lib/admin/constants";
 import { readListQuery } from "@/lib/admin/query";
 import { listRecords, resources } from "@/lib/admin/resources";
 import { requireAdmin } from "@/lib/auth/session";
-import { salonRoles } from "@/lib/content";
+import { employmentTypes, salonRoles } from "@/lib/content";
 
 export const metadata: Metadata = { title: "Staffing Requests" };
 
@@ -30,6 +30,7 @@ type Row = {
 
 const columns: Column<Row>[] = [
   { header: "Salon", primary: true, cell: (r) => r.salonName },
+  { header: "Reference", cell: (r) => <span className="font-mono text-xs text-muted">{r.referenceNumber ?? "—"}</span>, hideOnMobile: true },
   { header: "Contact", cell: (r) => r.contactName, hideOnMobile: true },
   { header: "Location", cell: (r) => r.location },
   { header: "Role", cell: (r) => r.professionalCategory },
@@ -43,15 +44,19 @@ export default async function StaffingPage({ searchParams }: { searchParams: Pro
   await requireAdmin();
   const { query, params } = readListQuery(await searchParams);
   const result = await listRecords<Row>(resources.staffing, query);
-  const filtered = Boolean(query.q || query.status || query.filter || query.from || query.to);
+  const filtered = Boolean(
+    query.q || query.status || query.filter || query.location || query.employment || query.from || query.to,
+  );
 
   return (
     <>
       <PageHeader title="Staffing Requests" description="Hiring requirements from salon and beauty-business owners looking for professionals." />
       <ListToolbar
-        searchPlaceholder="Search salon, contact, location or phone"
+        searchPlaceholder="Search salon, contact, location, reference or role"
         statuses={toOptions(staffingStatuses)}
         filter={{ label: "Role", options: salonRoles.map((r) => ({ value: r, label: r })) }}
+        filters={[{ name: "employment", label: "Type", options: employmentTypes.map((t) => ({ value: t, label: t })) }]}
+        textFilters={[{ name: "location", label: "Location", placeholder: "City or area" }]}
         dates
       />
       {result.items.length ? (

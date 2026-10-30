@@ -2,81 +2,113 @@
 
 import { useEffect, useId, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Sparkles, Store, UserRound } from "lucide-react";
+import { BriefcaseBusiness, ShieldCheck, UserRound } from "lucide-react";
 import { easeLux } from "@/components/animations/motion";
 import { cn } from "@/lib/utils";
 import { CandidateApplicationForm } from "./CandidateApplicationForm";
 import { StaffingRequestForm } from "./StaffingRequestForm";
 
-type Tab = "salon-owners" | "candidates";
+export type StaffingFormKey = "hiring" | "candidate";
 
 const tabs: {
-  key: Tab;
-  badge: string;
+  key: StaffingFormKey;
   label: string;
-  subtitle: string;
-  icon: typeof Store;
-  intro: string;
+  short: string;
+  icon: typeof BriefcaseBusiness;
+  description: string;
 }[] = [
   {
-    key: "salon-owners",
-    badge: "For Salons & Spas",
-    label: "I'm Hiring",
-    subtitle: "Submit your salon's staffing requirements",
-    icon: Store,
-    intro:
-      "Tell us what your business requires. Our team will review your specifications, search our curated talent pool, and coordinate introductions.",
+    key: "hiring",
+    label: "I Need Salon Staff",
+    short: "Hiring",
+    icon: BriefcaseBusiness,
+    description:
+      "Share the role, the skills that matter and the terms you can offer. We review every requirement personally.",
   },
   {
-    key: "candidates",
-    badge: "For Beauty Professionals",
+    key: "candidate",
     label: "I'm Looking for a Job",
-    subtitle: "Create your verified professional profile",
+    short: "Job seeker",
     icon: UserRound,
-    intro:
-      "Build your profile with your specialized skills, certificates, and portfolio. We present matching profiles directly to premier salons.",
+    description:
+      "Build a private professional profile with your skills, experience and certificates. Nothing is shared without your consent.",
   },
 ];
 
-const fromHash = (): Tab | undefined => {
-  const hash = window.location.hash.slice(1);
-  return tabs.some((t) => t.key === hash) ? (hash as Tab) : undefined;
-};
+function readFormFromUrl(): StaffingFormKey | undefined {
+  if (typeof window === "undefined") return undefined;
+  const value = new URLSearchParams(window.location.search).get("form");
+  return value === "hiring" || value === "candidate" ? value : undefined;
+}
 
-/** Two recruitment workflows behind an executive tab interface. */
-export function SalonStaffingForms() {
-  const [active, setActive] = useState<Tab>("salon-owners");
+/** Two recruitment journeys behind one accessible, URL-addressable switcher. */
+export function SalonStaffingForms({ initialForm = "hiring" }: { initialForm?: StaffingFormKey }) {
+  const [active, setActive] = useState<StaffingFormKey>(initialForm);
   const baseId = useId();
 
+  // The server passes the current ?form value so deep links and back/forward
+  // navigation always open the right journey.
   useEffect(() => {
-    const sync = () => {
-      const tab = fromHash();
-      if (tab) setActive(tab);
+    setActive(initialForm);
+  }, [initialForm]);
+
+  useEffect(() => {
+    const syncFromUrl = () => {
+      const value = readFormFromUrl();
+      if (value) setActive(value);
     };
-    sync();
-    window.addEventListener("hashchange", sync);
-    return () => window.removeEventListener("hashchange", sync);
+    syncFromUrl();
+    window.addEventListener("popstate", syncFromUrl);
+    return () => window.removeEventListener("popstate", syncFromUrl);
   }, []);
 
-  const onKeyDown = (e: React.KeyboardEvent<HTMLButtonElement>) => {
-    if (e.key !== "ArrowRight" && e.key !== "ArrowLeft") return;
-    e.preventDefault();
-    const next = tabs[(tabs.findIndex((t) => t.key === active) + 1) % tabs.length].key;
+  const select = (next: StaffingFormKey) => {
     setActive(next);
+    if (typeof window === "undefined") return;
+    const url = new URL(window.location.href);
+    url.searchParams.set("form", next);
+    url.hash = "staffing-forms";
+    // Keep the journey in the address bar without forcing a server round trip.
+    window.history.replaceState({ form: next }, "", url.toString());
+  };
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLButtonElement>) => {
+    const keys = tabs.map((tab) => tab.key);
+    const index = keys.indexOf(active);
+    let next: StaffingFormKey | undefined;
+
+    if (event.key === "ArrowRight") next = keys[(index + 1) % keys.length];
+    if (event.key === "ArrowLeft") next = keys[(index - 1 + keys.length) % keys.length];
+    if (event.key === "Home") next = keys[0];
+    if (event.key === "End") next = keys[keys.length - 1];
+    if (!next) return;
+
+    event.preventDefault();
+    select(next);
     document.getElementById(`${baseId}-tab-${next}`)?.focus();
   };
 
-  const current = tabs.find((t) => t.key === active)!;
+  const current = tabs.find((tab) => tab.key === active) ?? tabs[0];
 
   return (
-    <div className="relative">
-      {/* Tab Switcher Header */}
+    <div>
+      <div className="flex flex-col gap-3 border-b border-line pb-6 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <p className="eyebrow text-gold-dark">Choose your route</p>
+          <h3 className="mt-2 font-serif text-3xl text-forest sm:text-4xl">Two journeys. One careful process.</h3>
+        </div>
+        <p className="flex items-center gap-2 text-xs text-muted">
+          <ShieldCheck aria-hidden className="h-4 w-4 text-emerald" />
+          Private by default · Reviewed by people
+        </p>
+      </div>
+
       <div
         role="tablist"
-        aria-label="Choose recruitment pathway"
-        className="grid gap-3 rounded-2xl border border-line/80 bg-ivory p-2 sm:grid-cols-2"
+        aria-label="Choose your staffing journey"
+        className="mt-6 grid border border-line bg-white sm:grid-cols-2"
       >
-        {tabs.map(({ key, label, subtitle, badge, icon: Icon }) => {
+        {tabs.map(({ key, label, short, icon: Icon }) => {
           const selected = key === active;
           return (
             <button
@@ -87,98 +119,66 @@ export function SalonStaffingForms() {
               aria-selected={selected}
               aria-controls={`${baseId}-panel`}
               tabIndex={selected ? 0 : -1}
-              onClick={() => setActive(key)}
+              onClick={() => select(key)}
               onKeyDown={onKeyDown}
               className={cn(
-                "group relative flex items-start gap-4 rounded-xl p-4 text-left transition-all duration-300 sm:p-5",
-                selected
-                  ? "text-ivory shadow-lg shadow-forest/10"
-                  : "bg-transparent text-muted hover:bg-white/80 hover:text-forest",
+                "group relative flex items-center gap-4 px-5 py-5 text-left transition-colors duration-300 sm:px-6",
+                "border-b border-line last:border-b-0 sm:border-b-0 sm:border-r sm:last:border-r-0",
+                selected ? "bg-forest text-ivory" : "bg-white text-ink hover:bg-ivory",
               )}
             >
-              {selected ? (
-                <motion.span
-                  layoutId={`${baseId}-pill`}
-                  className="absolute inset-0 rounded-xl bg-forest"
-                  transition={{ duration: 0.45, ease: easeLux }}
-                />
-              ) : null}
-
-              <div
+              <span
                 className={cn(
-                  "relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border transition-colors duration-300 sm:h-11 sm:w-11",
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-full border transition-colors duration-300",
                   selected
-                    ? "border-gold/40 bg-emerald/60 text-gold"
-                    : "border-line bg-white text-forest group-hover:border-gold/50 group-hover:text-gold-dark",
+                    ? "border-gold/50 bg-emerald text-gold"
+                    : "border-line bg-ivory text-forest group-hover:border-gold/50",
                 )}
               >
-                <Icon aria-hidden className="h-5 w-5" strokeWidth={1.75} />
-              </div>
-
-              <div className="relative min-w-0 flex-1">
-                <div className="flex items-center gap-2">
-                  <span
-                    className={cn(
-                      "text-[0.65rem] font-bold uppercase tracking-wider",
-                      selected ? "text-gold" : "text-gold-dark",
-                    )}
-                  >
-                    {badge}
-                  </span>
-                  {selected && (
-                    <Sparkles className="h-3 w-3 text-gold animate-pulse" aria-hidden />
-                  )}
-                </div>
-                <h3
+                <Icon aria-hidden className="h-5 w-5" strokeWidth={1.6} />
+              </span>
+              <span className="min-w-0">
+                <span
                   className={cn(
-                    "mt-0.5 font-serif text-xl font-medium sm:text-2xl",
-                    selected ? "text-ivory" : "text-forest",
+                    "block text-[0.65rem] font-semibold uppercase tracking-[0.2em]",
+                    selected ? "text-gold" : "text-gold-dark",
                   )}
                 >
+                  {short}
+                </span>
+                <span className={cn("mt-1 block font-serif text-xl leading-tight sm:text-2xl", selected ? "text-ivory" : "text-forest")}>
                   {label}
-                </h3>
-                <p
-                  className={cn(
-                    "mt-0.5 line-clamp-1 text-xs",
-                    selected ? "text-ivory/70" : "text-muted",
-                  )}
-                >
-                  {subtitle}
-                </p>
-              </div>
+                </span>
+              </span>
+              <span
+                aria-hidden
+                className={cn(
+                  "ml-auto hidden h-2 w-2 shrink-0 rounded-full sm:block",
+                  selected ? "bg-gold" : "bg-line group-hover:bg-gold/60",
+                )}
+              />
             </button>
           );
         })}
       </div>
 
-      {/* Description Banner */}
-      <div className="mt-8 rounded-xl border border-line/60 bg-ivory-dark/40 px-5 py-3.5">
-        <p className="text-sm leading-relaxed text-ink/80">
-          <span className="font-semibold text-forest">Current Selection:</span>{" "}
-          {current.intro}
-        </p>
-      </div>
-
-      {/* Form Container */}
       <div
         id={`${baseId}-panel`}
         role="tabpanel"
         aria-labelledby={`${baseId}-tab-${active}`}
-        className="mt-8"
+        className="pt-8"
       >
+        <p className="mb-8 max-w-2xl text-sm leading-relaxed text-muted">{current.description}</p>
+
         <AnimatePresence mode="wait" initial={false}>
           <motion.div
             key={active}
-            initial={{ opacity: 0, y: 12 }}
+            initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.35, ease: easeLux }}
+            exit={{ opacity: 0, y: -6 }}
+            transition={{ duration: 0.3, ease: easeLux }}
           >
-            {active === "salon-owners" ? (
-              <StaffingRequestForm />
-            ) : (
-              <CandidateApplicationForm />
-            )}
+            {active === "hiring" ? <StaffingRequestForm /> : <CandidateApplicationForm />}
           </motion.div>
         </AnimatePresence>
       </div>

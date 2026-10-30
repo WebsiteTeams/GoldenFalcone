@@ -95,22 +95,25 @@ export async function saveCv(file: File): Promise<StoredFile> {
   return meta;
 }
 
-/** Save a certificate or training document (PDF, Word, or image). */
-export async function saveCertificate(file: File, prefix: "cert" | "training" | "portfolio"): Promise<StoredFile> {
+/** Save a certificate, training document, portfolio image or profile photo. */
+export async function saveCertificate(
+  file: File,
+  prefix: "cert" | "training" | "portfolio" | "profile",
+): Promise<StoredFile> {
   const provider = cvStorageProvider();
   if (provider === "none") throw new UploadError("Document uploads are not currently accepted.");
 
   if (file.size === 0) throw new UploadError("The selected file is empty.");
 
-  const allowedTypes = prefix === "portfolio" ? IMG_TYPES : CERT_TYPES;
-  const maxBytes = prefix === "portfolio" ? IMG_MAX_BYTES : CERT_MAX_BYTES;
+  const allowedTypes = prefix === "cert" || prefix === "training" ? CERT_TYPES : IMG_TYPES;
+  const maxBytes = prefix === "portfolio" ? IMG_MAX_BYTES : prefix === "profile" ? 2 * 1024 * 1024 : CERT_MAX_BYTES;
 
   if (file.size > maxBytes) throw new UploadError(`File must be ${Math.round(maxBytes / 1024 / 1024)} MB or smaller.`);
 
   const type = allowedTypes[file.type];
   const buffer = Buffer.from(await file.arrayBuffer());
   if (!type || !type.magic(buffer)) {
-    if (prefix === "portfolio") throw new UploadError("Portfolio images must be JPEG, PNG or WebP.");
+    if (prefix === "portfolio" || prefix === "profile") throw new UploadError("Images must be JPEG, PNG or WebP.");
     throw new UploadError("Certificates must be PDF, Word or image files.");
   }
 
@@ -136,7 +139,7 @@ export async function saveCertificate(file: File, prefix: "cert" | "training" | 
 }
 
 // Accept any key from saveCv or saveCertificate
-const STORAGE_KEY = /^(cv|cert|training|portfolio)\/\d{4}-\d{2}\/[0-9a-f-]{36}\.(pdf|docx?|jpg|png|webp)$/;
+const STORAGE_KEY = /^(cv|cert|training|portfolio|profile)\/\d{4}-\d{2}\/[0-9a-f-]{36}\.(pdf|docx?|jpg|png|webp)$/;
 
 const localPath = (storageKey: string) => {
   if (!STORAGE_KEY.test(storageKey)) throw new UploadError("Invalid file reference.");

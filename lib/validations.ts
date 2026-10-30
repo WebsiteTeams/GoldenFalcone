@@ -161,3 +161,6 @@ export const IMG_MAX_BYTES = 8 * 1024 * 1024; // 8 MB per image
 export const IMG_ACCEPT = ".jpg,.jpeg,.png,.webp";
 export const IMG_MAX_COUNT = 6; // max portfolio images
 
+export const PROFILE_MAX_BYTES = 2 * 1024 * 1024; // 2 MB
+export const PROFILE_ACCEPT = ".jpg,.jpeg,.png,.webp";
+

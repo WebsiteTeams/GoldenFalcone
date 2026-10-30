@@ -1,35 +1,24 @@
 import Link from "next/link";
 import Image from "next/image";
 import {
+  ArrowDownRight,
   ArrowRight,
-  Award,
-  Brush,
   CheckCircle2,
   Clock,
-  Hand,
-  HeartHandshake,
   Lock,
   Scissors,
   ShieldCheck,
-  Sparkles,
   Store,
   UserCheck,
   UserRound,
-  Users,
 } from "lucide-react";
-import {
-  AnimatedButton,
-  ImageReveal,
-  RevealUp,
-  StaggerContainer,
-  StaggerItem,
-} from "@/components/animations";
-import { SalonStaffingForms } from "@/components/forms/SalonStaffingForms";
-import { PageHero } from "@/components/sections/PageHero";
+import { AnimatedButton, RevealUp, StaggerContainer, StaggerItem, StaggerList, StaggerListItem } from "@/components/animations";
+import { SalonStaffingForms, type StaffingFormKey } from "@/components/forms/SalonStaffingForms";
+import { StaffingRolesCarousel } from "@/components/sections/StaffingRolesCarousel";
 import { SectionHeading } from "@/components/ui/SectionHeading";
-import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
 import { Accordion } from "@/components/ui/Accordion";
-import { images, staffingFaqs } from "@/lib/content";
+import { WhatsAppButton } from "@/components/ui/WhatsAppButton";
+import { images, salonRoleProfiles, staffingFaqs } from "@/lib/content";
 import { pageMetadata } from "@/lib/cms";
 
 export const generateMetadata = () =>
@@ -44,244 +33,491 @@ export const generateMetadata = () =>
     },
   });
 
-const roleCategories = [
-  {
-    icon: Scissors,
-    title: "Hair Stylists",
-    text: "Precision cutting, balayage, creative colouring, keratin smoothing, and modern styling.",
-    number: "01",
-  },
-  {
-    icon: Sparkles,
-    title: "Beauticians",
-    text: "Clinical and organic facials, skin diagnosis, body care, threading, and waxing.",
-    number: "02",
-  },
-  {
-    icon: Brush,
-    title: "Makeup Artists",
-    text: "Bridal transformations, airbrush techniques, occasion aesthetics, and high-fashion editorial.",
-    number: "03",
-  },
-  {
-    icon: Hand,
-    title: "Nail Technicians",
-    text: "Classic manicure & pedicure, gel extensions, acrylic sculpting, and bespoke nail artistry.",
-    number: "04",
-  },
-  {
-    icon: UserRound,
-    title: "Hair Assistants",
-    text: "Client greeting, shampoo ritual care, sectioning, product prep, and daily chair support.",
-    number: "05",
-  },
-  {
-    icon: Store,
-    title: "Salon Receptionists",
-    text: "Front-desk hospitality, appointment coordination, billing management, and client relationships.",
-    number: "06",
-  },
-  {
-    icon: HeartHandshake,
-    title: "Spa & Wellness Therapists",
-    text: "Holistic massage rituals, body polishes, aromatherapy, and therapeutic wellness care.",
-    number: "07",
-  },
-  {
-    icon: Users,
-    title: "Salon Managers",
-    text: "Operational leadership, inventory oversight, revenue tracking, and team development.",
-    number: "08",
-  },
-];
-
 const hiringSteps = [
   {
-    step: "01",
-    title: "Submit your requirement",
-    text: "Specify the exact roles, required techniques, vacancy count, experience expectations, and remuneration bracket.",
+    title: "Submit the requirement",
+    text: "Tell us the role, the techniques that matter, how many people you need and the terms you can offer.",
   },
   {
-    step: "02",
-    title: "Goldenfalcone reviews your requirement",
-    text: "Our staffing specialists review your criteria, verify specific treatment requirements, and connect with you to align on timelines.",
+    title: "We review it personally",
+    text: "A staffing specialist checks the brief, clarifies anything unclear and agrees a realistic timeline with you.",
   },
   {
-    step: "03",
-    title: "Suitable candidate profiles are identified",
-    text: "We cross-reference our vetted talent database, matching candidates based on verified skills, location, and aesthetic standard.",
+    title: "Suitable profiles are identified",
+    text: "We look through our private candidate network for people whose skills, experience and location genuinely fit.",
   },
   {
-    step: "04",
-    title: "The hiring business is contacted to coordinate next steps",
-    text: "Curated candidate dossiers are shared with your consent. Interviews, trials, and final hiring determinations remain entirely between you and the candidate.",
+    title: "You decide the next step",
+    text: "We contact you before any profile is introduced. Interviews, trials and final hiring terms remain between you and the candidate.",
   },
 ];
 
 const candidateSteps = [
   {
-    step: "01",
-    title: "Create your professional profile",
-    text: "Register your contact details, current geographic location, preferred work areas, and core beauty discipline.",
+    title: "Build your private profile",
+    text: "Add your contact details, current location and the areas you would consider working in.",
   },
   {
-    step: "02",
-    title: "Add your skills and experience",
-    text: "Detail your background, tenure, brand training, and select specific service capabilities across our skills matrix.",
+    title: "Show your craft",
+    text: "Select your discipline, the services you can deliver confidently and the experience you have gained.",
   },
   {
-    step: "03",
-    title: "Upload your resume and certificates",
-    text: "Attach your CV, academy diplomas, brand certifications, and visual portfolio to substantiate your artistry.",
+    title: "Add documents if you wish",
+    text: "A resume, academy certificates and portfolio images are optional, stored privately and never published.",
   },
   {
-    step: "04",
-    title: "Submit your profile for review",
-    text: "Our team reviews your credentials and records your reference ID into our private recruitment network.",
+    title: "Submit for review",
+    text: "Our team reads your profile and records your reference number. Nothing is shared without speaking to you first.",
   },
   {
-    step: "05",
-    title: "Goldenfalcone may contact you about suitable opportunities",
-    text: "When a matching salon opening emerges, we coordinate a discreet introduction. We do not promise guaranteed placement or instant hiring.",
+    title: "We may contact you",
+    text: "If a salon opening looks like a genuine fit, we get in touch. Registration never guarantees a job or placement.",
   },
 ];
 
-const whyChoosePoints = [
+const reasons = [
   {
     icon: Store,
-    title: "Industry-focused recruitment",
-    text: "Built exclusively for the salon, spa, and beauty industry with deep appreciation for artistic technique and salon culture.",
+    title: "Built only for beauty",
+    text: "Salons, spas, studios and wellness businesses — we understand the roles, the rhythm of the floor and what a strong team actually needs.",
   },
   {
     icon: Scissors,
-    title: "Multiple beauty and salon job categories",
-    text: "From master hair colourists and aesthetic therapists to front-desk managers and support assistants.",
+    title: "Every discipline covered",
+    text: "Hair, beauty, makeup, nails, spa and salon operations, from assistants and receptionists to senior stylists and managers.",
   },
   {
     icon: UserCheck,
-    title: "Structured candidate profiles",
-    text: "Every submission contains categorized skills, documented experience, salary expectations, and verified contact identity.",
-  },
-  {
-    icon: Award,
-    title: "Skills and certificate-based evaluation",
-    text: "We prioritize documented credentials, academy training, and actual client artistry rather than vague resumes.",
+    title: "Profiles with substance",
+    text: "Skills are categorised, experience is stated plainly and documents are optional but welcome. No vague one-line applications.",
   },
   {
     icon: ShieldCheck,
-    title: "Support for both businesses and job seekers",
-    text: "Clear, respectful communication with both salon owners and aspiring candidates throughout the introduction process.",
+    title: "Discretion first",
+    text: "Candidate documents and contact details stay private. We speak to both sides before any introduction is made.",
   },
   {
     icon: Clock,
-    title: "A straightforward recruitment coordination process",
-    text: "A direct, human-driven workflow without automated algorithms obscuring authentic talent or genuine salon needs.",
+    title: "A human-paced process",
+    text: "No automated matching engine decides your shortlist. A person reviews the brief, the profile and the fit.",
+  },
+  {
+    icon: Lock,
+    title: "No false promises",
+    text: "We do not guarantee placements or instant hiring. We do commit to clear communication and an honest assessment.",
   },
 ];
 
-export default function SalonStaffingPage() {
+const FORM_HIRING = "/salon-staffing?form=hiring#staffing-forms";
+const FORM_CANDIDATE = "/salon-staffing?form=candidate#staffing-forms";
+
+type PageProps = {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+};
+
+export default async function SalonStaffingPage({ searchParams }: PageProps) {
+  const params = await searchParams;
+  const requested = Array.isArray(params.form) ? params.form[0] : params.form;
+  const initialForm: StaffingFormKey = requested === "candidate" ? "candidate" : "hiring";
+
   return (
     <>
-      {/* ── 1. Hero Section ── */}
-      <PageHero
-        eyebrow="Division 04 · Salon Staffing & Recruitment"
-        title={["Find the Right Talent.", "Build a Stronger Beauty Team."]}
-        intro="Goldenfalcone connects salons, beauty studios and wellness businesses with skilled beauty professionals. Whether you're building your team or looking for your next opportunity, we help bring the right people together."
-        image={images.salonChairs}
-        imageAlt="Modern premium salon interior with styling chairs, mirrors and warm lighting"
-        actions={
-          <>
-            <AnimatedButton href="#salon-owners">Hire Salon Professionals</AnimatedButton>
-            <AnimatedButton href="#candidates" variant="outline-light" arrow={false}>
-              Find a Job
-            </AnimatedButton>
-          </>
-        }
-      />
-
-      {/* ── Editorial Brand Strip ── */}
-      <div className="border-b border-line/70 bg-white py-5">
-        <div className="container-lux flex flex-col items-center justify-between gap-4 text-center sm:flex-row sm:text-left">
-          <p className="eyebrow flex items-center justify-center gap-2.5 text-gold-dark sm:justify-start">
-            <span className="h-1.5 w-1.5 rounded-full bg-gold" aria-hidden />
-            Connecting Beauty Businesses with Skilled Professionals
-          </p>
-          <div className="flex items-center gap-6 text-xs text-muted">
-            <span>Discreet & Confidential</span>
-            <span className="h-3 w-px bg-line" aria-hidden />
-            <span>Human-Curated Matches</span>
-            <span className="h-3 w-px bg-line" aria-hidden />
-            <span>Verified Credentials</span>
-          </div>
-        </div>
-      </div>
-
-      {/* ── 2. About the Staffing Service ("People Make the Difference") ── */}
-      <section className="bg-ivory py-24 sm:py-32">
+      {/* ── 01 · Editorial hero ─────────────────────────────────────────── */}
+      <section className="relative overflow-hidden border-b border-line/80 bg-ivory pb-16 pt-28 sm:pb-24 sm:pt-36">
+        <span
+          aria-hidden
+          className="pointer-events-none absolute -right-24 top-16 hidden h-72 w-72 rounded-full border border-gold/15 lg:block"
+        />
         <div className="container-lux">
-          {/* Header & Philosophy */}
-          <div className="grid items-end gap-10 lg:grid-cols-12">
+          <div className="grid items-center gap-12 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-7">
-              <SectionHeading
-                eyebrow="The Goldenfalcone Philosophy"
-                title={["People Make", "the Difference."]}
-              />
-              <RevealUp delay={0.15} className="mt-6 max-w-2xl text-base leading-relaxed text-muted sm:text-lg">
-                <p>
-                  Running a successful salon requires more than great services. It takes talented
-                  professionals, reliable support staff and a team that understands quality and
-                  customer care.
+              <RevealUp distance={12}>
+                <p className="eyebrow flex items-center gap-3 text-gold-dark">
+                  <span aria-hidden className="h-px w-10 bg-gold" />
+                  Salon Staffing · Division 04
                 </p>
-                <p className="mt-4">
-                  Goldenfalcone helps businesses discover suitable candidates while giving beauty
-                  professionals a platform to present their experience and skills.
+              </RevealUp>
+
+              <RevealUp delay={0.08}>
+                <h1 className="mt-6 max-w-[18ch] font-serif text-[2.9rem] leading-[0.98] text-forest sm:text-6xl lg:text-[4.6rem]">
+                  The right people make a salon.{" "}
+                  <em className="font-light italic text-gold-dark">Everything else follows.</em>
+                </h1>
+              </RevealUp>
+
+              <RevealUp delay={0.16}>
+                <p className="mt-7 max-w-xl text-base leading-relaxed text-muted sm:text-lg">
+                  Goldenfalcone brings salons, spas and beauty studios together with skilled professionals —
+                  carefully, privately and with a real person reading every brief.
                 </p>
+              </RevealUp>
+
+              <RevealUp delay={0.24} className="mt-9 flex flex-wrap gap-4">
+                <AnimatedButton href={FORM_HIRING}>I Need Salon Staff</AnimatedButton>
+                <AnimatedButton href={FORM_CANDIDATE} variant="outline-dark">
+                  I&apos;m Looking for a Job
+                </AnimatedButton>
+              </RevealUp>
+
+              <RevealUp delay={0.32}>
+                <dl className="mt-12 grid max-w-xl grid-cols-3 divide-x divide-line border-t border-line pt-6 text-left">
+                  {[
+                    ["8", "core disciplines"],
+                    ["1:1", "human review"],
+                    ["100%", "private documents"],
+                  ].map(([value, label]) => (
+                    <div key={label} className="px-4 first:pl-0 last:pr-0">
+                      <dt className="font-serif text-2xl text-forest sm:text-3xl">{value}</dt>
+                      <dd className="mt-1 text-[0.7rem] uppercase tracking-[0.14em] text-muted">{label}</dd>
+                    </div>
+                  ))}
+                </dl>
               </RevealUp>
             </div>
 
             <div className="lg:col-span-5">
-              <RevealUp delay={0.25} className="rounded-2xl border border-line/80 bg-white p-7 shadow-xs">
-                <p className="eyebrow text-gold-dark">Our Guarantee to You</p>
-                <h4 className="mt-2 font-serif text-2xl text-forest">Honest, Human Coordination</h4>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
-                  We believe in transparency. We do not claim automated matching or guaranteed placements.
-                  Instead, every salon requirement and candidate profile is individually reviewed by
-                  people who understand salon operations.
+              <RevealUp delay={0.18} className="relative mx-auto max-w-md lg:mr-0">
+                <div aria-hidden className="absolute -left-4 -top-4 hidden h-full w-full border border-gold/35 sm:block" />
+                <figure className="relative">
+                  <div className="relative aspect-[4/5] overflow-hidden bg-ivory-dark">
+                    <Image
+                      src={images.salonStylist}
+                      alt="A stylist working with a client in a calm, modern salon"
+                      fill
+                      priority
+                      sizes="(min-width: 1024px) 32vw, 90vw"
+                      className="object-cover"
+                    />
+                    <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-forest/55 via-transparent to-transparent" />
+                  </div>
+                  <figcaption className="absolute inset-x-5 bottom-5 border border-ivory/25 bg-forest/85 px-5 py-4 text-ivory backdrop-blur-sm">
+                    <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-gold">
+                      Human-reviewed introductions
+                    </p>
+                    <p className="mt-1.5 font-serif text-xl leading-snug">
+                      Hair · Beauty · Makeup · Nails · Spa
+                    </p>
+                  </figcaption>
+                </figure>
+                <p className="mt-5 flex items-start gap-2 text-xs leading-relaxed text-muted">
+                  <ShieldCheck aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-emerald" />
+                  Candidate documents are stored privately. Contact details are shared only after a conversation.
                 </p>
               </RevealUp>
             </div>
           </div>
+        </div>
+      </section>
 
-          {/* 8 Service Categories Showcase */}
-          <div className="mt-20">
-            <RevealUp className="mb-8 flex items-center justify-between border-b border-line pb-4">
-              <p className="eyebrow text-gold-dark">Specialized Disciplines</p>
-              <span className="text-xs text-muted">8 Recruitment Categories</span>
+      {/* ── Editorial ribbon ────────────────────────────────────────────── */}
+      <div className="border-b border-line/70 bg-white">
+        <div className="container-lux flex flex-col gap-3 py-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
+          <p className="eyebrow text-gold-dark">Connecting beauty businesses with skilled professionals</p>
+          <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-muted">
+            <span>Discreet by default</span>
+            <span aria-hidden className="hidden h-3 w-px bg-line sm:block" />
+            <span>Reviewed by people</span>
+            <span aria-hidden className="hidden h-3 w-px bg-line sm:block" />
+            <span>No registration fee for candidates</span>
+          </p>
+        </div>
+      </div>
+
+      {/* ── 02 · Two journeys ───────────────────────────────────────────── */}
+      <section className="bg-white py-20 sm:py-28">
+        <div className="container-lux">
+          <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <SectionHeading
+                eyebrow="Two ways in"
+                title={["Start where", "you stand."]}
+                intro="One careful process, seen from two sides. Choose the route that matches what you need today."
+              />
+            </div>
+            <p className="max-w-sm text-sm leading-relaxed text-muted lg:col-span-5 lg:justify-self-end">
+              Both journeys lead to the same team. We read every submission, ask questions where needed, and never
+              pass details across without consent.
+            </p>
+          </div>
+
+          <div className="mt-14 grid border-y border-line lg:grid-cols-2">
+            <RevealUp className="group flex flex-col border-b border-line px-6 py-9 transition-colors duration-300 hover:bg-ivory sm:px-9 lg:border-b-0 lg:border-r">
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <p className="eyebrow text-gold-dark">For salons &amp; studios</p>
+                  <h3 className="mt-3 max-w-sm font-serif text-3xl leading-tight text-forest sm:text-4xl">
+                    I need salon staff
+                  </h3>
+                </div>
+                <span aria-hidden className="font-serif text-5xl leading-none text-line transition-colors group-hover:text-gold/50">
+                  01
+                </span>
+              </div>
+              <p className="mt-5 max-w-md text-sm leading-relaxed text-muted">
+                Tell us about the chair you need to fill. Share the role, the skills that matter, the salary band and
+                the kind of salon culture the person will walk into.
+              </p>
+              <ul className="mt-6 space-y-2.5 text-sm text-ink/80">
+                {["One brief, however many hires", "Profiles matched to your terms", "You approve every introduction"].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-emerald" />
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={FORM_HIRING}
+                className="mt-8 inline-flex items-center gap-3 self-start border-b border-forest/25 pb-1 text-sm font-semibold text-forest transition-colors hover:border-gold hover:text-gold-dark"
+              >
+                Submit a hiring requirement
+                <ArrowRight aria-hidden className="h-4 w-4" />
+              </Link>
             </RevealUp>
 
-            <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {roleCategories.map(({ icon: Icon, title, text, number }) => (
-                <StaggerItem
-                  key={title}
-                  className="group relative flex flex-col justify-between rounded-2xl border border-line bg-white p-7 transition-all duration-300 hover:-translate-y-1 hover:border-gold/60 hover:shadow-md"
-                >
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <span className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-line bg-ivory text-forest transition-colors duration-300 group-hover:border-gold/40 group-hover:bg-forest group-hover:text-gold">
-                        <Icon aria-hidden className="h-5 w-5" strokeWidth={1.5} />
-                      </span>
-                      <span className="font-serif text-xs font-semibold text-gold-dark/60">
-                        {number}
-                      </span>
+            <RevealUp delay={0.1} className="group flex flex-col px-6 py-9 transition-colors duration-300 hover:bg-ivory sm:px-9">
+              <div className="flex items-start justify-between gap-6">
+                <div>
+                  <p className="eyebrow text-gold-dark">For beauty professionals</p>
+                  <h3 className="mt-3 max-w-sm font-serif text-3xl leading-tight text-forest sm:text-4xl">
+                    I&apos;m looking for a job
+                  </h3>
+                </div>
+                <span aria-hidden className="font-serif text-5xl leading-none text-line transition-colors group-hover:text-gold/50">
+                  02
+                </span>
+              </div>
+              <p className="mt-5 max-w-md text-sm leading-relaxed text-muted">
+                Present your craft properly. Add your specialities, your experience and, if you have them, the
+                certificates and client work that show what you can do.
+              </p>
+              <ul className="mt-6 space-y-2.5 text-sm text-ink/80">
+                {["A private profile, not a public listing", "Documents kept under lock", "Contacted only with your consent"].map((line) => (
+                  <li key={line} className="flex items-start gap-2.5">
+                    <CheckCircle2 aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-emerald" />
+                    {line}
+                  </li>
+                ))}
+              </ul>
+              <Link
+                href={FORM_CANDIDATE}
+                className="mt-8 inline-flex items-center gap-3 self-start border-b border-forest/25 pb-1 text-sm font-semibold text-forest transition-colors hover:border-gold hover:text-gold-dark"
+              >
+                Create your professional profile
+                <ArrowRight aria-hidden className="h-4 w-4" />
+              </Link>
+            </RevealUp>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 03 · Roles ──────────────────────────────────────────────────── */}
+      <section className="border-y border-line/80 bg-ivory py-20 sm:py-28">
+        <div className="container-lux">
+          <div className="border-b border-line pb-8">
+            <SectionHeading
+              eyebrow="Who we place"
+              title={["Eight disciplines.", "One standard."]}
+              intro="The core roles we recruit for across salons, spas, makeup studios and wellness businesses."
+            />
+          </div>
+
+          <StaffingRolesCarousel roles={salonRoleProfiles} />
+
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <p className="max-w-xl text-xs leading-relaxed text-muted">
+              Also placing salon assistants, front-desk coordinators and other support roles. If your requirement sits
+              slightly outside this list, describe it in the form.
+            </p>
+            <Link
+              href={FORM_HIRING}
+              className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-forest transition-colors hover:text-gold-dark"
+            >
+              Discuss a role <ArrowDownRight aria-hidden className="h-4 w-4" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 04 · Two workflows ──────────────────────────────────────────── */}
+      <section className="bg-forest py-20 text-ivory sm:py-28">
+        <div className="container-lux">
+          <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <SectionHeading
+                tone="light"
+                eyebrow="How it works"
+                title={["A short brief.", "A considered introduction."]}
+                intro="No automated shortlists and no promises we cannot keep. Just a clear sequence, from first message to final decision."
+              />
+            </div>
+            <p className="max-w-sm text-sm leading-relaxed text-ivory/65 lg:col-span-5 lg:justify-self-end">
+              Interviews, trials and employment terms are always agreed directly between the salon and the candidate.
+              Goldenfalcone coordinates the introduction, not the outcome.
+            </p>
+          </div>
+
+          <div className="mt-14 grid gap-12 lg:grid-cols-2 lg:gap-16">
+            <div>
+              <div className="flex items-center gap-3 border-b border-ivory/15 pb-4">
+                <Store aria-hidden className="h-4.5 w-4.5 text-gold" />
+                <h3 className="font-serif text-2xl">If you are hiring</h3>
+                <span className="ml-auto text-[0.65rem] uppercase tracking-[0.18em] text-gold">4 steps</span>
+              </div>
+              <StaggerList className="mt-2">
+                {hiringSteps.map((step, i) => (
+                  <StaggerListItem key={step.title} className="flex gap-5 border-b border-ivory/10 py-6">
+                    <span aria-hidden className="font-serif text-2xl text-gold/70">{String(i + 1).padStart(2, "0")}</span>
+                    <div>
+                      <h4 className="font-serif text-xl text-ivory">{step.title}</h4>
+                      <p className="mt-1.5 text-sm leading-relaxed text-ivory/65">{step.text}</p>
                     </div>
-                    <h3 className="mt-6 font-serif text-2xl text-forest group-hover:text-gold-dark transition-colors">
-                      {title}
-                    </h3>
-                    <p className="mt-2.5 text-xs leading-relaxed text-muted">{text}</p>
+                  </StaggerListItem>
+                ))}
+              </StaggerList>
+              <Link
+                href={FORM_HIRING}
+                className="mt-7 inline-flex items-center gap-3 rounded-full bg-gold px-6 py-3 text-sm font-semibold text-forest transition-colors hover:bg-champagne"
+              >
+                I Need Salon Staff <ArrowRight aria-hidden className="h-4 w-4" />
+              </Link>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-3 border-b border-ivory/15 pb-4">
+                <UserRound aria-hidden className="h-4.5 w-4.5 text-gold" />
+                <h3 className="font-serif text-2xl">If you are looking</h3>
+                <span className="ml-auto text-[0.65rem] uppercase tracking-[0.18em] text-gold">5 steps</span>
+              </div>
+              <StaggerList className="mt-2">
+                {candidateSteps.map((step, i) => (
+                  <StaggerListItem key={step.title} className="flex gap-5 border-b border-ivory/10 py-6">
+                    <span aria-hidden className="font-serif text-2xl text-gold/70">{String(i + 1).padStart(2, "0")}</span>
+                    <div>
+                      <h4 className="font-serif text-xl text-ivory">{step.title}</h4>
+                      <p className="mt-1.5 text-sm leading-relaxed text-ivory/65">{step.text}</p>
+                    </div>
+                  </StaggerListItem>
+                ))}
+              </StaggerList>
+              <Link
+                href={FORM_CANDIDATE}
+                className="mt-7 inline-flex items-center gap-3 rounded-full border border-champagne/45 px-6 py-3 text-sm font-semibold text-ivory transition-colors hover:border-gold hover:text-champagne"
+              >
+                I&apos;m Looking for a Job <ArrowRight aria-hidden className="h-4 w-4" />
+              </Link>
+            </div>
+          </div>
+
+          <p className="mt-12 max-w-3xl border-l border-gold/50 pl-5 text-xs leading-relaxed text-ivory/55">
+            <strong className="font-semibold text-champagne">A note on honesty.</strong> Submitting a requirement or a
+            profile does not guarantee a hire, interview or placement. We facilitate introductions; the decision stays
+            with the salon and the professional.
+          </p>
+        </div>
+      </section>
+
+      {/* ── 05 · Main forms ─────────────────────────────────────────────── */}
+      <section id="staffing-forms" className="scroll-mt-24 bg-white py-20 sm:py-28">
+        <div className="container-lux">
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <aside className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <p className="eyebrow text-gold-dark">Recruitment portal</p>
+                <h2 className="mt-4 font-serif text-4xl leading-[1.05] text-forest sm:text-5xl">
+                  Choose your <em className="font-light italic text-gold-dark">route.</em>
+                </h2>
+                <p className="mt-5 max-w-sm text-sm leading-relaxed text-muted">
+                  Two journeys, one form area. The tab you choose is reflected in the address bar, so you can return to
+                  the same form later or send the link to a colleague.
+                </p>
+
+                <div className="mt-8 space-y-5 border-t border-line pt-6">
+                  <div className="flex items-start gap-3.5">
+                    <Lock aria-hidden className="mt-0.5 h-4.5 w-4.5 shrink-0 text-gold-dark" />
+                    <div>
+                      <h3 className="text-sm font-semibold text-forest">Private by default</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-muted">
+                        Contact details, resumes and certificates are stored privately and used only for recruitment.
+                        Read our{" "}
+                        <Link href="/privacy-policy" className="font-medium text-forest underline decoration-gold/60 underline-offset-2">
+                          Privacy Policy
+                        </Link>
+                        .
+                      </p>
+                    </div>
                   </div>
-                  <div className="mt-6 pt-4 border-t border-line/40 flex items-center justify-between text-[0.7rem] font-semibold text-forest">
-                    <span>Recruiting Now</span>
-                    <ArrowRight className="h-3 w-3 text-gold-dark transition-transform duration-300 group-hover:translate-x-1" />
+
+                  <div className="flex items-start gap-3.5">
+                    <Clock aria-hidden className="mt-0.5 h-4.5 w-4.5 shrink-0 text-gold-dark" />
+                    <div>
+                      <h3 className="text-sm font-semibold text-forest">A real timeline</h3>
+                      <p className="mt-1 text-xs leading-relaxed text-muted">
+                        The hiring form takes about three minutes. A candidate profile takes around five. Neither
+                        requires an account.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-8 border border-line bg-ivory px-5 py-5">
+                  <h3 className="font-serif text-xl text-forest">Need to speak to someone?</h3>
+                  <p className="mt-1.5 text-xs leading-relaxed text-muted">
+                    For bulk hiring, a confidential search or help with your profile, message the staffing team
+                    directly.
+                  </p>
+                  <div className="mt-4">
+                    <WhatsAppButton message="Hello Goldenfalcone, I have a salon staffing enquiry." label="Chat with the staffing team" />
+                  </div>
+                </div>
+              </div>
+            </aside>
+
+            <div className="lg:col-span-8">
+              <div className="border border-line bg-ivory/40 p-5 sm:p-8 lg:p-10">
+                <SalonStaffingForms initialForm={initialForm} />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 06 · Why Goldenfalcone ──────────────────────────────────────── */}
+      <section className="border-y border-line/80 bg-ivory-dark/45 py-20 sm:py-28">
+        <div className="container-lux">
+          <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-4">
+              <div className="lg:sticky lg:top-28">
+                <SectionHeading
+                  eyebrow="Why Goldenfalcone"
+                  title={["Fewer profiles.", "Better conversations."]}
+                />
+                <p className="mt-6 text-sm leading-relaxed text-muted">
+                  Recruitment in the beauty industry works on trust and craft. Our process is built around both — not
+                  around volume.
+                </p>
+                <blockquote className="mt-8 border-l border-gold/60 pl-5">
+                  <p className="font-serif text-2xl italic leading-snug text-forest">
+                    “The best hire is rarely the fastest one.”
+                  </p>
+                  <footer className="mt-2 text-[0.65rem] uppercase tracking-[0.18em] text-muted">
+                    Goldenfalcone staffing principle
+                  </footer>
+                </blockquote>
+              </div>
+            </div>
+
+            <StaggerContainer className="grid gap-x-10 gap-y-0 sm:grid-cols-2 lg:col-span-8">
+              {reasons.map(({ icon: Icon, title, text }, i) => (
+                <StaggerItem key={title} className="border-t border-line py-6 first:border-t-0 sm:[&:nth-child(2)]:border-t-0">
+                  <div className="flex items-start gap-4">
+                    <span className="mt-0.5 font-serif text-2xl text-gold-dark/60">{String(i + 1).padStart(2, "0")}</span>
+                    <div>
+                      <h3 className="flex items-center gap-2 font-serif text-2xl text-forest">
+                        <Icon aria-hidden className="h-4 w-4 text-emerald" strokeWidth={1.6} />
+                        {title}
+                      </h3>
+                      <p className="mt-2 text-sm leading-relaxed text-muted">{text}</p>
+                    </div>
                   </div>
                 </StaggerItem>
               ))}
@@ -290,313 +526,23 @@ export default function SalonStaffingPage() {
         </div>
       </section>
 
-      {/* ── 3. Visual Breakout & Dual Pathways ── */}
-      <section className="border-y border-line/80 bg-white py-24 sm:py-32">
-        <div className="container-lux">
-          <SectionHeading
-            align="center"
-            eyebrow="Two Distinct Pathways"
-            title={["Tailored for Business.", "Crafted for Talent."]}
-            intro="Select the recruitment track that aligns with your immediate objectives."
-          />
-
-          <div className="mt-16 grid gap-8 lg:grid-cols-2">
-            {/* For Salon Owners Card */}
-            <RevealUp delay={0.1}>
-              <div className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-line bg-ivory transition-all duration-500 hover:border-gold/60 hover:shadow-lg">
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={images.salonInterior}
-                    alt="Elegant modern salon styling stations with warm lighting"
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-forest/80 via-forest/20 to-transparent" />
-                  <span className="absolute bottom-6 left-6 rounded-full border border-gold/40 bg-forest/90 px-4 py-1.5 text-xs font-semibold text-gold backdrop-blur-xs">
-                    For Salon Owners & Operators
-                  </span>
-                </div>
-
-                <div className="flex flex-1 flex-col p-8 sm:p-10">
-                  <h3 className="font-serif text-3xl text-forest sm:text-4xl">
-                    Find the Right People for Your Business
-                  </h3>
-                  <p className="mt-4 flex-1 text-sm leading-relaxed text-muted">
-                    Tell us what your salon needs. Whether you are expanding to a new branch, filling
-                    a single senior chair, or staffing a complete spa facility, we help identify
-                    and introduce verified talent.
-                  </p>
-
-                  <ul className="my-6 space-y-2.5 text-xs text-ink/80">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald" />
-                      Specify exact brand techniques & certifications
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald" />
-                      Candidate portfolios & verified background notes
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald" />
-                      Full discretion & direct coordinator follow-up
-                    </li>
-                  </ul>
-
-                  <Link
-                    href="#salon-owners"
-                    className="mt-2 inline-flex items-center justify-between rounded-xl border border-forest bg-forest px-6 py-4 text-sm font-semibold text-ivory transition-colors hover:bg-emerald"
-                  >
-                    <span>Submit Hiring Requirement</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-            </RevealUp>
-
-            {/* For Candidates Card */}
-            <RevealUp delay={0.2}>
-              <div className="group relative flex h-full flex-col overflow-hidden rounded-[2rem] border border-line bg-ivory transition-all duration-500 hover:border-gold/60 hover:shadow-lg">
-                <div className="relative aspect-[16/10] overflow-hidden">
-                  <Image
-                    src={images.salonStylist}
-                    alt="Professional hair stylist consulting with a client in a luxury studio"
-                    fill
-                    className="object-cover transition-transform duration-700 ease-out group-hover:scale-105"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-forest/80 via-forest/20 to-transparent" />
-                  <span className="absolute bottom-6 left-6 rounded-full border border-gold/40 bg-forest/90 px-4 py-1.5 text-xs font-semibold text-gold backdrop-blur-xs">
-                    For Beauty & Wellness Professionals
-                  </span>
-                </div>
-
-                <div className="flex flex-1 flex-col p-8 sm:p-10">
-                  <h3 className="font-serif text-3xl text-forest sm:text-4xl">
-                    Showcase Your Skills. Discover New Opportunities.
-                  </h3>
-                  <p className="mt-4 flex-1 text-sm leading-relaxed text-muted">
-                    Create your professional profile so salons and beauty businesses can understand
-                    your skills, experience and qualifications. Present your diplomas and client
-                    portfolio securely.
-                  </p>
-
-                  <ul className="my-6 space-y-2.5 text-xs text-ink/80">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald" />
-                      Direct representation to premier salons & aesthetic spas
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald" />
-                      Secure document vault (CV, certificates, & photos)
-                    </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="h-4 w-4 text-emerald" />
-                      Zero registration fees for candidates
-                    </li>
-                  </ul>
-
-                  <Link
-                    href="#candidates"
-                    className="mt-2 inline-flex items-center justify-between rounded-xl border border-line bg-white px-6 py-4 text-sm font-semibold text-forest transition-colors hover:border-gold hover:text-gold-dark"
-                  >
-                    <span>Register as a Candidate</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </div>
-              </div>
-            </RevealUp>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 4. How the Service Works (Two-Path Process) ── */}
-      <section className="bg-forest py-24 text-ivory sm:py-32">
-        <div className="container-lux">
-          <SectionHeading
-            align="center"
-            tone="light"
-            eyebrow="Operational Process"
-            title={["How the Service Works"]}
-            intro="A clear, structured two-path coordination process without false promises or automated filters."
-          />
-
-          <div className="mt-16 grid gap-12 lg:grid-cols-2">
-            {/* For Hiring Businesses */}
-            <div className="rounded-[2rem] border border-ivory/15 bg-emerald/30 p-8 sm:p-10 backdrop-blur-xs">
-              <div className="flex items-center gap-3 border-b border-ivory/10 pb-5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/40 bg-forest text-gold">
-                  <Store className="h-5 w-5" />
-                </span>
-                <div>
-                  <h3 className="font-serif text-2xl text-ivory">For Hiring Businesses</h3>
-                  <p className="text-xs text-gold">4-Step Talent Acquisition</p>
-                </div>
-              </div>
-
-              <div className="mt-8 space-y-6">
-                {hiringSteps.map((s) => (
-                  <div key={s.step} className="flex items-start gap-4">
-                    <span className="font-serif text-3xl font-light text-gold shrink-0">
-                      {s.step}
-                    </span>
-                    <div>
-                      <h4 className="font-serif text-xl text-ivory">{s.title}</h4>
-                      <p className="mt-1.5 text-xs leading-relaxed text-ivory/70">{s.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* For Candidates */}
-            <div className="rounded-[2rem] border border-ivory/15 bg-emerald/30 p-8 sm:p-10 backdrop-blur-xs">
-              <div className="flex items-center gap-3 border-b border-ivory/10 pb-5">
-                <span className="flex h-10 w-10 items-center justify-center rounded-xl border border-gold/40 bg-forest text-gold">
-                  <UserRound className="h-5 w-5" />
-                </span>
-                <div>
-                  <h3 className="font-serif text-2xl text-ivory">For Candidates</h3>
-                  <p className="text-xs text-gold">5-Step Career Placement</p>
-                </div>
-              </div>
-
-              <div className="mt-8 space-y-6">
-                {candidateSteps.map((s) => (
-                  <div key={s.step} className="flex items-start gap-4">
-                    <span className="font-serif text-3xl font-light text-gold shrink-0">
-                      {s.step}
-                    </span>
-                    <div>
-                      <h4 className="font-serif text-xl text-ivory">{s.title}</h4>
-                      <p className="mt-1.5 text-xs leading-relaxed text-ivory/70">{s.text}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-12 rounded-2xl border border-gold/30 bg-forest/60 p-6 text-center text-xs text-ivory/75">
-            <p>
-              <strong className="text-gold">Transparency Note:</strong> Goldenfalcone facilitates
-              recruitment introductions between hiring businesses and qualified beauty professionals.
-              Submitting a profile or requirement does not promise instant hiring or guaranteed
-              placements. Final selection and employment terms remain exclusively an agreement between
-              the salon and the candidate.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 5. Main Recruitment Gateway (Forms Section) ── */}
-      <section className="relative bg-ivory py-24 sm:py-32">
-        <span id="salon-owners" className="absolute top-0 scroll-mt-20" aria-hidden />
-        <span id="candidates" className="absolute top-0 scroll-mt-20" aria-hidden />
-
-        <div className="container-lux">
-          <div className="grid gap-12 lg:grid-cols-12">
-            {/* Left Column: Context, Trust, & Assistance */}
-            <div className="lg:col-span-4">
-              <div className="sticky top-28 space-y-6">
-                <SectionHeading
-                  eyebrow="Recruitment Portal"
-                  title={["Let's Find the", "Right Fit."]}
-                  intro="Choose your journey and submit your details. Fields marked with an asterisk (*) are mandatory."
-                />
-
-                {/* Confidentiality & Security Card */}
-                <div className="rounded-2xl border border-line bg-white p-6 shadow-xs">
-                  <div className="flex items-start gap-3.5">
-                    <Lock className="h-5 w-5 shrink-0 text-gold-dark mt-0.5" aria-hidden />
-                    <div>
-                      <h4 className="text-sm font-semibold text-forest">Privacy & Discretion Guaranteed</h4>
-                      <p className="mt-1.5 text-xs leading-relaxed text-muted">
-                        All contact details, candidate CVs, and salon requirements are securely stored
-                        and handled strictly for recruitment purposes. Candidate profiles are shared
-                        only with explicit mutual consent.
-                      </p>
-                      <Link
-                        href="/privacy-policy"
-                        className="mt-3 inline-block text-xs font-semibold text-forest underline decoration-gold/60 underline-offset-2"
-                      >
-                        Read our Privacy Policy →
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Direct Coordinator Contact */}
-                <div className="rounded-2xl border border-line bg-white p-6 shadow-xs">
-                  <h4 className="text-sm font-semibold text-forest">Need Direct Assistance?</h4>
-                  <p className="mt-1.5 text-xs leading-relaxed text-muted">
-                    Have questions regarding custom staffing packages, bulk team hiring, or special
-                    aesthetic requirements? Speak directly with our team.
-                  </p>
-                  <div className="mt-4">
-                    <WhatsAppButton
-                      message="Hello Goldenfalcone, I have a staffing enquiry."
-                      label="Chat with Staffing Team"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Interactive Tabbed Form Container */}
-            <div className="lg:col-span-8">
-              <div className="rounded-[2rem] border border-line bg-white p-6 shadow-sm sm:p-10">
-                <SalonStaffingForms />
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── 6. Why Choose Goldenfalcone ── */}
-      <section className="border-t border-line/80 bg-ivory-dark/40 py-24 sm:py-32">
-        <div className="container-lux">
-          <SectionHeading
-            align="center"
-            eyebrow="The Goldenfalcone Standard"
-            title={["A Better Way to", "Build Your Beauty Team"]}
-            intro="We combine aesthetic industry knowledge with rigorous, structured recruitment coordination."
-          />
-
-          <StaggerContainer className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {whyChoosePoints.map(({ icon: Icon, title, text }) => (
-              <StaggerItem
-                key={title}
-                className="rounded-2xl border border-line bg-white p-8 transition-all duration-300 hover:border-gold/50 hover:shadow-xs"
-              >
-                <span className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-gold/30 bg-ivory text-gold-dark">
-                  <Icon aria-hidden className="h-5 w-5" />
-                </span>
-                <h3 className="mt-5 font-serif text-2xl text-forest">{title}</h3>
-                <p className="mt-2.5 text-xs leading-relaxed text-muted">{text}</p>
-              </StaggerItem>
-            ))}
-          </StaggerContainer>
-        </div>
-      </section>
-
-      {/* ── 7. Frequently Asked Questions ── */}
-      <section className="bg-white py-24 sm:py-32">
-        <div className="container-lux grid gap-16 lg:grid-cols-12">
+      {/* ── 07 · FAQ ────────────────────────────────────────────────────── */}
+      <section className="bg-white py-20 sm:py-28">
+        <div className="container-lux grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
-            <div className="sticky top-28">
+            <div className="lg:sticky lg:top-28">
               <SectionHeading
-                eyebrow="Clarity & Protocol"
-                title={["Frequently", "Asked Questions"]}
-                intro="Common inquiries from salon owners and beauty professionals."
+                eyebrow="Questions, answered"
+                title={["Before you", "send anything."]}
+                intro="The things salon owners and beauty professionals ask us most often."
               />
-              <div className="mt-8 rounded-2xl border border-line bg-ivory p-6">
+              <div className="mt-8 border border-line px-5 py-5">
                 <p className="text-xs leading-relaxed text-muted">
-                  Have a specific question not covered here? Reach out to our concierge team directly.
+                  Still unsure? Ask us directly. We would rather answer a question than have you submit something that
+                  does not fit.
                 </p>
                 <div className="mt-4">
-                  <WhatsAppButton
-                    message="Hello Goldenfalcone, I have a question about salon recruitment."
-                    label="Ask a Question"
-                  />
+                  <WhatsAppButton message="Hello Goldenfalcone, I have a question about salon recruitment." label="Ask a question" />
                 </div>
               </div>
             </div>
@@ -610,33 +556,43 @@ export default function SalonStaffingPage() {
         </div>
       </section>
 
-      {/* ── 8. Final Luxury CTA ── */}
-      <section className="relative overflow-hidden bg-forest py-28 text-ivory sm:py-36">
-        <div className="container-lux relative z-10 text-center">
-          <RevealUp>
-            <p className="eyebrow text-gold mb-6">Start Today</p>
-            <h2 className="font-serif text-4xl leading-[1.05] text-ivory sm:text-5xl lg:text-6xl">
-              Let&apos;s Build Better<br className="hidden sm:block" /> Beauty Teams Together.
-            </h2>
-            <p className="mx-auto mt-6 max-w-xl text-base leading-relaxed text-ivory/70 sm:text-lg">
-              Whether you&apos;re hiring skilled professionals or searching for your next opportunity,
-              start with Goldenfalcone.
-            </p>
-          </RevealUp>
+      {/* ── 08 · Final CTA ──────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-forest py-20 text-ivory sm:py-28">
+        <span aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full border border-gold/20" />
+        <span aria-hidden className="pointer-events-none absolute -bottom-32 left-1/4 h-72 w-72 rounded-full border border-ivory/10" />
+        <div className="container-lux relative z-10">
+          <div className="grid gap-10 lg:grid-cols-12 lg:items-end">
+            <div className="lg:col-span-7">
+              <RevealUp>
+                <p className="eyebrow text-gold">Start where you are</p>
+                <h2 className="mt-5 max-w-2xl font-serif text-4xl leading-[1.02] text-ivory sm:text-5xl lg:text-6xl">
+                  Build a team worth <em className="font-light italic text-champagne">keeping.</em>
+                </h2>
+              </RevealUp>
+              <RevealUp delay={0.1}>
+                <p className="mt-6 max-w-xl text-base leading-relaxed text-ivory/65">
+                  Whether you are filling a chair or looking for the next good room to work in, the first step is a
+                  short, honest conversation.
+                </p>
+              </RevealUp>
+            </div>
 
-          <RevealUp delay={0.15} className="mt-10 flex flex-wrap items-center justify-center gap-5">
-            <AnimatedButton href="#salon-owners">Submit Hiring Requirement</AnimatedButton>
-            <AnimatedButton href="#candidates" variant="outline-light" arrow={false}>
-              Register as a Candidate
-            </AnimatedButton>
-          </RevealUp>
+            <RevealUp delay={0.16} className="flex flex-col gap-3 lg:col-span-5 lg:items-end">
+              <AnimatedButton href={FORM_HIRING} className="w-full justify-between sm:w-auto">
+                I Need Salon Staff
+              </AnimatedButton>
+              <AnimatedButton href={FORM_CANDIDATE} variant="outline-light" className="w-full justify-between sm:w-auto">
+                I&apos;m Looking for a Job
+              </AnimatedButton>
+            </RevealUp>
+          </div>
 
-          <div className="mt-12 flex flex-wrap items-center justify-center gap-6 text-xs text-ivory/50">
-            <span>Verified Candidate Dossiers</span>
-            <span className="h-1 w-1 rounded-full bg-gold" aria-hidden />
-            <span>Encrypted Document Vault</span>
-            <span className="h-1 w-1 rounded-full bg-gold" aria-hidden />
-            <span>Dedicated Coordination Support</span>
+          <div className="mt-14 flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-ivory/15 pt-6 text-[0.68rem] uppercase tracking-[0.16em] text-ivory/45">
+            <span>Private candidate documents</span>
+            <span aria-hidden className="h-1 w-1 rounded-full bg-gold" />
+            <span>Human-reviewed requirements</span>
+            <span aria-hidden className="h-1 w-1 rounded-full bg-gold" />
+            <span>No placement guarantees</span>
           </div>
         </div>
       </section>

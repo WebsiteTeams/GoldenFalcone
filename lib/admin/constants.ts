@@ -27,8 +27,49 @@ export const adminRoles = ["admin", "editor"] as const;
 export type AdminRole = (typeof adminRoles)[number];
 
 export const enquiryStatuses = ["new", "contacted", "in-progress", "converted", "closed"] as const;
-export const staffingStatuses = ["new", "reviewing", "shortlisted", "contacted", "filled", "closed"] as const;
-export const candidateStatuses = ["new", "reviewing", "shortlisted", "contacted", "interview", "selected", "not-selected", "inactive"] as const;
+
+/** Hiring requirement lifecycle. */
+export const staffingStatuses = [
+  "new",
+  "reviewing",
+  "candidate-matching",
+  "candidates-shortlisted",
+  "shared-with-salon",
+  "interview-scheduled",
+  "filled",
+  "closed",
+] as const;
+
+/** Candidate profile lifecycle. */
+export const candidateStatuses = [
+  "new",
+  "reviewing",
+  "shortlisted",
+  "contacted",
+  "interview",
+  "selected",
+  "not-selected",
+  "inactive",
+] as const;
+
+/** The candidate-to-salon relationship, tracked separately from either record. */
+export const connectionStatuses = [
+  "suggested",
+  "shortlisted",
+  "shared-with-salon",
+  "interview-scheduled",
+  "interview-completed",
+  "selected",
+  "not-selected",
+  "withdrawn",
+] as const;
+
+export const interviewStatuses = ["not-scheduled", "scheduled", "completed", "cancelled", "no-show"] as const;
+export const communicationChannels = ["call", "whatsapp", "email", "meeting"] as const;
+export const communicationParties = ["salon", "candidate"] as const;
+
+/** Staffing statuses that still represent an open vacancy. */
+export const openStaffingStatuses = ["new", "reviewing", "candidate-matching", "candidates-shortlisted", "shared-with-salon", "interview-scheduled"] as const;
 
 export const publishStatuses = ["draft", "published"] as const;
 export type PublishStatus = (typeof publishStatuses)[number];
@@ -72,8 +113,22 @@ export const serviceTypeLabels: Record<string, string> = {
 export const labelFor = (value: string, options: readonly { value: string; label: string }[]) =>
   options.find((o) => o.value === value)?.label ?? value;
 
+const statusLabels: Record<string, string> = {
+  reviewing: "Under Review",
+  "candidate-matching": "Candidate Matching",
+  "candidates-shortlisted": "Candidates Shortlisted",
+  "shared-with-salon": "Shared with Salon",
+  "interview-scheduled": "Interview Scheduled",
+  "interview-completed": "Interview Completed",
+  "not-selected": "Not Selected",
+  "not-scheduled": "Not Scheduled",
+  "no-show": "No Show",
+  filled: "Filled",
+};
+
 /** "in-progress" → "In Progress" */
 export const statusLabel = (status: string) =>
+  statusLabels[status] ??
   status
     .split("-")
     .map((w) => w.charAt(0).toUpperCase() + w.slice(1))

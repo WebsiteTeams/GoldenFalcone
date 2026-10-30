@@ -25,6 +25,12 @@ const candidateApplicationSchema = new Schema(
     whatsapp: { type: String, trim: true, maxlength: 20 },
     location: { type: String, required: true, trim: true, maxlength: 120 },
     preferredWorkLocation: { type: String, trim: true, maxlength: 120 },
+    profilePhoto: {
+      storageKey: { type: String },
+      originalName: { type: String, maxlength: 200 },
+      mimeType: { type: String, maxlength: 100 },
+      size: { type: Number },
+    },
 
     // Professional
     professionalCategory: { type: String, required: true, enum: salonRoles },
@@ -51,6 +57,7 @@ const candidateApplicationSchema = new Schema(
 
     consent: { type: Boolean, required: true },
     consentAt: { type: Date, required: true },
+    referenceNumber: { type: String, trim: true, maxlength: 30 },
     status: { type: String, enum: candidateStatuses, default: "new" },
     internalNotes: { type: [noteSchema], default: [], select: false },
   },
@@ -59,7 +66,9 @@ const candidateApplicationSchema = new Schema(
 
 candidateApplicationSchema.index({ professionalCategory: 1, location: 1, createdAt: -1 });
 candidateApplicationSchema.index({ email: 1 });
+candidateApplicationSchema.index({ phone: 1 });
 candidateApplicationSchema.index({ status: 1 });
+candidateApplicationSchema.index({ referenceNumber: 1 }, { unique: true, sparse: true });
 
 export type CandidateApplicationDoc = InferSchemaType<typeof candidateApplicationSchema>;
 

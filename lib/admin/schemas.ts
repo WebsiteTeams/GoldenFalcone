@@ -1,13 +1,15 @@
 import { z } from "zod";
-import { sanitize } from "@/lib/validations";
+import { sanitize, experienceOptions } from "@/lib/validations";
+import { employmentTypes } from "@/lib/content";
 import {
-  availabilityValues,
   candidateStatuses,
+  communicationChannels,
+  communicationParties,
+  connectionStatuses,
   enquiryStatuses,
+  interviewStatuses,
   orderStatuses,
   publishStatuses,
-  SUPPORTED_CURRENCIES,
-  spiceCategoryValues,
   staffingStatuses,
 } from "./constants";
 
@@ -111,6 +113,41 @@ export const noteSchema = z.object({ body: str("Note", 1, 2000) });
 export const enquiryUpdateSchema = z.object({ status: z.enum(enquiryStatuses) });
 export const staffingUpdateSchema = z.object({ status: z.enum(staffingStatuses) });
 export const candidateUpdateSchema = z.object({ status: z.enum(candidateStatuses) });
+
+// ---------- Candidate ↔ salon connections ----------
+
+const optionalDate = z.preprocess(
+  (value) => (value === "" || value === null || value === undefined ? undefined : value),
+  z.coerce.date({ invalid_type_error: "Enter a valid date" }).optional(),
+);
+
+export const connectionUpsertSchema = z.object({
+  candidateId: objectId,
+  staffingRequestId: objectId,
+  connectionStatus: z.enum(connectionStatuses).optional(),
+  matchNotes: optional(3000),
+  adminNotes: optional(3000),
+  shortlistedAt: optionalDate,
+  sharedWithSalonAt: optionalDate,
+  salonFeedback: optional(3000),
+  interviewDate: optionalDate,
+  interviewStatus: z.enum(interviewStatuses).optional(),
+  candidateResponse: optional(1000),
+  finalOutcome: optional(2000),
+});
+
+export const communicationSchema = z.object({
+  action: z.literal("log-contact"),
+  candidateId: objectId,
+  staffingRequestId: objectId,
+  channel: z.enum(communicationChannels),
+  party: z.enum(communicationParties),
+  contactedAt: optionalDate,
+  outcome: optional(1000),
+  followUpAt: optionalDate,
+  notes: optional(2000),
+});
+export type CommunicationInput = z.input<typeof communicationSchema>;
 
 // ---------- Categories ----------
 
@@ -303,6 +340,11 @@ export const listQuerySchema = z.object({
   q: z.string().trim().max(100).optional().catch(undefined),
   status: z.string().max(40).optional().catch(undefined),
   filter: z.string().max(40).optional().catch(undefined),
+  location: z.string().trim().max(120).optional().catch(undefined),
+  employment: z.enum(employmentTypes).optional().catch(undefined),
+  experience: z.enum(experienceOptions).optional().catch(undefined),
+  availability: z.string().trim().max(60).optional().catch(undefined),
+  skill: z.string().trim().max(100).optional().catch(undefined),
   from: dateParam,
   to: dateParam,
   sort: z.enum(["newest", "oldest"]).catch("newest").default("newest"),

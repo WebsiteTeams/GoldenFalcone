@@ -7,6 +7,7 @@ import { logActivity } from "./activity";
 import { authorize, dbError, invalid, isObjectId, notFound, readJson, respond, toPlain } from "./api";
 import { listQuerySchema, noteSchema, toSlug } from "./schemas";
 import { getRecord, listRecords, resources, type CatalogueResource, type Resource } from "./resources";
+import { StaffingConnection } from "@/models/StaffingConnection";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- generic over every resource model */
 
@@ -139,7 +140,13 @@ export function itemRoute(res: Resource) {
 
       try {
         await connectToDatabase();
-        const doc = await res.model.findByIdAndDelete(id).lean<Record<string, any>>();
+        // Candidate documents need their file fields for storage cleanup; the public
+        // "hidden" projection strips exactly those fields, so select them explicitly.
+        const select =
+          res.key === resources.candidates.key
+            ? "fullName cv profilePhoto certificates trainingCertificates portfolioImages"
+            : res.hidden ?? "";
+        const doc = await res.model.findByIdAndDelete(id).select(select).lean<Record<string, any>>();
         if (!doc) return notFound(capital(res.entity));
         if (res.kind === "catalogue") {
           await deleteMedia(res.mediaIds(doc));
@@ -147,12 +154,17 @@ export function itemRoute(res: Resource) {
         }
         if (res.key === resources.candidates.key) {
           if (doc.cv?.storageKey) await deleteCv(doc.cv.storageKey);
+          if (doc.profilePhoto?.storageKey) await deleteCv(doc.profilePhoto.storageKey);
           const fileKeys = [
             ...(doc.certificates ?? []).map((f: Record<string, any>) => f.storageKey),
             ...(doc.trainingCertificates ?? []).map((f: Record<string, any>) => f.storageKey),
             ...(doc.portfolioImages ?? []).map((f: Record<string, any>) => f.storageKey),
           ];
           if (fileKeys.length) await deleteFiles(fileKeys);
+          await StaffingConnection.deleteMany({ candidateId: id });
+        }
+        if (res.key === resources.staffing.key) {
+          await StaffingConnection.deleteMany({ staffingRequestId: id });
         }
         await logActivity(auth.admin, "deleted", res.entity, id, res.label(doc));
         return respond(200, { ok: true, message: `${capital(res.entity)} deleted.` });

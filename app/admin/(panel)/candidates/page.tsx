@@ -14,6 +14,7 @@ import { listRecords, resources } from "@/lib/admin/resources";
 import { requireAdmin } from "@/lib/auth/session";
 import { getSettings } from "@/lib/cms";
 import { salonRoles } from "@/lib/content";
+import { experienceOptions } from "@/lib/validations";
 
 export const metadata: Metadata = { title: "Candidates" };
 
@@ -38,6 +39,7 @@ const columns: Column<Row>[] = [
   { header: "Role", cell: (r) => r.professionalCategory },
   { header: "Experience", cell: (r) => r.experience, hideOnMobile: true },
   { header: "Location", cell: (r) => r.location },
+  { header: "Availability", cell: (r) => r.availability || "—", hideOnMobile: true },
   {
     header: "CV",
     cell: (r) => (r.cv?.originalName ? <FileText aria-label="CV attached" className="h-4 w-4 text-emerald" /> : <span className="text-muted">—</span>),
@@ -52,7 +54,17 @@ export default async function CandidatesPage({ searchParams }: { searchParams: P
   const admin = await requireAdmin();
   const { query, params } = readListQuery(await searchParams);
   const [result, settings] = await Promise.all([listRecords<Row>(resources.candidates, query), getSettings()]);
-  const filtered = Boolean(query.q || query.status || query.filter || query.from || query.to);
+  const filtered = Boolean(
+    query.q ||
+      query.status ||
+      query.filter ||
+      query.location ||
+      query.experience ||
+      query.availability ||
+      query.skill ||
+      query.from ||
+      query.to,
+  );
 
   return (
     <>
@@ -62,9 +74,17 @@ export default async function CandidatesPage({ searchParams }: { searchParams: P
         actions={admin.role === "admin" ? <PurgeButton months={settings.retentionMonths} /> : null}
       />
       <ListToolbar
-        searchPlaceholder="Search name, email, phone or location"
+        searchPlaceholder="Search name, email, phone, location, skill or reference"
         statuses={toOptions(candidateStatuses)}
         filter={{ label: "Role", options: salonRoles.map((r) => ({ value: r, label: r })) }}
+        filters={[
+          { name: "experience", label: "Experience", options: experienceOptions.map((e) => ({ value: e, label: e })) },
+        ]}
+        textFilters={[
+          { name: "location", label: "Location", placeholder: "City or area" },
+          { name: "availability", label: "Availability", placeholder: "e.g. immediate" },
+          { name: "skill", label: "Skill", placeholder: "e.g. balayage" },
+        ]}
         dates
       />
       {result.items.length ? (

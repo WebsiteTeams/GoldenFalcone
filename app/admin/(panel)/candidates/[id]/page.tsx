@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Download, FileText, Image, Mail, MessageSquare, Phone } from "lucide-react";
 import { Card, DetailList } from "@/components/admin/DetailList";
@@ -8,11 +9,12 @@ import { RecordActions } from "@/components/admin/RecordActions";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { isObjectId } from "@/lib/admin/api";
 import { formatDate } from "@/lib/admin/client";
-import { candidateStatuses } from "@/lib/admin/constants";
+import { candidateStatuses, statusLabel } from "@/lib/admin/constants";
 import { getRecord, resources } from "@/lib/admin/resources";
 import { requireAdmin } from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/mongodb";
 import { CandidateApplication } from "@/models/CandidateApplication";
+import { StaffingConnection } from "@/models/StaffingConnection";
 
 export const metadata: Metadata = { title: "Candidate" };
 
@@ -27,10 +29,11 @@ type Candidate = {
   whatsapp?: string;
   location: string;
   preferredWorkLocation?: string;
+  profilePhoto?: StoredFileMeta;
   // Professional
   professionalCategory: string;
   additionalSkills?: string[];
-  customSkills?: string;
+  customSkills?: string[];
   experience: string;
   previousWorkplace?: string;
   previousJobRole?: string;
@@ -50,7 +53,7 @@ type Candidate = {
 
 const kb = (bytes?: number) => (bytes ? `${Math.max(1, Math.round(bytes / 1024))} KB` : "");
 
-function FileDownloadRow({ label, file, href }: { label: string; file: StoredFileMeta; href: string }) {
+function FileDownloadRow({ file, href }: { file: StoredFileMeta; href: string }) {
   const isImage = file.mimeType?.startsWith("image/");
   const Icon = isImage ? Image : FileText;
   return (
@@ -83,18 +86,33 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
   // Fetch document metadata (storage keys included for download link generation — never exposed to browser)
   await connectToDatabase();
   const docData = await CandidateApplication.findById(id)
-    .select("cv.storageKey certificates trainingCertificates portfolioImages")
+    .select("cv.storageKey profilePhoto.storageKey certificates trainingCertificates portfolioImages")
     .lean<{
       cv?: StoredFileMeta;
+      profilePhoto?: StoredFileMeta;
       certificates?: StoredFileMeta[];
       trainingCertificates?: StoredFileMeta[];
       portfolioImages?: StoredFileMeta[];
     }>();
 
-  const allSkills = [
-    ...(c.additionalSkills ?? []),
-    ...(c.customSkills ? c.customSkills.split(",").map((s) => s.trim()).filter(Boolean) : []),
-  ];
+  const connections = await StaffingConnection.find({ candidateId: id })
+    .populate({ path: "staffingRequestId", select: "salonName professionalCategory location quantity status referenceNumber" })
+    .sort({ updatedAt: -1 })
+    .lean<
+      {
+        _id: string;
+        connectionStatus: string;
+        sharedWithSalonAt?: string;
+        interviewDate?: string;
+        interviewStatus?: string;
+        matchNotes?: string;
+        salonFeedback?: string;
+        finalOutcome?: string;
+        staffingRequestId?: { _id: string; salonName: string; professionalCategory: string; location: string; quantity: number; status: string; referenceNumber?: string };
+      }[]
+    >();
+
+  const allSkills = [...(c.additionalSkills ?? []), ...(c.customSkills ?? [])];
 
   const waPhone = (c.whatsapp || c.phone).replace(/\s/g, "");
 
@@ -128,6 +146,20 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               </div>
             }
           >
+            {docData?.profilePhoto?.storageKey ? (
+              <div className="mb-5 flex items-center gap-4 border-b border-line pb-5">
+                {/* eslint-disable-next-line @next/next/no-img-element -- authenticated admin file route */}
+                <img
+                  src={fileDownloadHref(docData.profilePhoto.storageKey)}
+                  alt={`Profile photo of ${c.fullName}`}
+                  className="h-20 w-20 border border-line object-cover"
+                />
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-gold-dark">Profile photo</p>
+                  <p className="mt-1 text-xs text-muted">Stored privately. Visible only to signed-in administrators.</p>
+                </div>
+              </div>
+            ) : null}
             <DetailList
               items={[
                 { label: "Full Name", value: c.fullName },
@@ -175,7 +207,6 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">Resume / CV</p>
               {docData?.cv?.storageKey ? (
                 <FileDownloadRow
-                  label="CV"
                   file={{ ...c.cv, storageKey: docData.cv.storageKey }}
                   href={fileDownloadHref(docData.cv.storageKey)}
                 />
@@ -190,7 +221,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
                 <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">Professional Certificates</p>
                 {docData!.certificates!.map((f, i) =>
                   f.storageKey ? (
-                    <FileDownloadRow key={i} label={f.originalName ?? `Certificate ${i + 1}`} file={f} href={fileDownloadHref(f.storageKey)} />
+                    <FileDownloadRow key={i} file={f} href={fileDownloadHref(f.storageKey)} />
                   ) : null,
                 )}
               </div>
@@ -202,7 +233,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
                 <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">Training Certificates</p>
                 {docData!.trainingCertificates!.map((f, i) =>
                   f.storageKey ? (
-                    <FileDownloadRow key={i} label={f.originalName ?? `Training ${i + 1}`} file={f} href={fileDownloadHref(f.storageKey)} />
+                    <FileDownloadRow key={i} file={f} href={fileDownloadHref(f.storageKey)} />
                   ) : null,
                 )}
               </div>
@@ -214,7 +245,7 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
                 <p className="mb-2 text-xs font-semibold uppercase tracking-widest text-muted">Portfolio Images</p>
                 {docData!.portfolioImages!.map((f, i) =>
                   f.storageKey ? (
-                    <FileDownloadRow key={i} label={f.originalName ?? `Portfolio ${i + 1}`} file={f} href={fileDownloadHref(f.storageKey)} />
+                    <FileDownloadRow key={i} file={f} href={fileDownloadHref(f.storageKey)} />
                   ) : null,
                 )}
               </div>
@@ -226,6 +257,54 @@ export default async function CandidatePage({ params }: { params: Promise<{ id: 
               !docData?.portfolioImages?.length && (
                 <p className="text-sm text-muted">No documents were uploaded with this application.</p>
               )}
+          </Card>
+
+          <Card title="Salon Connections">
+            {connections.length ? (
+              <ul className="divide-y divide-line">
+                {connections.map((connection) => {
+                  const salon = connection.staffingRequestId;
+                  return (
+                    <li key={connection._id} className="py-4 first:pt-0 last:pb-0">
+                      <div className="flex flex-wrap items-start justify-between gap-2">
+                        <div className="min-w-0">
+                          {salon ? (
+                            <Link href={`/admin/staffing/${salon._id}`} className="font-medium text-forest hover:text-gold-dark">
+                              {salon.salonName}
+                            </Link>
+                          ) : (
+                            <span className="font-medium text-ink">Requirement removed</span>
+                          )}
+                          <p className="mt-0.5 text-xs text-muted">
+                            {salon ? `${salon.quantity} × ${salon.professionalCategory} · ${salon.location}` : "No requirement details"}
+                          </p>
+                        </div>
+                        <StatusBadge status={connection.connectionStatus} />
+                      </div>
+                      <p className="mt-2 text-xs text-muted">
+                        {connection.sharedWithSalonAt ? `Shared ${formatDate(connection.sharedWithSalonAt)} · ` : ""}
+                        {connection.interviewDate ? `Interview ${formatDate(connection.interviewDate, true)} (${statusLabel(connection.interviewStatus ?? "scheduled")})` : "No interview scheduled"}
+                      </p>
+                      {connection.matchNotes ? <p className="mt-1.5 text-xs text-ink/80">{connection.matchNotes}</p> : null}
+                      {connection.salonFeedback ? (
+                        <p className="mt-1 text-xs text-muted">Salon feedback: {connection.salonFeedback}</p>
+                      ) : null}
+                      {connection.finalOutcome ? (
+                        <p className="mt-1 text-xs text-muted">Outcome: {connection.finalOutcome}</p>
+                      ) : null}
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted">
+                This candidate has not been attached to a hiring requirement yet.{" "}
+                <Link href="/admin/matching" className="font-medium text-forest underline decoration-gold/60 underline-offset-2">
+                  Open candidate matching
+                </Link>
+                .
+              </p>
+            )}
           </Card>
 
           <Card title="Internal Notes">
