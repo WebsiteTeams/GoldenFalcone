@@ -1,7 +1,7 @@
 import "server-only";
 import { Readable } from "stream";
 import mongoose from "mongoose";
-import { IMAGE_MAX_BYTES } from "@/lib/admin/constants";
+import { IMAGE_MAX_BYTES, LAB_REPORT_MAX_BYTES } from "@/lib/admin/constants";
 import { connectToDatabase } from "@/lib/mongodb";
 import { UploadError } from "@/lib/storage";
 import { deleteFromCloudinary, isCloudinaryConfigured, uploadToCloudinary } from "./cloudinary";
@@ -126,6 +126,56 @@ export async function openImage(mediaId: string) {
     contentType: (file.metadata?.contentType as string | undefined) ?? "application/octet-stream",
     length: file.length,
   };
+}
+
+const LAB_REPORT_SIGNATURES: Record<string, { ext: string; matches: (b: Buffer) => boolean }> = {
+  "application/pdf": { ext: "pdf", matches: (b) => b.subarray(0, 5).toString("latin1") === "%PDF-" },
+  "image/jpeg": { ext: "jpg", matches: SIGNATURES["image/jpeg"] },
+  "image/png": { ext: "png", matches: SIGNATURES["image/png"] },
+  "image/webp": { ext: "webp", matches: SIGNATURES["image/webp"] },
+};
+
+/**
+ * Stores a lab report in GridFS. The type is decided by the file's contents, never by its name or declared type.
+ * Reports are only ever served through routes that check the product and variant, so the file id stays server-side.
+ */
+export async function saveLabReport(file: File, uploadedBy: string) {
+  if (file.size === 0) throw new UploadError("The selected file is empty.");
+  if (file.size > LAB_REPORT_MAX_BYTES) throw new UploadError("Lab reports must be 8 MB or smaller.");
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const contentType = Object.keys(LAB_REPORT_SIGNATURES).find((t) => LAB_REPORT_SIGNATURES[t].matches(buffer));
+  if (!contentType) throw new UploadError("Lab reports must be a PDF, JPEG, PNG or WebP file.");
+
+  const base = file.name.replace(/\.[^/.]+$/, "").replace(/[^\w\- ]/g, "_").trim().slice(0, 120) || "lab-report";
+  const fileName = `${base}.${LAB_REPORT_SIGNATURES[contentType].ext}`;
+
+  const store = await bucket();
+  const id = new mongoose.Types.ObjectId();
+  await new Promise<void>((resolve, reject) => {
+    Readable.from(buffer)
+      .pipe(store.openUploadStreamWithId(id, fileName, { metadata: { contentType, uploadedBy, kind: "lab-report" } }))
+      .on("finish", () => resolve())
+      .on("error", reject);
+  });
+  return { fileId: String(id), fileName, contentType, size: file.size };
+}
+
+/** Response for a stored lab report, inline for preview or as a download. */
+export async function labReportResponse(fileId: string, report: { fileName: string }, download: boolean, cacheControl: string) {
+  const stored = await openImage(fileId);
+  if (!stored || !(stored.contentType in LAB_REPORT_SIGNATURES)) return new Response("Not found", { status: 404 });
+  const fileName = report.fileName.replace(/[^\w.\- ]/g, "_");
+  return new Response(Readable.toWeb(stored.stream) as ReadableStream, {
+    headers: {
+      "Content-Type": stored.contentType,
+      "Content-Length": String(stored.length),
+      "Content-Disposition": `${download ? "attachment" : "inline"}; filename="${fileName}"`,
+      "Cache-Control": cacheControl,
+      "X-Content-Type-Options": "nosniff",
+      "X-Robots-Tag": "noindex",
+    },
+  });
 }
 
 export async function deleteMedia(mediaIds: string[]) {

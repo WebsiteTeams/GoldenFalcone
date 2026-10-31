@@ -15,6 +15,8 @@ type ImageUploaderProps = {
   max?: number;
   label?: string;
   hint?: string;
+  /** Replaces the "(optional)" note for fields that are required at some point, e.g. before publishing. */
+  requirement?: string;
 };
 
 const src = (mediaId: string) =>
@@ -26,7 +28,7 @@ const src = (mediaId: string) =>
  * Uploads images as soon as they are chosen and previews them. The record only references an image once the form
  * is saved; replaced or removed images are deleted from storage by the server at that point.
  */
-export function ImageUploader({ value, onChange, max = 1, label = "Images", hint }: ImageUploaderProps) {
+export function ImageUploader({ value, onChange, max = 1, label = "Images", hint, requirement }: ImageUploaderProps) {
   const id = useId();
   const toast = useToast();
   const [uploading, setUploading] = useState<{ name: string; preview: string }[]>([]);
@@ -68,7 +70,7 @@ export function ImageUploader({ value, onChange, max = 1, label = "Images", hint
   return (
     <div>
       <p className="mb-2 text-sm font-medium text-ink">
-        {label} <span className="font-normal text-muted">(optional{max > 1 ? `, up to ${max}` : ""})</span>
+        {label} <span className="font-normal text-muted">({requirement ?? `optional${max > 1 ? `, up to ${max}` : ""}`})</span>
       </p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
         <AnimatePresence initial={false}>

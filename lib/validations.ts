@@ -53,7 +53,7 @@ export const spamFields = {
   startedAt: z.number().int().positive(),
 };
 
-export const serviceTypes = ["spices", "mentorship", "digital", "staffing", "general"] as const;
+export const serviceTypes = ["spices", "mentorship", "staffing", "general"] as const;
 export type ServiceType = (typeof serviceTypes)[number];
 
 export const enquirySchema = z.object({

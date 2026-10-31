@@ -28,7 +28,7 @@ export const images = {
   collaboration: unsplash("1600880292203-757bb62b4baf"),
 } as const;
 
-export type ServiceKey = "spices" | "mentorship" | "digital" | "staffing";
+export type ServiceKey = "spices" | "mentorship" | "staffing";
 
 export type Division = {
   key: ServiceKey;
@@ -82,24 +82,11 @@ export const divisions: Division[] = [
     imageAlt: "Bright modern salon interior with styling chairs and mirrors",
     highlights: ["Hair Stylists", "Beauticians", "Makeup Artists", "Nail Technicians", "Salon Assistants"],
   },
-  {
-    key: "digital",
-    number: "04",
-    title: "Digital Solutions",
-    short: "Digital",
-    description: "Transforming business ideas into digital experiences through website development, mobile applications, web applications and custom software.",
-    href: "/digital-solutions",
-    cta: "Explore Digital Solutions",
-    image: images.digitalDevices,
-    imageAlt: "Desktop monitor, tablet and phone displaying website designs",
-    highlights: ["Business Websites", "Landing Pages", "Web Applications", "Booking Systems"],
-  },
 ];
 
 export const serviceOptions: { value: ServiceKey | "general"; label: string }[] = [
   { value: "spices", label: "Whole Spices Export & Import" },
   { value: "mentorship", label: "Trading Mentorship" },
-  { value: "digital", label: "Digital Solutions" },
   { value: "staffing", label: "Salon Staffing" },
   { value: "general", label: "General Enquiry" },
 ];

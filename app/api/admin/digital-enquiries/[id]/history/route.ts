@@ -1,9 +1,9 @@
 import { logActivity } from "@/lib/admin/activity";
 import { authorize, isObjectId, notFound, readJson, respond } from "@/lib/admin/api";
-import { digitalEnquiryHistorySchema } from "@/lib/admin/schemas";
+import { enquiryHistorySchema } from "@/lib/admin/schemas";
 import { connectToDatabase } from "@/lib/mongodb";
 import { serverError } from "@/lib/security";
-import { DigitalEnquiry } from "@/models/DigitalEnquiry";
+import { Enquiry } from "@/models/Enquiry";
 
 export const runtime = "nodejs";
 
@@ -17,7 +17,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
   const json = await readJson(request);
   if ("response" in json) return json.response;
 
-  const parsed = digitalEnquiryHistorySchema.safeParse(json.body);
+  const parsed = enquiryHistorySchema.safeParse(json.body);
   if (!parsed.success) {
     return respond(422, { ok: false, message: "Please check the history entry." });
   }
@@ -31,7 +31,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       date: new Date(),
     };
 
-    const doc = await DigitalEnquiry.findByIdAndUpdate(
+    const doc = await Enquiry.findByIdAndUpdate(
       id,
       { $push: { contactHistory: entry } },
       { new: true },
@@ -42,14 +42,13 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
     await logActivity(
       auth.admin,
       `logged a ${parsed.data.channel} with`,
-      "digital project enquiry",
+      "enquiry",
       id,
-      `${doc.fullName} (${doc.referenceNumber})`,
+      `${doc.name} (${doc.referenceNumber})`,
     );
 
     return respond(200, { ok: true, message: "Contact logged successfully.", data: doc });
   } catch (error) {
-    return serverError(error, "admin:digital-enquiry:history");
+    return serverError(error, "admin:enquiry:history");
   }
 }
-

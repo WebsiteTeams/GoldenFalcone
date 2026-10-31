@@ -16,17 +16,26 @@ type Ctx = { params: Promise<{ id: string }> };
 const queryFrom = (request: Request) =>
   listQuerySchema.parse(Object.fromEntries(new URL(request.url).searchParams.entries()));
 
-function refreshPublic(res: Resource) {
+export function refreshPublic(res: Resource) {
   if (res.kind !== "catalogue") return;
   revalidateTag(res.revalidate.tag);
-  for (const path of res.revalidate.paths) revalidatePath(path);
+  for (const path of res.revalidate.paths) {
+    if (path.includes("[")) revalidatePath(path, "page");
+    else revalidatePath(path);
+  }
 }
+
+const publishBlocked = (errors: Record<string, string>) =>
+  respond(422, { ok: false, message: "This product isn't ready to publish yet. Complete the highlighted fields or save it as a draft.", errors });
+
+const saveBlocked = (errors: Record<string, string>) => respond(422, { ok: false, message: "Please check the highlighted fields.", errors });
 
 /** Generates a unique slug, appending -2, -3… when needed. */
 async function uniqueSlug(res: CatalogueResource, base: string, excludeId?: string) {
   const root = toSlug(base) || res.key;
   for (let n = 1; n < 50; n++) {
     const candidate = n === 1 ? root : `${root}-${n}`;
+    if (res.reservedSlugs?.includes(candidate)) continue;
     const clash = await res.model.exists({ slug: candidate, ...(excludeId ? { _id: { $ne: excludeId } } : {}) });
     if (!clash) return candidate;
   }
@@ -61,6 +70,11 @@ export function collectionRoute(res: Resource) {
       try {
         await connectToDatabase();
         const data = parsed.data as Record<string, any>;
+        res.prepare?.(data, null);
+        const invalidSave = res.saveErrors?.(data);
+        if (invalidSave) return saveBlocked(invalidSave);
+        const blocked = res.publishErrors?.(data);
+        if (blocked) return publishBlocked(blocked);
         data.slug = await uniqueSlug(res, data.slug || data[res.slugSource]);
         const doc = await res.model.create(data);
         await logActivity(auth.admin, "created", res.entity, String(doc._id), res.label(data));
@@ -109,6 +123,13 @@ export function itemRoute(res: Resource) {
         const before = await res.model.findById(id).lean<Record<string, any>>();
         if (!before) return notFound(capital(res.entity));
 
+        if (res.kind === "catalogue") {
+          res.prepare?.(data, before);
+          const invalidSave = res.saveErrors?.({ ...before, ...data });
+          if (invalidSave) return saveBlocked(invalidSave);
+          const blocked = res.publishErrors?.({ ...before, ...data });
+          if (blocked) return publishBlocked(blocked);
+        }
         if (res.kind === "catalogue" && "slug" in data) {
           data.slug = await uniqueSlug(res, (data.slug as string) || (data[res.slugSource] as string) || before[res.slugSource], id);
         }

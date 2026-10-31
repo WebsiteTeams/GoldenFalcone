@@ -10,29 +10,17 @@ import { Checkbox, Field, Honeypot, Input, Select, Textarea } from "./fields";
 import { FormError, FormSuccess, PrivacyConsentLabel, SubmitButton, type SubmitState } from "./FormFeedback";
 import { submitToApi } from "./submit";
 
-type Variant = "general" | "spices" | "mentorship" | "digital";
+type Variant = "general" | "spices" | "mentorship";
 
 const variantService: Record<Exclude<Variant, "general">, ServiceType> = {
   spices: "spices",
   mentorship: "mentorship",
-  digital: "digital",
 };
 
 const opts = (values: string[]) => values.map((v) => ({ value: v, label: v }));
 
 const productOptions = opts([...spices.map((s) => s.name), "Multiple spices", "Other whole spices"]);
 const levelOptions = opts(["Complete beginner", "Some self-study", "Some trading experience", "Experienced, looking to refine"]);
-const projectOptions = opts([
-  "Corporate / business website",
-  "Landing page or portfolio",
-  "E-commerce website",
-  "Web application",
-  "Booking or management system",
-  "Custom business software",
-  "Maintenance / SEO",
-  "Not sure yet",
-]);
-const timelineOptions = opts(["As soon as possible", "Within 1 month", "1–3 months", "3+ months", "Flexible"]);
 
 const copy: Record<Variant, { message: string; placeholder: string; submit: string }> = {
   general: { message: "How can we help?", placeholder: "Tell us a little about your enquiry…", submit: "Send Enquiry" },
@@ -45,11 +33,6 @@ const copy: Record<Variant, { message: string; placeholder: string; submit: stri
     message: "Your learning goals",
     placeholder: "What would you like to learn, and how do you prefer to learn (one-to-one, online, schedule)?",
     submit: "Request a Consultation",
-  },
-  digital: {
-    message: "Project overview",
-    placeholder: "What are you building, who is it for, and what should it achieve?",
-    submit: "Send Project Enquiry",
   },
 };
 
@@ -113,7 +96,7 @@ export function EnquiryForm({ variant = "general", defaultService }: EnquiryForm
           </Field>
         ) : null}
 
-        {variant === "spices" || variant === "digital" || variant === "general" ? (
+        {variant === "spices" || variant === "general" ? (
           <Field label="Company / business" error={errors.company?.message}>
             {(p) => <Input id={p.id} invalid={p.invalid} describedBy={p.describedBy} autoComplete="organization" {...register("company")} />}
           </Field>
@@ -137,20 +120,6 @@ export function EnquiryForm({ variant = "general", defaultService }: EnquiryForm
           <Field label="Current experience" error={errors.experienceLevel?.message}>
             {(p) => <Select id={p.id} invalid={p.invalid} describedBy={p.describedBy} options={levelOptions} {...register("experienceLevel")} />}
           </Field>
-        ) : null}
-
-        {variant === "digital" ? (
-          <>
-            <Field label="Project type" error={errors.projectType?.message}>
-              {(p) => <Select id={p.id} invalid={p.invalid} describedBy={p.describedBy} options={projectOptions} {...register("projectType")} />}
-            </Field>
-            <Field label="Approximate budget" hint="Any currency — a rough range is fine" error={errors.budget?.message}>
-              {(p) => <Input id={p.id} invalid={p.invalid} describedBy={p.describedBy} {...register("budget")} />}
-            </Field>
-            <Field label="Timeline" error={errors.timeline?.message}>
-              {(p) => <Select id={p.id} invalid={p.invalid} describedBy={p.describedBy} options={timelineOptions} {...register("timeline")} />}
-            </Field>
-          </>
         ) : null}
       </div>
 

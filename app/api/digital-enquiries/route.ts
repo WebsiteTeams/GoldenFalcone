@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/lib/mongodb";
 import { guardRequest, json, looksLikeSpam, serverError, zodErrors } from "@/lib/security";
-import { digitalProjectEnquirySchema } from "@/lib/validations";
-import { DigitalEnquiry } from "@/models/DigitalEnquiry";
+import { enquirySchema } from "@/lib/validations";
+import { Enquiry } from "@/models/Enquiry";
 
 export const runtime = "nodejs";
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     return json(400, { ok: false, message: "Invalid request body." });
   }
 
-  const parsed = digitalProjectEnquirySchema.safeParse(body);
+  const parsed = enquirySchema.safeParse(body);
   if (!parsed.success) {
     return json(422, { ok: false, message: "Please check the highlighted fields.", errors: zodErrors(parsed.error) });
   }
@@ -39,9 +39,9 @@ export async function POST(request: Request) {
     // means a double click or a refresh. Return the existing reference instead of
     // creating a second enquiry.
     const since = new Date(Date.now() - 10 * 60 * 1000);
-    const duplicate = await DigitalEnquiry.findOne({
+    const duplicate = await Enquiry.findOne({
       createdAt: { $gte: since },
-      $or: [{ mobile: data.mobile }, { email: data.email }],
+      $or: [{ phone: data.phone }, { email: data.email }],
     })
       .select("referenceNumber")
       .lean();
@@ -56,7 +56,7 @@ export async function POST(request: Request) {
     }
 
     const referenceNumber = generateRef();
-    const enquiry = await DigitalEnquiry.create({
+    const enquiry = await Enquiry.create({
       ...data,
       referenceNumber,
       source: request.headers.get("referer")?.slice(0, 200),
@@ -71,4 +71,3 @@ export async function POST(request: Request) {
     return serverError(error, "digital-enquiry");
   }
 }
-

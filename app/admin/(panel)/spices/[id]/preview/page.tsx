@@ -24,7 +24,7 @@ export default async function PreviewSpicePage({ params }: { params: Promise<{ i
       editHref={`/admin/spices/${id}`}
       listHref="/admin/spices"
       listLabel="Spices catalogue"
-      publicHref={`/spices#${spice.slug}`}
+      publicHref={`/spices/${spice.slug}`}
     >
       <div className="grid gap-10 lg:grid-cols-3">
         <div className="rounded-[1.75rem] bg-forest p-5">

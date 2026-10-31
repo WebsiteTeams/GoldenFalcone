@@ -41,7 +41,7 @@ const sections: LegalSection[] = [
     body: (
       <p>
         Submitting an enquiry, request or application does not create a binding agreement or guarantee a particular outcome.
-        Any engagement — a spice supply order, a mentorship programme, a digital project or a staffing arrangement — is
+        Any engagement — a spice supply order, a mentorship programme or a staffing arrangement — is
         governed by the separate terms agreed between you and Goldenfalcone for that engagement.
       </p>
     ),

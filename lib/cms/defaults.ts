@@ -1,3 +1,4 @@
+import { DEFAULT_PRODUCTS_PER_PAGE } from "@/lib/admin/constants";
 import type { Settings, SiteContent } from "@/lib/admin/schemas";
 import { brandValues, divisions } from "@/lib/content";
 import { site } from "@/lib/site";
@@ -10,7 +11,7 @@ export const defaultContent: SiteContent = {
   home: {
     heroTitle: "One Vision.\nFour Dimensions of Business.",
     heroDescription:
-      "A diversified business group bringing together opportunities across spices, trading education, salon staffing, and digital solutions — driven by purpose, integrity, and a vision for growth.",
+      "A diversified business group bringing together opportunities across spices, trading education and salon staffing — driven by purpose, integrity, and a vision for growth.",
     heroPrimaryCta: "Explore Our Businesses",
     heroSecondaryCta: "Discover Goldenfalcone",
     introTitle: "A Diversified Brand,\nBuilt With Purpose.",
@@ -29,14 +30,14 @@ export const defaultContent: SiteContent = {
   footer: {
     tagline: site.tagline,
     description:
-      "A diversified business brand bringing one set of values to four distinct divisions — spice trade, trading education, digital solutions and salon staffing.",
+      "A diversified business brand bringing one set of values to three distinct divisions — spice trade, trading education and salon staffing.",
   },
   seo: {
     home: { title: "", description: "" },
     about: { title: "", description: "" },
     spices: { title: "", description: "" },
     mentorship: { title: "", description: "" },
-    digital: { title: "", description: "" },
+    
     staffing: { title: "", description: "" },
     contact: { title: "", description: "" },
   },
@@ -54,6 +55,7 @@ export const defaultSettings: Settings = {
   seo: { defaultTitle: "", defaultDescription: "" },
   notifications: { emailOnSubmission: false },
   publishing: { newItemsAsDraft: true },
+  store: { productsPerPage: DEFAULT_PRODUCTS_PER_PAGE },
   retentionMonths: 24,
 };
 

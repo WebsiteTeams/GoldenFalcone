@@ -3,7 +3,7 @@ import Link from "next/link";
 import { ArrowUpRight, CalendarClock, Check, Clock, Leaf, MapPinned, Package, Users } from "lucide-react";
 import { RevealUp, StaggerContainer, StaggerItem } from "@/components/animations";
 import { availabilityOptions, labelFor } from "@/lib/admin/constants";
-import type { PublicDigitalService, PublicPortfolioProject, PublicProgram, PublicSpice } from "@/lib/cms";
+import type { PublicPortfolioProject, PublicProgram, PublicSpice } from "@/lib/cms";
 import type { Spice } from "@/lib/content";
 import { SpiceIllustration } from "./SpiceIllustration";
 
@@ -239,34 +239,6 @@ export function ProgrammeCard({ program }: { program: PublicProgram }) {
         <ArrowUpRight aria-hidden className="h-4 w-4" />
       </Link>
     </article>
-  );
-}
-
-export function DigitalServiceCard({ service }: { service: PublicDigitalService }) {
-  return (
-    <div className="group flex h-full flex-col bg-forest p-8 transition-colors duration-500 hover:bg-emerald/60 sm:p-10">
-      {service.image ? (
-        <div className="relative -mx-8 -mt-8 mb-7 aspect-[16/9] overflow-hidden sm:-mx-10 sm:-mt-10">
-          <Image src={service.image.url} alt={service.image.alt || service.title} fill sizes="(min-width: 1024px) 33vw, 100vw" className="object-cover" />
-        </div>
-      ) : null}
-      {service.category ? <p className="eyebrow text-gold">{service.category}</p> : null}
-      <h3 className="mt-3 text-2xl text-ivory sm:text-[1.75rem]">{service.title}</h3>
-      <p className="mt-3 text-sm leading-relaxed text-ivory/65">{service.description}</p>
-      {service.features.length ? (
-        <ul className="mt-5 flex-1 space-y-2 text-sm text-ivory/80">
-          {service.features.map((f) => (
-            <li key={f} className="flex items-start gap-3">
-              <span aria-hidden className="mt-2 h-px w-3 shrink-0 bg-gold" />
-              {f}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="flex-1" />
-      )}
-      {service.startingPrice ? <p className="mt-6 font-serif text-xl text-champagne">{service.startingPrice}</p> : null}
-    </div>
   );
 }
 

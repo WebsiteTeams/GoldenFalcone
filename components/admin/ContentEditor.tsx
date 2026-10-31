@@ -20,12 +20,11 @@ const pageLabels: Record<ContentPageKey, { label: string; path: string }> = {
   about: { label: "About", path: "/about" },
   spices: { label: "Spices", path: "/spices" },
   mentorship: { label: "Trading Mentorship", path: "/trading-mentorship" },
-  digital: { label: "Digital Solutions", path: "/digital-solutions" },
   staffing: { label: "Salon Staffing", path: "/salon-staffing" },
   contact: { label: "Contact", path: "/contact" },
 };
 
-const divisionLabels = { spices: "Spices Export & Import", mentorship: "Trading Mentorship", digital: "Digital Solutions", staffing: "Salon Staffing" } as const;
+const divisionLabels = { spices: "Spices Export & Import", mentorship: "Trading Mentorship", staffing: "Salon Staffing" } as const;
 
 /** Draft → preview → publish workflow for the editable website copy. */
 export function ContentEditor({ initial }: { initial: ContentState }) {

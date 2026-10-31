@@ -2,8 +2,8 @@
 
 import { Controller } from "react-hook-form";
 import type { z } from "zod";
-import { digitalCategories } from "@/lib/admin/constants";
-import { digitalServiceSchema } from "@/lib/admin/schemas";
+import { serviceTypeLabels } from "@/lib/admin/constants";
+import { enquirySchema } from "@/lib/validations";
 import { FormField, FormSection, Input, Select, Textarea } from "../FormField";
 import { ImageUploader } from "../ImageUploader";
 import { EditorLayout } from "./EditorLayout";
@@ -11,13 +11,13 @@ import { LinesField } from "./LinesField";
 import { SeoFields } from "./SeoFields";
 import { useCatalogueForm } from "./useCatalogueForm";
 
-type Values = z.input<typeof digitalServiceSchema>;
+type Values = z.input<typeof enquirySchema>;
 
 export function DigitalServiceEditor({ id, initial, canDelete }: { id?: string; initial: Values; canDelete: boolean }) {
   const { form, onSubmit } = useCatalogueForm({
-    schema: digitalServiceSchema,
-    endpoint: "/api/admin/digital-services",
-    base: "/admin/digital-services/services",
+    schema: enquirySchema,
+    endpoint: "/api/admin/enquiries",
+    base: "/admin/enquiries",
     id,
     defaultValues: initial,
   });
@@ -33,12 +33,12 @@ export function DigitalServiceEditor({ id, initial, canDelete }: { id?: string; 
       submitting={isSubmitting}
       dirty={isDirty}
       entity="service"
-      endpoint="/api/admin/digital-services"
-      listHref="/admin/digital-services"
+      endpoint="/api/admin/enquiries"
+      listHref="/admin/enquiries"
       id={id}
-      previewHref={id ? `/admin/digital-services/services/${id}/preview` : undefined}
+      previewHref={id ? `/admin/enquiries/${id}/preview` : undefined}
       canDelete={canDelete}
-      statusField={register("status")}
+      statusField={register("serviceType")}
       orderField={register("order")}
       orderError={errors.order?.message}
       main={
@@ -48,22 +48,27 @@ export function DigitalServiceEditor({ id, initial, canDelete }: { id?: string; 
               <FormField label="Service title" required error={errors.title?.message}>
                 {(p) => <Input id={p.id} invalid={p.invalid} describedBy={p.describedBy} {...register("title")} />}
               </FormField>
-              <FormField label="Category" error={errors.category?.message}>
+              <FormField label="Service type" error={errors.serviceType?.message}>
                 {(p) => (
                   <Select
                     id={p.id}
                     invalid={p.invalid}
                     describedBy={p.describedBy}
-                    options={digitalCategories.map((c) => ({ value: c, label: c }))}
-                    placeholder="No category"
-                    {...register("category")}
+                    options={[
+                      { value: "spices", label: "Spices Export & Import" },
+                      { value: "mentorship", label: "Trading Mentorship" },
+                      { value: "staffing", label: "Salon Staffing" },
+                      { value: "general", label: "General Enquiry" },
+                    ]}
+                    placeholder="Select service type"
+                    {...register("serviceType")}
                   />
                 )}
               </FormField>
               <FormField label="URL slug" hint="Leave blank to generate from the title." error={errors.slug?.message}>
                 {(p) => <Input id={p.id} invalid={p.invalid} describedBy={p.describedBy} {...register("slug")} />}
               </FormField>
-              <FormField label="Starting price" hint="Only if confirmed, e.g. “From ₹25,000”. Blank hides pricing." error={errors.startingPrice?.message}>
+              <FormField label="Starting price" hint="Only if confirmed, e.g. &quot;From ₹25,000&quot;. Blank hides pricing." error={errors.startingPrice?.message}>
                 {(p) => <Input id={p.id} invalid={p.invalid} describedBy={p.describedBy} {...register("startingPrice")} />}
               </FormField>
             </div>

@@ -119,6 +119,9 @@ export function SettingsForm({ initial, canEdit, emailConfigured }: { initial: V
               <p className="mt-1.5 pl-8 text-xs text-muted">No email provider is configured yet, so no emails are sent. This preference takes effect once one is set up.</p>
             ) : null}
           </div>
+          <FormField label="Products per page in the spice store" hint="How many product cards each page of the store listing shows." error={errors.store?.productsPerPage?.message}>
+            {(p) => <Input id={p.id} invalid={p.invalid} describedBy={p.describedBy} type="number" min={1} max={48} inputMode="numeric" className="max-w-[10rem]" {...register("store.productsPerPage")} />}
+          </FormField>
           <FormField label="Candidate data retention (months)" hint="Applications older than this can be purged from the Candidates page." error={errors.retentionMonths?.message}>
             {(p) => <Input id={p.id} invalid={p.invalid} describedBy={p.describedBy} type="number" min={1} max={120} inputMode="numeric" className="max-w-[10rem]" {...register("retentionMonths")} />}
           </FormField>

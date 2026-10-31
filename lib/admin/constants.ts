@@ -1,25 +1,56 @@
 /** Shared admin enums — imported by models, validation schemas and UI alike. */
 
-export const orderStatuses = [
-  "pending-whatsapp",
-  "enquiry-received",
-  "confirmed",
-  "processing",
-  "shipped",
-  "completed",
-  "cancelled",
-] as const;
+export const orderStatuses = ["pending", "confirmed", "processing", "completed", "cancelled"] as const;
 export type OrderStatus = (typeof orderStatuses)[number];
 
 export const orderStatusLabels: Record<string, string> = {
-  "pending-whatsapp": "Pending WhatsApp Confirmation",
-  "enquiry-received": "Enquiry Received",
+  pending: "Pending",
   confirmed: "Confirmed",
   processing: "Processing",
-  shipped: "Shipped",
   completed: "Completed",
   cancelled: "Cancelled",
 };
+
+/**
+ * Statuses saved by the earlier order flow. Existing orders keep them in the database (no migration),
+ * so they stay valid for the model but are shown and filtered as their current equivalent.
+ */
+const legacyOrderStatusMap = {
+  "pending-whatsapp": "pending",
+  "enquiry-received": "pending",
+  shipped: "processing",
+} as const satisfies Record<string, OrderStatus>;
+
+export const allOrderStatusValues = [...orderStatuses, ...(Object.keys(legacyOrderStatusMap) as (keyof typeof legacyOrderStatusMap)[])];
+
+export const normalizeOrderStatus = (status: string): OrderStatus =>
+  (legacyOrderStatusMap as Record<string, OrderStatus>)[status] ?? (status as OrderStatus);
+
+/** Stored values that count as the given status, including legacy ones. */
+export const orderStatusValues = (status: string) => allOrderStatusValues.filter((value) => normalizeOrderStatus(value) === status);
+
+export const orderSources = ["website", "whatsapp"] as const;
+export type OrderSource = (typeof orderSources)[number];
+export const orderSourceLabels: Record<OrderSource, string> = { website: "Website checkout", whatsapp: "WhatsApp order" };
+
+// ---------- Quality-based spice catalogue ----------
+
+export const productTypes = ["powder", "solid"] as const;
+export type ProductType = (typeof productTypes)[number];
+export const productTypeLabels: Record<ProductType, string> = { powder: "Powder", solid: "Solid / Whole" };
+
+export const qualityLevels = ["high", "medium", "low"] as const;
+export type QualityLevel = (typeof qualityLevels)[number];
+export const qualityLabels: Record<QualityLevel, string> = { high: "High Quality", medium: "Medium Quality", low: "Low Quality" };
+
+/** Whole kilograms only: decimal quantities have not been approved by the business. */
+export const MIN_ORDER_KG = 1;
+export const MAX_ORDER_KG = 10000;
+
+export const LAB_REPORT_MAX_BYTES = 8 * 1024 * 1024;
+export const LAB_REPORT_TYPES = ["application/pdf", "image/jpeg", "image/png", "image/webp"] as const;
+
+export const DEFAULT_PRODUCTS_PER_PAGE = 4;
 
 export const SUPPORTED_CURRENCIES = ["INR", "USD", "AED", "GBP", "EUR", "SGD"] as const;
 
@@ -29,79 +60,7 @@ export type AdminRole = (typeof adminRoles)[number];
 export const enquiryStatuses = ["new", "contacted", "in-progress", "converted", "closed"] as const;
 
 /** Digital Solutions project enquiry lifecycle */
-export const digitalEnquiryStatuses = [
-  "new",
-  "reviewing",
-  "requirement-discussion",
-  "proposal-preparation",
-  "proposal-sent",
-  "negotiation",
-  "approved",
-  "in-development",
-  "completed",
-  "on-hold",
-  "not-proceeding",
-  "rejected",
-] as const;
-export type DigitalEnquiryStatus = (typeof digitalEnquiryStatuses)[number];
 
-export const digitalEnquiryStatusLabels: Record<DigitalEnquiryStatus, string> = {
-  new: "New",
-  reviewing: "Reviewing",
-  "requirement-discussion": "Requirement Discussion",
-  "proposal-preparation": "Proposal Preparation",
-  "proposal-sent": "Proposal Sent",
-  negotiation: "Negotiation",
-  approved: "Approved",
-  "in-development": "In Development",
-  completed: "Completed",
-  "on-hold": "On Hold",
-  "not-proceeding": "Not Proceeding",
-  rejected: "Rejected",
-};
-
-export const digitalProjectTypes = [
-  "Website Development",
-  "Mobile App Development",
-  "Web Application Development",
-  "Custom Software Development",
-  "Other",
-] as const;
-export type DigitalProjectType = (typeof digitalProjectTypes)[number];
-
-export const digitalIndustries = [
-  "Retail",
-  "Education",
-  "Hospitality",
-  "Healthcare",
-  "Real Estate",
-  "Beauty & Salon",
-  "Manufacturing",
-  "Trading",
-  "Other",
-] as const;
-export type DigitalIndustry = (typeof digitalIndustries)[number];
-
-export const digitalBudgetRanges = [
-  "Under ₹50,000",
-  "₹50,000 – ₹1,00,000",
-  "₹1,00,000 – ₹2,50,000",
-  "₹2,50,000 – ₹5,00,000",
-  "₹5,00,000+",
-  "Flexible / To be discussed",
-] as const;
-
-export const digitalTimelines = [
-  "Immediate (Within 2–4 weeks)",
-  "1–2 Months",
-  "2–3 Months",
-  "3–6 Months",
-  "Flexible",
-] as const;
-
-export const digitalContactMethods = ["Any", "Email", "Phone", "WhatsApp"] as const;
-
-/** Hiring requirement lifecycle. */
 export const staffingStatuses = [
   "new",
   "reviewing",
@@ -165,20 +124,9 @@ export const availabilityOptions = [
 ] as const;
 export const availabilityValues = availabilityOptions.map((a) => a.value) as [string, ...string[]];
 
-export const digitalCategories = [
-  "Websites",
-  "Landing Pages",
-  "Portfolios",
-  "Web Applications",
-  "Booking & Management",
-  "Custom Software",
-  "Maintenance & SEO",
-] as const;
-
 export const serviceTypeLabels: Record<string, string> = {
   spices: "Spices Export & Import",
   mentorship: "Trading Mentorship",
-  digital: "Digital Solutions",
   staffing: "Salon Staffing",
   general: "General Enquiry",
 };
@@ -212,6 +160,34 @@ export const toOptions = (values: readonly string[], format: (v: string) => stri
 
 export const PAGE_SIZE = 20;
 export const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
+export const digitalProjectTypes = [
+  "corporate-website",
+  "landing-page",
+  "web-application",
+  "booking-system",
+  "custom-software",
+  "maintenance-seo",
+] as const;
+export type DigitalProjectType = (typeof digitalProjectTypes)[number];
+export const digitalIndustries = [
+  "corporate",
+  "e-commerce",
+  "finance",
+  "healthcare",
+  "education",
+  "technology",
+  " hospitality",
+  "retail",
+] as const;
+export type DigitalIndustry = (typeof digitalIndustries)[number];
+export const digitalEnquiryStatuses = [
+  "new",
+  "contacted",
+  "in-progress",
+  "converted",
+  "closed",
+] as const;
+export type DigitalEnquiryStatus = (typeof digitalEnquiryStatuses)[number];
 export const IMAGE_TYPES = [
   "image/jpeg",
   "image/png",

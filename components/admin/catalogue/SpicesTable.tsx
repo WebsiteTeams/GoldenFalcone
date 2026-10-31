@@ -8,6 +8,7 @@ import {
   CheckCircle2,
   Clock3,
 } from "lucide-react";
+import { productTypeLabels, type ProductType } from "@/lib/admin/constants";
 import { formatPrice } from "@/lib/cart/price";
 import { formatDate } from "@/lib/admin/client";
 import { mediaUrl } from "@/lib/media";
@@ -18,6 +19,10 @@ export type SpiceRow = {
   name: string;
   slug?: string;
   category: string;
+  productType?: ProductType | null;
+  variants?: Array<{ level: string; active?: boolean }>;
+  isFeatured?: boolean;
+  featuredOrder?: number;
   images?: Array<{ mediaId: string; alt?: string }>;
   marketPrice: number;
   ourPrice: number;
@@ -33,6 +38,12 @@ type SpicesTableProps = {
   rows: SpiceRow[];
   categoryMap: Map<string, string>;
 };
+
+/** Powder / Solid where set; products from before quality levels still show their old category. */
+const categoryLabel = (row: SpiceRow, categoryMap: Map<string, string>) =>
+  row.productType ? productTypeLabels[row.productType] : categoryMap.get(String(row.category)) || row.category || "Unassigned";
+
+const activeQualities = (row: SpiceRow) => row.variants?.filter((v) => v.active !== false).length ?? 0;
 
 export function SpicesTable({ rows, categoryMap }: SpicesTableProps) {
   return (
@@ -53,7 +64,7 @@ export function SpicesTable({ rows, categoryMap }: SpicesTableProps) {
                 Category
               </th>
               <th scope="col" className="px-4 py-3.5 font-semibold text-right">
-                Pricing (INR)
+                Price / kg (INR)
               </th>
               <th scope="col" className="w-20 px-4 py-3.5 text-center font-semibold">
                 Order
@@ -74,7 +85,7 @@ export function SpicesTable({ rows, categoryMap }: SpicesTableProps) {
               const editHref = `/admin/spices/${row._id}`;
               const firstMedia = row.images?.[0]?.mediaId;
               const imgUrl = firstMedia ? mediaUrl(firstMedia) : null;
-              const categoryName = categoryMap.get(String(row.category)) || row.category || "Unassigned";
+              const categoryName = categoryLabel(row, categoryMap);
               const isLive = row.status === "published";
               const hasDiscount = row.marketPrice > row.ourPrice && row.ourPrice > 0;
               const discountPercent = hasDiscount
@@ -148,13 +159,19 @@ export function SpicesTable({ rows, categoryMap }: SpicesTableProps) {
                       <span className="h-1.5 w-1.5 rounded-full bg-forest/40" />
                       {categoryName}
                     </span>
+                    <span className={cn("mt-1 block text-[11px]", activeQualities(row) ? "text-muted" : "font-medium text-amber-700")}>
+                      {activeQualities(row) ? `${activeQualities(row)} of 3 qualities active` : "Quality levels not set up"}
+                    </span>
+                    {row.isFeatured ? (
+                      <span className="mt-1 block text-[11px] font-medium text-gold-dark">Featured · order {row.featuredOrder ?? 0}</span>
+                    ) : null}
                   </td>
 
                   {/* 4. Pricing */}
                   <td className="px-4 py-3.5 align-middle text-right">
                     <div className="flex flex-col items-end">
                       <span className="font-semibold text-base text-forest tabular-nums">
-                        {formatPrice(row.ourPrice || 0)}
+                        {activeQualities(row) ? "From " : ""}{formatPrice(row.ourPrice || 0)}
                       </span>
                       {row.marketPrice > 0 ? (
                         <div className="flex items-center gap-1.5">
@@ -213,7 +230,7 @@ export function SpicesTable({ rows, categoryMap }: SpicesTableProps) {
                         <Pencil className="h-3.5 w-3.5" />
                       </Link>
                       <Link
-                        href="/spices"
+                        href={isLive && row.slug ? `/spices/${row.slug}` : "/spices"}
                         target="_blank"
                         rel="noreferrer"
                         aria-label={`View ${row.name} on public store`}
@@ -237,7 +254,7 @@ export function SpicesTable({ rows, categoryMap }: SpicesTableProps) {
           const editHref = `/admin/spices/${row._id}`;
           const firstMedia = row.images?.[0]?.mediaId;
           const imgUrl = firstMedia ? mediaUrl(firstMedia) : null;
-          const categoryName = categoryMap.get(String(row.category)) || row.category || "Unassigned";
+          const categoryName = categoryLabel(row, categoryMap);
           const isLive = row.status === "published";
 
           return (

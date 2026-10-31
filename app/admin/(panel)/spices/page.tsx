@@ -4,6 +4,7 @@ import {
   Leaf,
   Package,
   Plus,
+  Star,
   Tags,
   CheckCircle2,
   Clock3,
@@ -54,7 +55,7 @@ export default async function SpicesAdminPage({
       {/* 1. Header with Title & Action Buttons */}
       <PageHeader
         title="Spices Catalogue"
-        description="Manage wholesale whole spices, pricing, origins, categories, and live store visibility."
+        description="Manage Powder and Solid products, their quality levels, per-kg pricing, lab reports and store visibility."
         actions={
           <div className="flex flex-wrap items-center gap-2.5">
             <ButtonLink
@@ -63,6 +64,13 @@ export default async function SpicesAdminPage({
               icon={<Tags aria-hidden className="h-4 w-4 text-forest" />}
             >
               Categories ({categoryDocs.length})
+            </ButtonLink>
+            <ButtonLink
+              href="/admin/spices/featured"
+              variant="secondary"
+              icon={<Star aria-hidden className="h-4 w-4 text-gold-dark" />}
+            >
+              Featured
             </ButtonLink>
             <ButtonLink
               href="/spices"
@@ -179,7 +187,7 @@ export default async function SpicesAdminPage({
           description={
             isFiltered
               ? "No products match the selected search or filters. Try clearing filters to see all products."
-              : "Until a product is published, the spices page shows its built-in introductory catalogue. Add your first product to get started."
+              : "The spices store lists published products only. Add your first product to get started."
           }
           action={
             isFiltered ? null : (

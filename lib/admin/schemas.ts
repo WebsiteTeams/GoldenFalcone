@@ -6,12 +6,21 @@ import {
   communicationChannels,
   communicationParties,
   connectionStatuses,
+  DEFAULT_PRODUCTS_PER_PAGE,
   digitalEnquiryStatuses,
   digitalIndustries,
   enquiryStatuses,
   interviewStatuses,
+  LAB_REPORT_MAX_BYTES,
+  LAB_REPORT_TYPES,
+  MAX_ORDER_KG,
+  MIN_ORDER_KG,
+  orderSources,
   orderStatuses,
+  productTypes,
   publishStatuses,
+  qualityLabels,
+  qualityLevels,
   staffingStatuses,
 } from "./constants";
 
@@ -179,23 +188,135 @@ export type SpiceCategoryInput = z.input<typeof spiceCategorySchema>;
 
 // ---------- Catalogue ----------
 
+const pricePerKg = (label: string) =>
+  z.coerce
+    .number({ required_error: `${label} is required`, invalid_type_error: `${label} must be a number` })
+    .min(0, `${label} must be 0 or greater`)
+    .max(10000000, `${label} is too large`);
+
+const labReport = z.object({
+  fileId: objectId,
+  fileName: z.string().trim().min(1).max(200),
+  contentType: z.enum(LAB_REPORT_TYPES),
+  size: z.coerce.number().int().min(0).max(LAB_REPORT_MAX_BYTES),
+});
+export type LabReportValue = z.output<typeof labReport>;
+
+const qualityVariant = z.object({
+  level: z.enum(qualityLevels),
+  qualityPercent: z.coerce
+    .number({ invalid_type_error: "Quality percentage must be a number" })
+    .min(0, "Quality percentage must be between 0 and 100")
+    .max(100, "Quality percentage must be between 0 and 100"),
+  marketPrice: pricePerKg("Market price"),
+  sellingPrice: pricePerKg("Selling price"),
+  importArea: optional(200),
+  specifications: optional(1000),
+  labReport: labReport.nullable().default(null),
+  active: z.boolean().default(true),
+});
+
+const featuredOrder = z.coerce
+  .number({ invalid_type_error: "Display order must be a number" })
+  .int("Display order must be a whole number")
+  .min(0, "Display order must be 0 or greater")
+  .max(9999, "Display order must be 9999 or lower")
+  .default(0);
+
+/** Quick changes from the Featured Products page. These run against saved variants, so they use real variant ids. */
+export const featuredSettingsSchema = z.object({
+  isFeatured: z.boolean(),
+  featuredOrder: featuredOrder.optional(),
+  featuredVariantId: objectId.nullable().optional(),
+});
+
+type FeaturedCandidate = {
+  isFeatured?: boolean | null;
+  productType?: string | null;
+  featuredVariantId?: unknown;
+  variants?: Array<{ _id?: unknown; active?: boolean | null; sellingPrice?: unknown }> | null;
+};
+
+/** A featured product must point at one of its own active, priced variants. Nothing falls back to another variant. */
+export function spiceFeaturedErrors(product: FeaturedCandidate): Record<string, string> | null {
+  if (!product.isFeatured) return null;
+  const errors: Record<string, string> = {};
+  if (!product.productType) errors.productType = "Select Powder or Solid to feature this product";
+
+  const selected = product.featuredVariantId ? product.variants?.find((v) => String(v._id) === String(product.featuredVariantId)) : undefined;
+  if (!selected) errors.featuredLevel = "Select the quality to show on the homepage";
+  else if (selected.active === false) errors.featuredLevel = "The selected quality is inactive. Activate it or choose another";
+  else if (!(Number(selected.sellingPrice) > 0)) errors.featuredLevel = "The selected quality needs a selling price";
+  return Object.keys(errors).length ? errors : null;
+}
+
 export const spiceProductSchema = z.object({
   name: str("Product name", 2, 100),
   slug,
-  category: z.string().trim().min(1, "Select a category"),
+  productType: z.enum(productTypes, { errorMap: () => ({ message: "Select Powder or Solid" }) }),
+  category: z.string().trim().max(60).nullable().optional().default(""),
   images: z.array(image).max(4, "Up to 4 images").default([]),
-  marketPrice: z.coerce
-    .number({ required_error: "Market price is required", invalid_type_error: "Market price must be a number" })
-    .min(0, "Market price must be 0 or greater"),
-  ourPrice: z.coerce
-    .number({ required_error: "Our price is required", invalid_type_error: "Our price must be a number" })
-    .min(0, "Our price must be 0 or greater"),
   shortDescription: str("Short description", 5, 500),
+  highlights: list(12, 160),
+  isFeatured: z.boolean().default(false),
+  featuredOrder,
+  // A new product has no variant ids yet, so the editor names a level. The server stores the matching featuredVariantId.
+  featuredLevel: z.preprocess((v) => (v === "" ? null : v), z.enum(qualityLevels).nullable().optional()),
+  variants: z
+    .array(qualityVariant)
+    .length(qualityLevels.length, "Provide all three quality levels")
+    .refine((v) => new Set(v.map((x) => x.level)).size === v.length, "Each quality level can only appear once"),
   description: z.string().optional().default(""),
   status,
   order,
   seo,
 });
+
+/** Three editor rows in High → Medium → Low order, filled from any saved variants. */
+export function normalizeVariants(saved: Array<Record<string, unknown>> | null | undefined) {
+  return qualityLevels.map((level) => {
+    const v = saved?.find((x) => x.level === level);
+    return {
+      level,
+      qualityPercent: (v?.qualityPercent as number) ?? 0,
+      marketPrice: (v?.marketPrice as number) ?? 0,
+      sellingPrice: (v?.sellingPrice as number) ?? 0,
+      importArea: (v?.importArea as string) ?? "",
+      specifications: (v?.specifications as string) ?? "",
+      labReport: (v?.labReport as LabReportValue | null) ?? null,
+      active: (v?.active as boolean) ?? true,
+    };
+  });
+}
+
+type PublishCandidate = {
+  productType?: string | null;
+  images?: unknown[] | null;
+  variants?: Array<z.input<typeof qualityVariant>> | null;
+};
+
+/**
+ * What must be true before a product goes live. Drafts may be incomplete, so this runs on the merged record
+ * whenever the result is published, including one-click status changes. An inactive quality is not sold, so it may stay blank.
+ */
+export function spicePublishErrors(product: PublishCandidate): Record<string, string> | null {
+  const errors: Record<string, string> = {};
+  if (!product.productType) errors.productType = "Select Powder or Solid before publishing";
+  if ((product.images?.length ?? 0) !== 4) errors.images = "Upload all four product images before publishing";
+
+  const variants = product.variants ?? [];
+  if (!variants.some((v) => v.active !== false)) errors.variants = "Activate at least one quality level before publishing";
+  variants.forEach((v, i) => {
+    if (v.active === false) return;
+    const label = qualityLabels[v.level];
+    if (!(Number(v.qualityPercent) > 0)) errors[`variants.${i}.qualityPercent`] = `Enter the ${label} percentage`;
+    if (!(Number(v.marketPrice) > 0)) errors[`variants.${i}.marketPrice`] = `Enter the ${label} market price`;
+    if (!(Number(v.sellingPrice) > 0)) errors[`variants.${i}.sellingPrice`] = `Enter the ${label} selling price`;
+    if (!v.importArea?.trim()) errors[`variants.${i}.importArea`] = `Enter the ${label} import area`;
+    if (!v.labReport) errors[`variants.${i}.labReport`] = `Upload the ${label} lab report`;
+  });
+  return Object.keys(errors).length ? errors : null;
+}
 
 // ---------- Order checkout (public, from browser) ----------
 
@@ -212,13 +333,25 @@ const customerSchema = z.object({
 
 const checkoutItemSchema = z.object({
   productId: z.string().regex(/^[a-f0-9]{24}$/i, "Invalid product"),
-  quantity: z.number().int().min(1).max(10000),
+  variantId: z.string().regex(/^[a-f0-9]{24}$/i, "Select a quality"),
+  quantity: z
+    .number({ invalid_type_error: "Enter a quantity in kilograms" })
+    .int("Quantity must be whole kilograms")
+    .min(MIN_ORDER_KG, `Minimum order is ${MIN_ORDER_KG} kg`)
+    .max(MAX_ORDER_KG, `Maximum order is ${MAX_ORDER_KG} kg`),
+  // The price the customer saw. Only used to detect a change: the charged price always comes from the database.
+  expectedPrice: z.number().min(0).optional(),
+});
+
+export const cartValidationSchema = z.object({
+  items: z.array(checkoutItemSchema).max(50),
 });
 
 export const checkoutSchema = z.object({
   customer: customerSchema,
   items: z.array(checkoutItemSchema).min(1, "Your cart is empty").max(50),
   notes: z.string().max(2000).optional().default(""),
+  source: z.enum(orderSources).default("website"),
 });
 export type CheckoutInput = z.input<typeof checkoutSchema>;
 
@@ -270,7 +403,7 @@ export const portfolioProjectSchema = z.object({
 
 // ---------- Website content ----------
 
-export const contentPageKeys = ["home", "about", "spices", "mentorship", "digital", "staffing", "contact"] as const;
+export const contentPageKeys = ["home", "about", "spices", "mentorship", "staffing", "contact"] as const;
 export type ContentPageKey = (typeof contentPageKeys)[number];
 
 const seoEntry = z.object({ title: optional(70), description: optional(170) });
@@ -339,6 +472,9 @@ export const settingsSchema = z.object({
   seo: z.object({ defaultTitle: optional(70), defaultDescription: optional(170) }).default({}),
   notifications: z.object({ emailOnSubmission: z.boolean().default(false) }).default({}),
   publishing: z.object({ newItemsAsDraft: z.boolean().default(true) }).default({}),
+  store: z
+    .object({ productsPerPage: z.coerce.number().int("Use a whole number").min(1, "Show at least 1 product").max(48, "Show at most 48 products").default(DEFAULT_PRODUCTS_PER_PAGE) })
+    .default({}),
   retentionMonths: z.coerce.number().int().min(1).max(120).default(24),
 });
 export type SettingsInput = z.input<typeof settingsSchema>;

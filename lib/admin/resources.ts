@@ -1,12 +1,10 @@
 import "server-only";
-import type { FilterQuery, Model } from "mongoose";
+import { Types, type FilterQuery, type Model } from "mongoose";
 import type { AnyZodObject } from "zod";
 import { salonRoles } from "@/lib/content";
 import { connectToDatabase } from "@/lib/mongodb";
 import { serviceTypes } from "@/lib/validations";
 import { CandidateApplication } from "@/models/CandidateApplication";
-import { DigitalEnquiry } from "@/models/DigitalEnquiry";
-import { DigitalService } from "@/models/DigitalService";
 import { Enquiry } from "@/models/Enquiry";
 import { MentorshipProgram } from "@/models/MentorshipProgram";
 import { PortfolioProject } from "@/models/PortfolioProject";
@@ -17,24 +15,24 @@ import { StaffingRequest } from "@/models/StaffingRequest";
 import { escapeRegex, toPlain } from "./api";
 import {
   candidateStatuses,
-  digitalEnquiryStatuses,
-  digitalProjectTypes,
   enquiryStatuses,
+  orderSources,
   orderStatuses,
+  orderStatusValues,
   PAGE_SIZE,
   publishStatuses,
   staffingStatuses,
 } from "./constants";
 import {
   candidateUpdateSchema,
-  digitalEnquiryUpdateSchema,
-  digitalServiceSchema,
   enquiryUpdateSchema,
   mentorshipProgramSchema,
   orderUpdateSchema,
   portfolioProjectSchema,
   spiceCategorySchema,
+  spiceFeaturedErrors,
   spiceProductSchema,
+  spicePublishErrors,
   staffingUpdateSchema,
   type ListQuery,
 } from "./schemas";
@@ -61,14 +59,52 @@ export type CatalogueResource = BaseResource & {
   kind: "catalogue";
   schema: AnyZodObject;
   slugSource: string;
-  /** Public pages and cache tag refreshed after every change. */
+  /** Public pages and cache tag refreshed after every change. Dynamic routes use their pattern, e.g. /spices/[slug]. */
   revalidate: { tag: string; paths: string[] };
   mediaIds: (doc: AnyDoc) => string[];
+  /** Slugs that would collide with a fixed route. */
+  reservedSlugs?: string[];
+  /** Server-side adjustments to validated data before it is saved. */
+  prepare?: (data: AnyDoc, before: AnyDoc | null) => void;
+  /** Field errors that block a record from being published. */
+  publishErrors?: (merged: AnyDoc) => Record<string, string> | null;
+  /** Field errors that block any save, whatever the record's status. */
+  saveErrors?: (merged: AnyDoc) => Record<string, string> | null;
 };
 
 export type Resource = InboxResource | CatalogueResource;
 
 const singleImage = (doc: AnyDoc) => (doc.image?.mediaId ? [doc.image.mediaId as string] : []);
+
+/**
+ * Variant ids are assigned here, never taken from the browser, and stay the same for each quality level across
+ * edits, so carts and past orders keep pointing at the right variant.
+ */
+function prepareSpice(data: AnyDoc, before: AnyDoc | null) {
+  if ("category" in data && !data.category) data.category = null;
+
+  if (data.variants) {
+    const existingIds = new Map<string, unknown>((before?.variants ?? []).map((v: AnyDoc) => [v.level, v._id]));
+    data.variants = data.variants.map((v: AnyDoc) => ({ ...v, _id: existingIds.get(v.level) ?? new Types.ObjectId() }));
+  }
+
+  // Runs after ids are assigned, so a brand-new product can feature one of its own variants.
+  if ("featuredLevel" in data) {
+    const level = data.featuredLevel;
+    delete data.featuredLevel;
+    if (level !== undefined) {
+      data.featuredVariantId = (data.variants ?? before?.variants ?? []).find((v: AnyDoc) => v.level === level)?._id ?? null;
+    }
+  }
+
+  if (!data.variants) return;
+
+  const lowest = data.variants
+    .filter((v: AnyDoc) => v.active && v.sellingPrice > 0)
+    .sort((a: AnyDoc, b: AnyDoc) => a.sellingPrice - b.sellingPrice)[0];
+  data.ourPrice = lowest?.sellingPrice ?? 0;
+  data.marketPrice = lowest?.marketPrice ?? 0;
+}
 
 export const resources = {
   enquiries: {
@@ -81,17 +117,6 @@ export const resources = {
     filter: { field: "serviceType", values: serviceTypes },
     label: (d) => `${d.name} <${d.email}>`,
     updateSchema: enquiryUpdateSchema,
-  },
-  digitalEnquiries: {
-    kind: "inbox",
-    key: "digitalEnquiries",
-    entity: "digital project enquiry",
-    model: DigitalEnquiry,
-    statuses: digitalEnquiryStatuses,
-    searchFields: ["fullName", "companyName", "email", "mobile", "referenceNumber", "projectName", "projectType"],
-    filter: { field: "projectType", values: digitalProjectTypes },
-    label: (d) => `${d.fullName} — ${d.projectName || d.projectType} (${d.referenceNumber})`,
-    updateSchema: digitalEnquiryUpdateSchema,
   },
   staffing: {
     kind: "inbox",
@@ -131,7 +156,8 @@ export const resources = {
     entity: "spice order",
     model: SpiceOrder,
     statuses: orderStatuses,
-    searchFields: ["orderNumber", "customer.name", "customer.phone", "customer.email"],
+    searchFields: ["orderNumber", "customer.name", "customer.phone", "customer.email", "items.name"],
+    filter: { field: "source", values: orderSources },
     label: (d) => `${d.orderNumber} — ${d.customer?.name}`,
     updateSchema: orderUpdateSchema,
   },
@@ -158,8 +184,15 @@ export const resources = {
     label: (d) => d.name,
     schema: spiceProductSchema,
     slugSource: "name",
-    revalidate: { tag: "spices", paths: ["/spices"] },
-    mediaIds: (d) => (d.images ?? []).map((i: AnyDoc) => i.mediaId),
+    revalidate: { tag: "spices", paths: ["/spices", "/spices/[slug]", "/api/spices", "/sitemap.xml"] },
+    mediaIds: (d) => [
+      ...(d.images ?? []).map((i: AnyDoc) => i.mediaId),
+      ...(d.variants ?? []).flatMap((v: AnyDoc) => (v.labReport?.fileId ? [v.labReport.fileId] : [])),
+    ],
+    reservedSlugs: ["shop", "featured"],
+    prepare: prepareSpice,
+    publishErrors: (merged) => (merged.status === "published" ? spicePublishErrors(merged) : null),
+    saveErrors: spiceFeaturedErrors,
   },
   mentorship: {
     kind: "catalogue",
@@ -174,19 +207,6 @@ export const resources = {
     revalidate: { tag: "mentorship", paths: ["/trading-mentorship"] },
     mediaIds: () => [],
   },
-  "digital-services": {
-    kind: "catalogue",
-    key: "digital-services",
-    entity: "digital service",
-    model: DigitalService,
-    statuses: publishStatuses,
-    searchFields: ["title", "category", "description"],
-    label: (d) => d.title,
-    schema: digitalServiceSchema,
-    slugSource: "title",
-    revalidate: { tag: "digital", paths: ["/digital-solutions"] },
-    mediaIds: singleImage,
-  },
   portfolio: {
     kind: "catalogue",
     key: "portfolio",
@@ -197,7 +217,7 @@ export const resources = {
     label: (d) => d.title,
     schema: portfolioProjectSchema,
     slugSource: "title",
-    revalidate: { tag: "digital", paths: ["/digital-solutions"] },
+    revalidate: { tag: "mentorship", paths: ["/trading-mentorship"] },
     mediaIds: singleImage,
   },
 } satisfies Record<string, Resource>;
@@ -213,9 +233,14 @@ export function buildFilter(res: Resource, query: ListQuery) {
     const pattern = new RegExp(escapeRegex(query.q), "i");
     where.$or = res.searchFields.map((field) => ({ [field]: pattern }));
   }
-  if (query.status && res.statuses.includes(query.status)) where.status = query.status;
+  if (query.status && res.statuses.includes(query.status)) {
+    where.status = res.key === "orders" ? { $in: orderStatusValues(query.status) } : query.status;
+  }
   if (query.filter) {
-    if (res.filter?.values.includes(query.filter)) {
+    if (res.key === "orders" && query.filter === "website") {
+      // Orders saved before sources were recorded all came through website checkout.
+      where.source = { $ne: "whatsapp" };
+    } else if (res.filter?.values.includes(query.filter)) {
       where[res.filter.field] = query.filter;
     } else if (res.key === "spices") {
       where.category = query.filter;
@@ -230,7 +255,6 @@ export function buildFilter(res: Resource, query: ListQuery) {
   }
   if (query.employment && res.key === "staffing") where.employmentType = query.employment;
   if (query.experience && res.key === "candidates") where.experience = query.experience;
-  if (query.industry && res.key === "digitalEnquiries") where.industry = query.industry;
   if (query.availability && res.key === "candidates") {
     where.availability = new RegExp(escapeRegex(query.availability), "i");
   }

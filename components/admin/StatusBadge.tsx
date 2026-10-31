@@ -28,11 +28,9 @@ const tones: Record<string, string> = {
   "no-show": "bg-red-50 text-red-800 ring-red-800/15",
   filled: "bg-emerald/10 text-emerald ring-emerald/25",
   // Order statuses
-  "pending-whatsapp": "bg-amber-50 text-amber-800 ring-amber-700/20",
-  "enquiry-received": "bg-sky-50 text-sky-800 ring-sky-700/15",
+  pending: "bg-amber-50 text-amber-800 ring-amber-700/20",
   confirmed: "bg-blue-50 text-blue-800 ring-blue-700/15",
   processing: "bg-purple-50 text-purple-800 ring-purple-700/15",
-  shipped: "bg-indigo-50 text-indigo-800 ring-indigo-700/15",
   completed: "bg-emerald/10 text-emerald ring-emerald/25",
   cancelled: "bg-red-50 text-red-800 ring-red-800/15",
 };

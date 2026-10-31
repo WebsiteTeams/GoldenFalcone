@@ -1,16 +1,22 @@
 import mongoose, { Schema, type InferSchemaType, type Model } from "mongoose";
-import { orderStatuses } from "@/lib/admin/constants";
+import { allOrderStatusValues, orderSources } from "@/lib/admin/constants";
 import { noteSchema } from "./shared";
 
-/** Snapshot of a single product at the time the order was placed. */
+/** Snapshot of a single product at the time the order was placed. Later price or product edits never change it. */
 const orderItemSchema = new Schema(
   {
     productId: { type: Schema.Types.ObjectId, ref: "SpiceProduct" },
+    variantId: { type: Schema.Types.ObjectId },
     name: { type: String, required: true, maxlength: 100 },
     image: { type: String, default: "" },
+    category: { type: String, maxlength: 40, default: "" },
+    quality: { type: String, maxlength: 40, default: "" },
+    qualityPercent: { type: Number, min: 0, max: 100, default: null },
+    importArea: { type: String, maxlength: 200, default: "" },
     unit: { type: String, default: "" },
     quantity: { type: Number, required: true, min: 1, max: 10000 },
     unitPrice: { type: Number, required: true, min: 0 },
+    marketPrice: { type: Number, min: 0, default: null },
     currency: { type: String, default: "INR", maxlength: 8 },
     lineTotal: { type: Number, required: true, min: 0 },
   },
@@ -45,7 +51,8 @@ const spiceOrderSchema = new Schema(
     totalAmount: { type: Number, required: true, min: 0 },
     currency: { type: String, default: "INR", maxlength: 8 },
     notes: { type: String, maxlength: 2000, default: "" },
-    status: { type: String, enum: orderStatuses, default: "pending-whatsapp" },
+    source: { type: String, enum: orderSources, default: "website" },
+    status: { type: String, enum: allOrderStatusValues, default: "pending" },
     whatsappOpenedAt: { type: Date, default: null },
     internalNotes: { type: [noteSchema], select: false, default: [] },
   },
@@ -53,6 +60,8 @@ const spiceOrderSchema = new Schema(
 );
 
 spiceOrderSchema.index({ status: 1, createdAt: -1 });
+spiceOrderSchema.index({ source: 1, createdAt: -1 });
+spiceOrderSchema.index({ createdAt: -1 });
 spiceOrderSchema.index({ "customer.phone": 1 });
 
 export type SpiceOrderDoc = InferSchemaType<typeof spiceOrderSchema>;

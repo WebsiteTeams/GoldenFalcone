@@ -5,9 +5,8 @@ import { PageHeader } from "@/components/admin/PageHeader";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { isObjectId } from "@/lib/admin/api";
 import { formatDate } from "@/lib/admin/client";
-import { editorValues } from "@/lib/admin/editor";
+import { spiceEditorValues } from "@/lib/admin/editor";
 import { getRecord, resources } from "@/lib/admin/resources";
-import { spiceProductSchema } from "@/lib/admin/schemas";
 import { requireAdmin } from "@/lib/auth/session";
 import { connectToDatabase } from "@/lib/mongodb";
 import { SpiceCategory } from "@/models/SpiceCategory";
@@ -42,7 +41,7 @@ export default async function EditSpicePage({ params }: { params: Promise<{ id: 
         id={id}
         categories={categories}
         canDelete={admin.role === "admin"}
-        initial={editorValues(spiceProductSchema, doc) as never}
+        initial={spiceEditorValues(doc) as never}
       />
     </>
   );

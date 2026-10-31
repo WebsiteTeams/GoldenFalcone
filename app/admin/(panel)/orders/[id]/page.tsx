@@ -9,7 +9,7 @@ import { RecordActions } from "@/components/admin/RecordActions";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { isObjectId } from "@/lib/admin/api";
 import { formatDate } from "@/lib/admin/client";
-import { orderStatuses } from "@/lib/admin/constants";
+import { normalizeOrderStatus, orderSourceLabels, orderStatuses, type OrderSource } from "@/lib/admin/constants";
 import { getRecord, resources } from "@/lib/admin/resources";
 import { requireAdmin } from "@/lib/auth/session";
 import { formatPrice } from "@/lib/cart/price";
@@ -20,6 +20,10 @@ type OrderItem = {
   productId?: string;
   name: string;
   image?: string;
+  category?: string;
+  quality?: string;
+  qualityPercent?: number | null;
+  importArea?: string;
   unit?: string;
   quantity: number;
   unitPrice: number;
@@ -46,6 +50,7 @@ type OrderDoc = {
   totalAmount: number;
   currency: string;
   notes?: string;
+  source?: OrderSource;
   status: string;
   whatsappOpenedAt?: string | null;
   internalNotes?: Note[];
@@ -65,6 +70,7 @@ export default async function OrderDetailPage({
   const order = await getRecord<OrderDoc>(resources.orders, id);
   if (!order) notFound();
 
+  const status = normalizeOrderStatus(order.status);
   const cleanPhone = order.customer.phone.replace(/[^0-9]/g, "");
   const waReplyHref = cleanPhone
     ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent(
@@ -78,7 +84,7 @@ export default async function OrderDetailPage({
         back={{ href: "/admin/orders", label: "All orders" }}
         title={`Order ${order.orderNumber}`}
         description={`Submitted by ${order.customer.name} · ${formatDate(order.createdAt, true)}`}
-        actions={<StatusBadge status={order.status} className="text-sm" />}
+        actions={<StatusBadge status={status} className="text-sm" />}
       />
 
       <div className="grid gap-6 lg:grid-cols-3">
@@ -107,6 +113,13 @@ export default async function OrderDetailPage({
 
                   <div className="flex-1 min-w-0">
                     <h4 className="font-medium text-ink truncate">{item.name}</h4>
+                    {item.quality ? (
+                      <p className="text-xs text-ink/80">
+                        {[item.category, item.quality, typeof item.qualityPercent === "number" ? `${item.qualityPercent}%` : null, item.importArea]
+                          .filter(Boolean)
+                          .join(" · ")}
+                      </p>
+                    ) : null}
                     <p className="text-xs text-muted">
                       Quantity: <strong className="text-ink">{item.quantity}</strong>
                       {item.unit ? ` ${item.unit}` : ""} ×{" "}
@@ -152,6 +165,7 @@ export default async function OrderDetailPage({
               items={
                 [
                   { label: "Customer Name", value: order.customer.name },
+                  { label: "Order Source", value: orderSourceLabels[order.source ?? "website"] },
                   {
                     label: "Phone / WhatsApp",
                     value: (
@@ -205,7 +219,7 @@ export default async function OrderDetailPage({
                   order.notes ? { label: "Customer Notes", value: order.notes } : null,
                   order.whatsappOpenedAt
                     ? {
-                        label: "WhatsApp Opened",
+                        label: "WhatsApp Link Prepared",
                         value: formatDate(order.whatsappOpenedAt, true),
                       }
                     : null,
@@ -220,7 +234,7 @@ export default async function OrderDetailPage({
           <Card title="Order Status">
             <RecordActions
               endpoint={`/api/admin/orders/${id}`}
-              status={order.status}
+              status={status}
               statuses={orderStatuses}
               canDelete={admin.role === "admin"}
               entity="order"

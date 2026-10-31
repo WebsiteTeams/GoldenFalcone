@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import { DataTable, type Column } from "@/components/admin/DataTable";
 import { EmptyState } from "@/components/admin/EmptyState";
+import { ExportOrdersButton } from "@/components/admin/ExportOrdersButton";
 import { ListToolbar } from "@/components/admin/ListToolbar";
 import { PageHeader } from "@/components/admin/PageHeader";
 import { Pagination } from "@/components/admin/Pagination";
 import { StatusBadge } from "@/components/admin/StatusBadge";
 import { formatDate } from "@/lib/admin/client";
-import { orderStatuses, toOptions } from "@/lib/admin/constants";
+import { normalizeOrderStatus, orderSourceLabels, orderSources, orderStatuses, toOptions, type OrderSource } from "@/lib/admin/constants";
 import { readListQuery } from "@/lib/admin/query";
 import { listRecords, resources } from "@/lib/admin/resources";
 import { requireAdmin } from "@/lib/auth/session";
@@ -24,23 +25,22 @@ type Row = {
     city?: string;
     country?: string;
   };
-  items: Array<{ name: string; quantity: number; unit?: string }>;
+  items: Array<{ name: string; quality?: string; quantity: number; unit?: string; unitPrice: number; currency?: string }>;
   totalAmount: number;
   currency: string;
+  source?: OrderSource;
   status: string;
   createdAt: string;
 };
 
 const columns: Column<Row>[] = [
   {
-    header: "Order Ref",
+    header: "Order ID",
     primary: true,
     cell: (r) => (
       <div>
         <span className="font-mono font-semibold text-ink">{r.orderNumber}</span>
-        <span className="block text-xs text-muted">
-          {r.items?.length || 0} item{r.items?.length !== 1 ? "s" : ""}
-        </span>
+        <span className="block text-xs text-muted">{formatDate(r.createdAt, true)}</span>
       </div>
     ),
   },
@@ -54,13 +54,21 @@ const columns: Column<Row>[] = [
     ),
   },
   {
-    header: "Location",
+    header: "Products",
     cell: (r) => (
-      <span className="text-muted text-xs">
-        {[r.customer?.city, r.customer?.country].filter(Boolean).join(", ") || "—"}
-      </span>
+      <ul className="space-y-1 text-xs">
+        {r.items?.map((item, i) => (
+          <li key={i}>
+            <span className="font-medium text-ink">{item.name}</span>
+            <span className="block text-muted">
+              {[item.quality, `${item.quantity} ${item.unit || "kg"}`, `${formatPrice(item.unitPrice, item.currency || r.currency || "INR")}/${item.unit || "kg"}`]
+                .filter(Boolean)
+                .join(" · ")}
+            </span>
+          </li>
+        ))}
+      </ul>
     ),
-    hideOnMobile: true,
   },
   {
     header: "Total",
@@ -71,13 +79,13 @@ const columns: Column<Row>[] = [
     ),
   },
   {
-    header: "Received",
-    cell: (r) => formatDate(r.createdAt),
+    header: "Source",
+    cell: (r) => <span className="text-xs text-muted">{orderSourceLabels[r.source ?? "website"]}</span>,
     hideOnMobile: true,
   },
   {
     header: "Status",
-    cell: (r) => <StatusBadge status={r.status} />,
+    cell: (r) => <StatusBadge status={normalizeOrderStatus(r.status)} />,
   },
 ];
 
@@ -89,17 +97,19 @@ export default async function OrdersPage({
   await requireAdmin();
   const { query, params } = readListQuery(await searchParams);
   const result = await listRecords<Row>(resources.orders, query);
-  const filtered = Boolean(query.q || query.status || query.from || query.to);
+  const filtered = Boolean(query.q || query.status || query.filter || query.from || query.to);
 
   return (
     <>
       <PageHeader
         title="Spice Orders"
-        description="Orders and WhatsApp enquiry requests submitted through the spices e-commerce storefront."
+        description="Orders submitted through the spices store. Every order stays pending until you confirm it here; sharing it on WhatsApp does not confirm it."
+        actions={<ExportOrdersButton />}
       />
       <ListToolbar
-        searchPlaceholder="Search order ref, customer name, or phone"
+        searchPlaceholder="Search order ID, customer, phone or product"
         statuses={toOptions(orderStatuses)}
+        filter={{ label: "Source", options: orderSources.map((value) => ({ value, label: orderSourceLabels[value] })) }}
         dates
       />
       {result.items.length ? (

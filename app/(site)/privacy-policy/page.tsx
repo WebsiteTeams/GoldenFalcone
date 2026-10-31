@@ -32,7 +32,7 @@ const buildSections = (contact: { email?: string; address?: string }): LegalSect
         <p>We only collect the information you choose to provide through our forms:</p>
         <ul>
           <li>
-            <strong>Business enquiries</strong> (general, spices, mentorship and digital projects): your name, email,
+            <strong>Business enquiries</strong> (general, spices and mentorship): your name, email,
             optional phone number, optional company and country, the service you are interested in, and your message and
             requirement details.
           </li>

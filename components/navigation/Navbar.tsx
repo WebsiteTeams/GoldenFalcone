@@ -16,7 +16,6 @@ const divisionIcons: Record<ServiceKey, LucideIcon> = {
   spices: Leaf,
   mentorship: GraduationCap,
   staffing: Scissors,
-  digital: MonitorSmartphone,
 };
 
 const isActive = (pathname: string, href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
@@ -176,14 +175,7 @@ export function Navbar({ logo }: { logo?: string }) {
           </ul>
 
           <div className="flex items-center gap-2">
-            <AnimatedButton
-              href="/contact"
-              variant="gold"
-              arrow={false}
-              className="max-sm:!hidden px-6 py-3 rounded-full text-sm font-medium transition-colors"
-            >
-              Discuss Your Project
-            </AnimatedButton>
+            
             <button
               type="button"
               onClick={() => setMobileOpen(true)}

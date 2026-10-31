@@ -1,17 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import {
-  ArrowLeft,
-  ChevronRight,
-  ShieldCheck,
-  Truck,
-} from "lucide-react";
-import { getPublishedSpices, getSettings, getSpiceBySlug } from "@/lib/cms";
-import { formatPrice, discountPercent } from "@/lib/cart/price";
+import { ArrowRight, ChevronRight, MessageCircle } from "lucide-react";
+import { getPublishedSpices, getSpiceBySlug, getWhatsappNumber, whatsappHref, type PublicSpice } from "@/lib/cms";
 import { ProductGallery } from "@/components/spices/ProductGallery";
-import { ProductActions } from "@/components/spices/ProductActions";
-import { SpiceCard } from "@/components/services/CatalogueItems";
+import { QualityPurchasePanel } from "@/components/spices/QualityPurchasePanel";
+import { SpiceProductCard } from "@/components/spices/SpiceProductCard";
+import { site } from "@/lib/site";
+import { catalogueHref } from "@/lib/spices/catalogue";
 
 export const revalidate = 3600;
 
@@ -24,186 +20,142 @@ export async function generateMetadata({
   const spice = await getSpiceBySlug(slug);
   if (!spice) return { title: "Product Not Found | Goldenfalcone" };
 
+  const title = `${spice.name}${spice.productTypeLabel ? ` | ${spice.productTypeLabel}` : ""} | Goldenfalcone`;
   return {
-    title: `${spice.name} | Whole Spices | Goldenfalcone`,
-    description:
-      spice.shortDescription ||
-      `Premium ${spice.name} whole spices export & supply from Goldenfalcone.`,
+    title,
+    description: spice.shortDescription,
     alternates: { canonical: `/spices/${spice.slug}` },
     openGraph: {
-      title: `${spice.name} | Goldenfalcone Whole Spices`,
+      title,
       description: spice.shortDescription,
       images: spice.images[0]?.url ? [{ url: spice.images[0].url }] : [],
     },
   };
 }
 
+const absolute = (url: string) => (url.startsWith("http") ? url : `${site.url}${url}`);
+
+/** Product structured data from real catalogue values. Ratings are left out because the store does not collect reviews. */
+function productJsonLd(spice: PublicSpice) {
+  const prices = spice.variants.map((v) => v.sellingPrice);
+  return {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: spice.name,
+    description: spice.shortDescription,
+    image: spice.images.map((i) => absolute(i.url)),
+    brand: { "@type": "Brand", name: site.name },
+    ...(spice.productTypeLabel ? { category: spice.productTypeLabel } : {}),
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: spice.currency,
+      lowPrice: Math.min(...prices),
+      highPrice: Math.max(...prices),
+      offerCount: prices.length,
+      availability: "https://schema.org/InStock",
+      url: `${site.url}/spices/${spice.slug}`,
+    },
+  };
+}
+
 export default async function SpiceDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ quality?: string | string[] }>;
 }) {
   const { slug } = await params;
-  const [spice, settings, allSpices] = await Promise.all([
+  const { quality } = await searchParams;
+  const [spice, whatsappNumber, allSpices] = await Promise.all([
     getSpiceBySlug(slug),
-    getSettings(),
+    getWhatsappNumber(),
     getPublishedSpices(),
   ]);
 
   if (!spice) notFound();
 
-  const whatsappNumber =
-    process.env.GOLDENFALCONE_WHATSAPP_NUMBER || settings.whatsappNumber || "";
+  const purchasable = spice.variants.length > 0 && spice.availability !== "unavailable";
+  const enquiryHref = whatsappHref(whatsappNumber, `Hello Goldenfalcone, I would like to enquire about ${spice.name}.`);
 
-  const hasPrice = typeof spice.ourPrice === "number" && spice.ourPrice > 0;
-  const hasMarketPrice =
-    typeof spice.marketPrice === "number" && spice.marketPrice > 0;
-  const discount =
-    hasMarketPrice && hasPrice
-      ? discountPercent(spice.marketPrice, spice.ourPrice)
-      : 0;
-
+  // Same category first, then anything else that can be bought.
   const related = allSpices
-    .filter((s) => s.id !== spice.id)
-    .slice(0, 3);
+    .filter((s) => s.id !== spice.id && s.variants.length > 0)
+    .sort((a, b) => Number(b.productType === spice.productType) - Number(a.productType === spice.productType))
+    .slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-ivory pt-28 pb-24">
-      <div className="container-lux">
-        {/* Breadcrumb */}
-        <nav aria-label="Breadcrumb" className="mb-8 flex items-center gap-2 text-xs text-muted">
-          <Link href="/" className="hover:text-forest transition-colors">
-            Home
-          </Link>
-          <ChevronRight className="h-3.5 w-3.5 text-muted/50" />
-          <Link href="/spices" className="hover:text-forest transition-colors">
-            Whole Spices
-          </Link>
-          <ChevronRight className="h-3.5 w-3.5 text-muted/50" />
-          <span className="font-medium text-forest truncate max-w-[200px]">{spice.name}</span>
+    <div className="min-h-screen bg-ivory pb-24">
+      {purchasable && spice.images.length ? (
+        <script
+          type="application/ld+json"
+          // Escaped so a value containing "</script>" cannot end the block early.
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(spice)).replace(/</g, "\\u003c") }}
+        />
+      ) : null}
+
+      {/* Keeps the transparent site navigation readable, as on the other store pages. */}
+      <div className="h-24 bg-forest-deep" />
+
+      <div className="container-lux pt-8">
+        <nav aria-label="Breadcrumb" className="mb-8 flex flex-wrap items-center gap-2 text-xs text-muted">
+          <Link href="/spices" className="py-1 transition-colors hover:text-forest">Spices</Link>
+          <ChevronRight aria-hidden className="h-3.5 w-3.5 text-muted/50" />
+          {spice.productType ? (
+            <>
+              <Link href={catalogueHref({ type: spice.productType })} className="py-1 transition-colors hover:text-forest">{spice.productTypeLabel}</Link>
+              <ChevronRight aria-hidden className="h-3.5 w-3.5 text-muted/50" />
+            </>
+          ) : null}
+          <span aria-current="page" className="max-w-[200px] truncate font-medium text-forest">{spice.name}</span>
         </nav>
 
-        {/* Main Product Layout: 2 Columns */}
-        <div className="grid gap-12 lg:grid-cols-12 items-start">
-          {/* Left Column: Gallery (displays all four product images) */}
-          <div className="lg:col-span-6 lg:sticky lg:top-28">
+        <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
+          {/* Left column: gallery */}
+          <div className="lg:sticky lg:top-28">
             <ProductGallery images={spice.images} productName={spice.name} />
           </div>
 
-          {/* Right Column: Product Info & Purchase Actions */}
-          <div className="lg:col-span-6 flex flex-col">
-            {/* Category badge */}
-            <div className="flex items-center gap-2.5 mb-3">
-              <span className="inline-flex items-center rounded-full bg-forest/10 px-3.5 py-1 text-xs font-semibold text-forest">
-                {spice.categoryName || "Whole Spices"}
-              </span>
-            </div>
+          {/* Right column: details and ordering */}
+          <div>
+            {spice.productTypeLabel ? (
+              <span className="inline-flex rounded-full bg-forest/10 px-3.5 py-1 text-xs font-semibold text-forest">{spice.productTypeLabel}</span>
+            ) : null}
+            <h1 className="mt-3 text-5xl leading-[1.05] text-forest sm:text-6xl">{spice.name}</h1>
+            <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-muted">{spice.shortDescription}</p>
 
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl text-forest font-normal leading-tight">
-              {spice.name}
-            </h1>
-
-            {/* Pricing Section */}
-            <div className="mt-6 flex flex-wrap items-baseline gap-4 rounded-2xl border border-line bg-white p-5 shadow-sm">
-              {hasPrice ? (
-                <>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-serif text-3xl sm:text-4xl font-bold text-forest">
-                      {formatPrice(spice.ourPrice, spice.currency)}
-                    </span>
-                  </div>
-
-                  {hasMarketPrice && spice.marketPrice > spice.ourPrice && (
-                    <div className="flex items-center gap-2">
-                      <span className="text-base text-muted line-through">
-                        {formatPrice(spice.marketPrice, spice.currency)}
-                      </span>
-                      {discount > 0 && (
-                        <span className="rounded-full bg-gold/20 px-2.5 py-0.5 text-xs font-bold text-forest">
-                          Save {discount}%
-                        </span>
-                      )}
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="flex flex-col">
-                  <span className="font-serif text-xl font-medium text-forest">
-                    Price available on enquiry
-                  </span>
-                  <span className="text-xs text-muted mt-0.5">
-                    Contact us for wholesale pricing, export terms, and bulk volume rates.
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Short description */}
-            <div className="mt-6">
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted mb-2">
-                Description
-              </h2>
-              <p className="text-base text-ink leading-relaxed whitespace-pre-line">
-                {spice.shortDescription || spice.description}
-              </p>
-            </div>
-
-            {/* Divider */}
-            <div className="my-8 h-px bg-line" />
-
-            {/* Interactive Cart and WhatsApp actions */}
-            <ProductActions spice={spice} whatsappNumber={whatsappNumber} />
-
-            {/* Quality and Supply Assurance */}
-            <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="rounded-2xl border border-line bg-white/60 p-4">
-                <div className="flex items-center gap-2 text-gold-dark mb-1">
-                  <Truck className="h-4 w-4" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">
-                    Logistics & Supply
-                  </span>
-                </div>
-                <p className="text-xs text-ink">
-                  Worldwide export & domestic dispatch with bulk order options.
+            {purchasable ? (
+              <QualityPurchasePanel spice={spice} whatsappEnabled={Boolean(whatsappNumber)} initialLevel={typeof quality === "string" ? quality : undefined} />
+            ) : (
+              <div className="mt-8 rounded-[1.25rem] border border-line bg-white p-6">
+                <h2 className="text-2xl text-forest">Not available to order online yet</h2>
+                <p className="mt-2 text-sm leading-relaxed text-muted">
+                  Quality levels and pricing for this product are being updated.{enquiryHref ? " Message us and we will share the current details." : " Please check back soon."}
                 </p>
+                {enquiryHref ? (
+                  <a href={enquiryHref} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full bg-forest px-7 py-3 text-sm font-semibold text-ivory transition-colors hover:bg-emerald">
+                    <MessageCircle aria-hidden className="h-4 w-4" /> Enquire on WhatsApp
+                  </a>
+                ) : null}
               </div>
-
-              <div className="rounded-2xl border border-line bg-white/60 p-4">
-                <div className="flex items-center gap-2 text-gold-dark mb-1">
-                  <ShieldCheck className="h-4 w-4" />
-                  <span className="text-xs font-semibold uppercase tracking-wider">
-                    Quality Guarantee
-                  </span>
-                </div>
-                <p className="text-xs text-ink">
-                  Graded, sorted, and moisture-controlled authentic whole spices.
-                </p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Related Products */}
         {related.length > 0 && (
-          <div className="mt-28 border-t border-line pt-16">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <p className="eyebrow text-gold-dark">Catalogue</p>
-                <h2 className="font-serif text-3xl text-forest">Explore Other Spices</h2>
-              </div>
-              <Link
-                href="/spices"
-                className="text-sm font-semibold text-forest hover:text-gold-dark transition-colors inline-flex items-center gap-1.5"
-              >
-                View all spices <ArrowLeft className="h-4 w-4 rotate-180" />
+          <section aria-labelledby="related-heading" className="mt-24 border-t border-line pt-14">
+            <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
+              <h2 id="related-heading" className="text-4xl text-forest">You may also like</h2>
+              <Link href="/spices/shop" className="inline-flex items-center gap-1.5 py-1 text-sm font-semibold text-forest transition-colors hover:text-gold-dark">
+                View all spices <ArrowRight aria-hidden className="h-4 w-4" />
               </Link>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {related.map((item) => (
-                <SpiceCard key={item.id} spice={item} />
+                <SpiceProductCard key={item.id} spice={item} />
               ))}
             </div>
-          </div>
+          </section>
         )}
       </div>
     </div>

@@ -3,13 +3,13 @@ import { cache } from "react";
 import { unstable_cache } from "next/cache";
 import { draftMode } from "next/headers";
 import type { Metadata } from "next";
+import { productTypeLabels, qualityLabels, qualityLevels, type ProductType, type QualityLevel } from "@/lib/admin/constants";
 import { settingsSchema, siteContentSchema, type ContentPageKey, type Settings, type SiteContent as Content } from "@/lib/admin/schemas";
 import { getCurrentAdmin } from "@/lib/auth/session";
 import { divisions } from "@/lib/content";
 import { mediaUrl } from "@/lib/media";
 import { connectToDatabase } from "@/lib/mongodb";
 import { site } from "@/lib/site";
-import { DigitalService } from "@/models/DigitalService";
 import { MentorshipProgram } from "@/models/MentorshipProgram";
 import { PortfolioProject } from "@/models/PortfolioProject";
 import { SiteContent } from "@/models/SiteContent";
@@ -116,10 +116,20 @@ export const getSiteConfig = cache(async () => {
 });
 export type SiteConfig = Awaited<ReturnType<typeof getSiteConfig>>;
 
+const toWhatsappDigits = (raw: string | undefined) => {
+  const digits = (raw ?? "").replace(/\D/g, "");
+  return digits.length === 10 ? `91${digits}` : digits;
+};
+
+/** The sales WhatsApp number from the environment, then Settings. Empty when neither is set, so links can be hidden. */
+export async function getWhatsappNumber() {
+  const { whatsappNumber } = await getSettings();
+  return toWhatsappDigits(process.env.GOLDENFALCONE_WHATSAPP_NUMBER || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || whatsappNumber);
+}
+
 export function whatsappHref(number: string | undefined, message?: string) {
-  const raw = number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "919790586474";
-  const digits = raw.replace(/\D/g, "");
-  const num = digits.length === 10 ? `91${digits}` : (digits || "919790586474");
+  const num = toWhatsappDigits(number || process.env.NEXT_PUBLIC_WHATSAPP_NUMBER);
+  if (!num) return undefined;
   return `https://wa.me/${num}${message ? `?text=${encodeURIComponent(message)}` : ""}`;
 }
 
@@ -166,11 +176,34 @@ export const getPublishedCategories = () =>
 
 // ---------- Spices ----------
 
+export type PublicVariant = {
+  id: string;
+  level: QualityLevel;
+  label: string;
+  qualityPercent: number;
+  marketPrice: number;
+  sellingPrice: number;
+  importArea: string;
+  specifications: string;
+  /** Addressed by variant, so the stored file id never reaches the browser. */
+  labReport: { previewUrl: string; downloadUrl: string; fileName: string; isPdf: boolean } | null;
+};
+
 export type PublicSpice = {
   id: string;
   slug: string;
   name: string;
   sku?: string;
+  productType: ProductType | null;
+  productTypeLabel: string;
+  /** Active qualities that can be bought, High → Low. Empty for products not yet set up with quality levels. */
+  variants: PublicVariant[];
+  /** Lowest selling price per kg across active qualities, or null when there is nothing to buy. */
+  startingPrice: number | null;
+  isFeatured: boolean;
+  featuredOrder: number;
+  /** The quality chosen for the homepage. Null if it is missing, inactive or unpriced, which keeps the product off the homepage. */
+  featuredVariant: PublicVariant | null;
   category: string;
   categoryId: string;
   categoryName: string;
@@ -188,29 +221,85 @@ export type PublicSpice = {
   minimumOrderQuantity: number | null;
 };
 
-const mapSpice = (d: Record<string, unknown>, categoryName = ""): PublicSpice => ({
-  id: String(d._id),
-  slug: d.slug as string,
-  name: d.name as string,
-  sku: (d.sku as string) ?? "",
-  category: String(d.category ?? ""),
-  categoryId: String(d.category ?? ""),
-  categoryName: categoryName || String(d.category ?? ""),
-  description: (d.description as string) || (d.shortDescription as string) || "",
-  shortDescription: (d.shortDescription as string) ?? "",
-  images: ((d.images as Array<{ mediaId?: string; alt?: string }>) ?? [])
-    .map((i) => img({ mediaId: i.mediaId!, alt: i.alt }))
-    .filter(Boolean) as { url: string; alt: string }[],
-  availability: (d.availability as string) ?? "available",
-  packaging: (d.packaging as string) ?? "",
-  origin: (d.origin as string) ?? "",
-  highlights: (d.highlights as string[]) ?? [],
-  marketPrice: Number(d.marketPrice ?? 0),
-  ourPrice: Number(d.ourPrice ?? 0),
-  currency: (d.currency as string) ?? "INR",
-  unit: (d.unit as string) ?? "",
-  minimumOrderQuantity: (d.minimumOrderQuantity as number | null) ?? null,
-});
+type VariantDoc = {
+  _id: unknown;
+  level: QualityLevel;
+  qualityPercent?: number;
+  marketPrice?: number;
+  sellingPrice?: number;
+  importArea?: string;
+  specifications?: string;
+  labReport?: { fileName: string; contentType: string } | null;
+  active?: boolean;
+};
+
+const mapVariants = (docs: VariantDoc[] | undefined): PublicVariant[] =>
+  (docs ?? [])
+    .filter((v) => v.active !== false && Number(v.sellingPrice) > 0)
+    .sort((a, b) => qualityLevels.indexOf(a.level) - qualityLevels.indexOf(b.level))
+    .map((v) => {
+      const id = String(v._id);
+      return {
+        id,
+        level: v.level,
+        label: qualityLabels[v.level],
+        qualityPercent: Number(v.qualityPercent ?? 0),
+        marketPrice: Number(v.marketPrice ?? 0),
+        sellingPrice: Number(v.sellingPrice),
+        importArea: v.importArea ?? "",
+        specifications: v.specifications ?? "",
+        labReport: v.labReport
+          ? {
+              previewUrl: `/api/spices/lab-reports/${id}`,
+              downloadUrl: `/api/spices/lab-reports/${id}?download=1`,
+              fileName: v.labReport.fileName,
+              isPdf: v.labReport.contentType === "application/pdf",
+            }
+          : null,
+      };
+    });
+
+export const mapSpice = (d: Record<string, unknown>, categoryName = ""): PublicSpice => {
+  const variants = mapVariants(d.variants as VariantDoc[] | undefined);
+  const productType = (d.productType as ProductType | null | undefined) ?? null;
+  return {
+    id: String(d._id),
+    slug: d.slug as string,
+    name: d.name as string,
+    sku: (d.sku as string) ?? "",
+    productType,
+    productTypeLabel: productType ? productTypeLabels[productType] : "",
+    variants,
+    startingPrice: variants.length ? Math.min(...variants.map((v) => v.sellingPrice)) : null,
+    isFeatured: Boolean(d.isFeatured),
+    featuredOrder: Number(d.featuredOrder ?? 0),
+    featuredVariant: variants.find((v) => v.id === String(d.featuredVariantId)) ?? null,
+    category: String(d.category ?? ""),
+    categoryId: String(d.category ?? ""),
+    categoryName: categoryName || String(d.category ?? ""),
+    description: (d.description as string) || (d.shortDescription as string) || "",
+    shortDescription: (d.shortDescription as string) ?? "",
+    images: ((d.images as Array<{ mediaId?: string; alt?: string }>) ?? [])
+      .map((i) => img({ mediaId: i.mediaId!, alt: i.alt }))
+      .filter(Boolean) as { url: string; alt: string }[],
+    availability: (d.availability as string) ?? "available",
+    packaging: (d.packaging as string) ?? "",
+    origin: (d.origin as string) ?? "",
+    highlights: (d.highlights as string[]) ?? [],
+    marketPrice: Number(d.marketPrice ?? 0),
+    ourPrice: Number(d.ourPrice ?? 0),
+    currency: (d.currency as string) ?? "INR",
+    unit: (d.unit as string) ?? "",
+    minimumOrderQuantity: (d.minimumOrderQuantity as number | null) ?? null,
+  };
+};
+
+/** Category may hold an id or, on older records, a slug. Looking a slug up by id would throw. */
+const findCategoryName = async (category: unknown) => {
+  const value = String(category ?? "");
+  const cat = value ? await SpiceCategory.findOne(/^[a-f0-9]{24}$/i.test(value) ? { _id: value } : { slug: value }).lean() : null;
+  return cat?.name ?? value;
+};
 
 export const getPublishedSpices = (categoryFilter?: string) =>
   safely(
@@ -219,7 +308,7 @@ export const getPublishedSpices = (categoryFilter?: string) =>
       async (): Promise<PublicSpice[]> => {
         await connectToDatabase();
         const [docs, categoryDocs] = await Promise.all([
-          SpiceProduct.find(published).sort(order).limit(100).lean(),
+          SpiceProduct.find(published).sort(order).limit(500).lean(),
           SpiceCategory.find().lean(),
         ]);
 
@@ -260,13 +349,7 @@ export const getSpiceBySlug = (slug: string) =>
       const doc = await SpiceProduct.findOne({ slug, status: "published" }).lean();
       if (!doc) return null;
 
-      let categoryName = String(doc.category ?? "");
-      if (doc.category) {
-        const cat = await SpiceCategory.findById(doc.category).lean();
-        if (cat) categoryName = cat.name;
-      }
-
-      return mapSpice(doc as Record<string, unknown>, categoryName);
+      return mapSpice(doc as Record<string, unknown>, await findCategoryName(doc.category));
     },
     null,
   );
@@ -280,13 +363,7 @@ export const getSpiceById = (id: string) =>
       const doc = await SpiceProduct.findOne({ _id: id, status: "published" }).lean();
       if (!doc) return null;
 
-      let categoryName = String(doc.category ?? "");
-      if (doc.category) {
-        const cat = await SpiceCategory.findById(doc.category).lean();
-        if (cat) categoryName = cat.name;
-      }
-
-      return mapSpice(doc as Record<string, unknown>, categoryName);
+      return mapSpice(doc as Record<string, unknown>, await findCategoryName(doc.category));
     },
     null,
   );
@@ -328,16 +405,6 @@ export const getPublishedPrograms = () =>
     [],
   );
 
-export type PublicDigitalService = {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: { url: string; alt: string } | null;
-  startingPrice: string;
-  features: string[];
-};
-
 export type PublicPortfolioProject = {
   id: string;
   title: string;
@@ -350,26 +417,12 @@ export type PublicPortfolioProject = {
 
 export const getPublishedDigital = () =>
   safely(
-    "digital",
+    "mentorship",
     unstable_cache(
       async () => {
         await connectToDatabase();
-        const [services, projects] = await Promise.all([
-          DigitalService.find(published).sort(order).limit(50).lean(),
-          PortfolioProject.find(published).sort(order).limit(50).lean(),
-        ]);
+        const projects = await PortfolioProject.find(published).sort(order).limit(50).lean();
         return {
-          services: services.map(
-            (d): PublicDigitalService => ({
-              id: String(d._id),
-              title: d.title,
-              category: d.category ?? "",
-              description: d.description,
-              image: img(d.image as Img),
-              startingPrice: d.startingPrice ?? "",
-              features: d.features ?? [],
-            }),
-          ),
           projects: projects.map(
             (d): PublicPortfolioProject => ({
               id: String(d._id),
@@ -383,8 +436,8 @@ export const getPublishedDigital = () =>
           ),
         };
       },
-      ["public:digital"],
-      { tags: ["digital"], revalidate: REVALIDATE },
+      ["public:mentorship"],
+      { tags: ["mentorship"], revalidate: REVALIDATE },
     ),
-    { services: [], projects: [] },
+    { projects: [] },
   );

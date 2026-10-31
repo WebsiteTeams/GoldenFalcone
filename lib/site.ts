@@ -5,7 +5,7 @@
  */
 const clean = (value: string | undefined) => (value && value.trim() ? value.trim() : undefined);
 
-const rawWhatsapp = clean(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER)?.replace(/\D/g, "") || "919790586474";
+const rawWhatsapp = clean(process.env.NEXT_PUBLIC_WHATSAPP_NUMBER)?.replace(/\D/g, "") ?? "";
 const whatsappNumber = rawWhatsapp.length === 10 ? `91${rawWhatsapp}` : rawWhatsapp;
 
 export const site = {
@@ -13,7 +13,7 @@ export const site = {
   legalName: "GOLDENFALCONE",
   tagline: "Integrity, Loyalty, Respect, Strength, Legacy.",
   description:
-    "Goldenfalcone is a diversified business brand spanning whole-spice export and import, trading mentorship, digital solutions and salon staffing.",
+    "Goldenfalcone is a diversified business brand spanning whole-spice export and import, trading mentorship and salon staffing.",
   url: (clean(process.env.NEXT_PUBLIC_SITE_URL) ?? "http://localhost:3000").replace(/\/$/, ""),
   logo: "/brand/emblem.webp",
   values: ["Integrity", "Loyalty", "Respect", "Strength", "Legacy"],

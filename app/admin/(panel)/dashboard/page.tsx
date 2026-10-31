@@ -12,7 +12,6 @@ import {
   Inbox,
   Leaf,
   MailOpen,
-  MonitorSmartphone,
   ShoppingBag,
   UserCheck,
   Users,
@@ -242,7 +241,6 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 { icon: MailOpen, label: "Enquiries", href: "/admin/enquiries", text: `${s.enquiries.total} total · ${s.enquiries.new} new` },
                 { icon: Leaf, label: "Spices catalogue", href: "/admin/spices", text: `${s.spices.published} published · ${s.spices.draft} draft` },
                 { icon: GraduationCap, label: "Mentorship programmes", href: "/admin/mentorship", text: `${s.mentorship.published} published · ${s.mentorship.draft} draft` },
-                { icon: MonitorSmartphone, label: "Digital services", href: "/admin/digital-services", text: `${s.digital.published} published · ${s.digital.draft} draft · ${s.digital.projects} portfolio` },
                 {
                   icon: FileText,
                   label: "Website content",
