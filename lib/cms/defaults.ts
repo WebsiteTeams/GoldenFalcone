@@ -8,22 +8,22 @@ import { site } from "@/lib/site";
  */
 export const defaultContent: SiteContent = {
   home: {
-    heroTitle: "One Vision.\nFour Dimensions\nof Business.",
+    heroTitle: "One Vision.\nFour Dimensions of Business.",
     heroDescription:
-      "From global spice trading and trading education to digital innovation and professional staffing, Goldenfalcone connects businesses with opportunities for growth.",
+      "A diversified business group bringing together opportunities across spices, trading education, salon staffing, and digital solutions — driven by purpose, integrity, and a vision for growth.",
     heroPrimaryCta: "Explore Our Businesses",
-    heroSecondaryCta: "Let's Work Together",
-    introTitle: "A diversified brand,\nbuilt with purpose.",
+    heroSecondaryCta: "Discover Goldenfalcone",
+    introTitle: "A Diversified Brand,\nBuilt With Purpose.",
     introLead:
-      "Goldenfalcone brings together four distinct businesses under one identity. Each division serves a different audience, yet all are guided by the same principles: honest dealings, lasting relationships and work done properly.",
+      "Goldenfalcone brings together distinct business ventures under one vision — creating opportunities, delivering meaningful services, and building long-term relationships through integrity and commitment.",
     introBody:
-      "Whether you are sourcing whole spices, beginning your market education, planning a new website or looking for salon talent, you will find a single point of contact who listens first and responds personally.",
+      "Each venture serves its own audience and brings its own expertise. What connects them is a shared way of working: listen carefully, deal honestly and build relationships that are meant to last.",
   },
   values: brandValues.map((v) => ({ name: v.name, text: v.text })),
   divisions: Object.fromEntries(divisions.map((d) => [d.key, d.description])) as SiteContent["divisions"],
   cta: {
-    title: "Let's build something\nof lasting value.",
-    text: "Tell us what you are looking for — a spice requirement, a learning goal, a digital project or a staffing need — and we will respond personally.",
+    title: "Let's Build Something\nMeaningful Together.",
+    text: "Have a business enquiry, partnership opportunity, or project in mind? Connect with Goldenfalcone and start a conversation.",
     buttonLabel: "Discuss Your Project",
   },
   footer: {

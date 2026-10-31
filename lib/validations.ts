@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { businessTypes, employmentTypes, experienceRequired, salonRoles } from "./content";
+import { digitalIndustries, digitalProjectTypes } from "./admin/constants";
 
 /**
  * Shared validation schemas — used by React Hook Form on the client
@@ -74,6 +75,41 @@ export const enquirySchema = z.object({
   ...spamFields,
 });
 export type EnquiryInput = z.input<typeof enquirySchema>;
+
+// ─── Digital Solutions Project Enquiry ─────────────────────────────────────
+
+export const digitalProjectEnquirySchema = z.object({
+  // Step 1: Contact Details
+  fullName: text("Full name", 2, 100),
+  companyName: optionalText(120),
+  email,
+  mobile: phone,
+  whatsapp: phone.optional().or(z.literal("")),
+  location: optionalText(120),
+
+  // Step 2: Project Information
+  projectType: z.enum(digitalProjectTypes, { errorMap: () => ({ message: "Select a project type" }) }),
+  projectName: optionalText(120),
+  industry: z.enum(digitalIndustries, { errorMap: () => ({ message: "Select an industry" }) }),
+
+  // Step 3: Requirements
+  projectDescription: text("Project description", 10, 4000),
+  problemToSolve: optionalText(2000),
+  requiredFeatures: optionalText(2000),
+  targetUsers: optionalText(1000),
+  referenceUrls: optionalText(1000),
+  existingWebsite: optionalText(300),
+
+  // Step 4: Project Planning
+  estimatedBudget: optionalText(100),
+  expectedTimeline: optionalText(100),
+  preferredContactMethod: z.enum(["Email", "Phone", "WhatsApp", "Any"]).optional().default("Any"),
+  additionalNotes: optionalText(2000),
+
+  consent: z.literal(true, { errorMap: () => ({ message: "Please accept the privacy notice to continue" }) }),
+  ...spamFields,
+});
+export type DigitalProjectEnquiryInput = z.input<typeof digitalProjectEnquirySchema>;
 
 // ─── Staffing request (salon hiring) ───────────────────────────────────────
 

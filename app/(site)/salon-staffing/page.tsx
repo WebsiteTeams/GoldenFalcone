@@ -134,7 +134,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
               <RevealUp distance={12}>
                 <p className="eyebrow flex items-center gap-3 text-gold-dark">
                   <span aria-hidden className="h-px w-10 bg-gold" />
-                  Salon Staffing · Division 04
+                  Salon Staffing · Division 03
                 </p>
               </RevealUp>
 

@@ -7,11 +7,12 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { duration, easeLux } from "./motion";
 
-type Variant = "gold" | "forest" | "outline-light" | "outline-dark";
+type Variant = "gold" | "forest" | "tech" | "outline-light" | "outline-dark";
 
 const variants: Record<Variant, string> = {
   gold: "bg-gold text-forest hover:bg-champagne",
   forest: "bg-forest text-ivory hover:bg-emerald",
+  tech: "bg-tech-blue text-white hover:bg-tech-blue-dark",
   "outline-light": "border border-champagne/50 text-ivory hover:border-gold hover:text-champagne",
   "outline-dark": "border border-forest/25 text-forest hover:border-gold hover:text-gold-dark",
 };

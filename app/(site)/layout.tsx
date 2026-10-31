@@ -1,4 +1,5 @@
 import { Eye } from "lucide-react";
+import { FloatingCart } from "@/components/layout/FloatingCart";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/navigation/Navbar";
 import { CartProvider } from "@/lib/cart/context";
@@ -39,6 +40,7 @@ export default async function SiteLayout({ children }: { children: React.ReactNo
       <Navbar logo={config.logo} />
       <main id="main">{children}</main>
       <Footer />
+      <FloatingCart />
     </CartProvider>
   );
 }

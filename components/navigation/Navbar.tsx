@@ -4,14 +4,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useId, useRef, useState } from "react";
 import { AnimatePresence, motion, useMotionValueEvent, useScroll } from "framer-motion";
-import { ArrowUpRight, ChevronDown, Menu } from "lucide-react";
+import { ChevronDown, GraduationCap, Leaf, type LucideIcon, Menu, MonitorSmartphone, Scissors } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { AnimatedButton } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
-import { CartBadge } from "@/components/spices/CartBadge";
-import { divisions } from "@/lib/content";
+import { divisions, type ServiceKey } from "@/lib/content";
 import { cn } from "@/lib/utils";
 import { MobileMenu } from "./MobileMenu";
+
+const divisionIcons: Record<ServiceKey, LucideIcon> = {
+  spices: Leaf,
+  mentorship: GraduationCap,
+  staffing: Scissors,
+  digital: MonitorSmartphone,
+};
 
 const isActive = (pathname: string, href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
 
@@ -65,23 +71,14 @@ export function Navbar({ logo }: { logo?: string }) {
     setMenuOpen(true);
   };
   const closeWithHover = () => {
-    closeTimer.current = setTimeout(() => setMenuOpen(false), 160);
+    closeTimer.current = setTimeout(() => setMenuOpen(false), 200);
   };
-
   const linkClass = (active: boolean) =>
     cn(
       "relative py-2 text-[0.82rem] font-medium tracking-[0.08em] uppercase transition-colors duration-300",
-      solid ? "text-ink/80 hover:text-forest" : "text-ivory/80 hover:text-ivory",
-      active && (solid ? "text-forest" : "text-ivory"),
+      "text-ivory/80 hover:text-ivory",
+      active && "text-ivory",
     );
-
-  const indicator = (
-    <motion.span
-      layoutId="nav-active"
-      className="absolute -bottom-0.5 left-0 right-0 h-px bg-gold"
-      transition={{ duration: 0.35, ease: easeLux }}
-    />
-  );
 
   return (
     <>
@@ -89,7 +86,7 @@ export function Navbar({ logo }: { logo?: string }) {
         className={cn(
           "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,padding,border-color] duration-500 ease-[var(--ease-lux)]",
           solid
-            ? "border-b border-line/80 bg-ivory/90 py-3 shadow-[0_8px_30px_-18px_rgba(6,47,37,0.35)] backdrop-blur-md"
+            ? "border-b border-line/80 bg-forest py-3 shadow-[0_8px_30px_-18px_rgba(6,47,37,0.35)] backdrop-blur-md"
             : "border-b border-transparent bg-transparent py-5",
         )}
       >
@@ -100,68 +97,71 @@ export function Navbar({ logo }: { logo?: string }) {
           Skip to content
         </a>
         <nav aria-label="Primary" className="container-lux flex items-center justify-between gap-6">
-          <Logo tone={solid ? "dark" : "light"} size={solid ? 38 : 46} priority src={logo} />
+          <Logo tone="light" size={solid ? 38 : 46} priority src={logo} />
 
-          <ul className="hidden items-center gap-9 lg:flex">
+          <ul className="hidden lg:flex items-center gap-6">
             <li>
               <Link href="/" className={linkClass(pathname === "/")} aria-current={pathname === "/" ? "page" : undefined}>
                 Home
-                {pathname === "/" && indicator}
               </Link>
             </li>
             <li>
               <Link href="/about" className={linkClass(isActive(pathname, "/about"))} aria-current={isActive(pathname, "/about") ? "page" : undefined}>
-                About
-                {isActive(pathname, "/about") && indicator}
+                About Us
               </Link>
             </li>
             <li>
-              <div ref={menuRef} className="relative" onMouseEnter={openWithHover} onMouseLeave={closeWithHover}>
+              <div
+                ref={menuRef}
+                className="relative group"
+                onMouseEnter={openWithHover}
+                onMouseLeave={closeWithHover}
+              >
                 <button
                   type="button"
                   aria-expanded={menuOpen}
                   aria-controls={menuId}
                   onClick={() => setMenuOpen((o) => !o)}
-                  className={cn(linkClass(divisionActive), "inline-flex items-center gap-1.5")}
+                  className={cn(
+                    "flex items-center gap-2 rounded-full border border-gold/30 hover:bg-gold/10 transition-colors",
+                    "py-2.5 px-4 text-sm font-medium hover:text-ivory",
+                    divisionActive || menuOpen ? "text-ivory" : "text-ivory/80",
+                  )}
                 >
-                  Businesses
-                  <ChevronDown aria-hidden className={cn("h-3.5 w-3.5 transition-transform duration-300", menuOpen && "rotate-180")} />
-                  {divisionActive && indicator}
+                  Our Businesses
+                  <ChevronDown aria-hidden className={cn("ml-2 h-4 w-4 transition-transform duration-300", menuOpen && "rotate-180")} />
                 </button>
-
                 <AnimatePresence>
                   {menuOpen ? (
                     <motion.div
                       id={menuId}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 6 }}
-                      transition={{ duration: 0.28, ease: easeLux }}
-                      className="absolute left-1/2 top-full w-[40rem] -translate-x-1/2 pt-5"
+                      initial={{ opacity: 0, x: "-50%", y: 8 }}
+                      animate={{ opacity: 1, x: "-50%", y: 0 }}
+                      exit={{ opacity: 0, x: "-50%", y: 4 }}
+                      transition={{ duration: 0.22, ease: easeLux }}
+                      className="absolute left-1/2 top-full z-30 w-[20rem] pt-3"
                     >
-                      <div className="grid grid-cols-2 gap-1 rounded-2xl border border-line bg-ivory p-3 shadow-[0_30px_60px_-30px_rgba(6,47,37,0.45)]">
-                        {divisions.map((d) => (
-                          <Link
-                            key={d.key}
-                            href={d.href}
-                            className={cn(
-                              "group rounded-xl p-4 transition-colors duration-300 hover:bg-white focus-visible:bg-white",
-                              pathname.startsWith(d.href) && "bg-white",
-                            )}
-                          >
-                            <span className="flex items-start justify-between gap-3">
-                              <span>
-                                <span className="eyebrow text-gold-dark">{d.number}</span>
-                                <span className="mt-1.5 block font-serif text-xl text-forest">{d.title}</span>
-                              </span>
-                              <ArrowUpRight
-                                aria-hidden
-                                className="mt-1 h-4 w-4 shrink-0 text-gold transition-transform duration-300 group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
-                              />
-                            </span>
-                            <span className="mt-2 block text-sm leading-relaxed text-muted">{d.description}</span>
-                          </Link>
-                        ))}
+                      <div className="flex flex-col gap-1 rounded-2xl bg-white p-2.5 shadow-[0_20px_45px_-12px_rgba(6,47,37,0.3)]">
+                        {divisions.map((d) => {
+                          const Icon = divisionIcons[d.key];
+                          const current = pathname.startsWith(d.href);
+                          return (
+                            <Link
+                              key={d.key}
+                              href={d.href}
+                              onClick={() => setMenuOpen(false)}
+                              aria-current={current ? "page" : undefined}
+                              className={cn(
+                                "flex items-center gap-4 rounded-xl px-4 py-3.5 text-[0.95rem] transition-colors duration-200",
+                                "hover:bg-forest/[0.06] hover:text-forest focus-visible:bg-forest/[0.06] focus-visible:text-forest",
+                                current ? "bg-forest/[0.06] text-forest" : "text-muted",
+                              )}
+                            >
+                              <Icon aria-hidden className="h-6 w-6 shrink-0" strokeWidth={1.25} />
+                              {d.title}
+                            </Link>
+                          );
+                        })}
                       </div>
                     </motion.div>
                   ) : null}
@@ -171,18 +171,16 @@ export function Navbar({ logo }: { logo?: string }) {
             <li>
               <Link href="/contact" className={linkClass(isActive(pathname, "/contact"))} aria-current={isActive(pathname, "/contact") ? "page" : undefined}>
                 Contact
-                {isActive(pathname, "/contact") && indicator}
               </Link>
             </li>
           </ul>
 
-          <div className="flex items-center gap-3">
-            <CartBadge />
+          <div className="flex items-center gap-2">
             <AnimatedButton
               href="/contact"
-              variant={solid ? "forest" : "gold"}
+              variant="gold"
               arrow={false}
-              className="hidden !px-5 !py-2.5 text-[0.8rem] sm:inline-flex"
+              className="max-sm:!hidden px-6 py-3 rounded-full text-sm font-medium transition-colors"
             >
               Discuss Your Project
             </AnimatedButton>
@@ -192,8 +190,7 @@ export function Navbar({ logo }: { logo?: string }) {
               aria-label="Open menu"
               aria-expanded={mobileOpen}
               className={cn(
-                "inline-flex h-11 w-11 items-center justify-center rounded-full border transition-colors duration-300 lg:hidden",
-                solid ? "border-forest/20 text-forest" : "border-ivory/30 text-ivory",
+                "inline-flex h-10 w-10 items-center justify-center rounded-full border border-ivory/30 text-ivory transition-colors duration-300 lg:hidden",
               )}
             >
               <Menu aria-hidden className="h-5 w-5" />

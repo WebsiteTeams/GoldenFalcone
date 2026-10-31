@@ -30,7 +30,7 @@ export async function generateMetadata(): Promise<Metadata> {
     title: { default: title, template: `%s | ${name}` },
     description,
     applicationName: name,
-    icons: { icon: site.logo },
+    icons: { icon: "/brand/emblem-192.png" },
     openGraph: { type: "website", siteName: name, title, description, url: "/", locale: "en_US" },
     twitter: { card: "summary_large_image" },
     alternates: { canonical: "/" },

@@ -121,6 +121,7 @@ export default async function SpicesPage() {
           </div>
         </div>
       </section>
+
     </div>
   );
 }

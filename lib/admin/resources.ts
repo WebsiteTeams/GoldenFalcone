@@ -5,6 +5,7 @@ import { salonRoles } from "@/lib/content";
 import { connectToDatabase } from "@/lib/mongodb";
 import { serviceTypes } from "@/lib/validations";
 import { CandidateApplication } from "@/models/CandidateApplication";
+import { DigitalEnquiry } from "@/models/DigitalEnquiry";
 import { DigitalService } from "@/models/DigitalService";
 import { Enquiry } from "@/models/Enquiry";
 import { MentorshipProgram } from "@/models/MentorshipProgram";
@@ -16,6 +17,8 @@ import { StaffingRequest } from "@/models/StaffingRequest";
 import { escapeRegex, toPlain } from "./api";
 import {
   candidateStatuses,
+  digitalEnquiryStatuses,
+  digitalProjectTypes,
   enquiryStatuses,
   orderStatuses,
   PAGE_SIZE,
@@ -24,6 +27,7 @@ import {
 } from "./constants";
 import {
   candidateUpdateSchema,
+  digitalEnquiryUpdateSchema,
   digitalServiceSchema,
   enquiryUpdateSchema,
   mentorshipProgramSchema,
@@ -77,6 +81,17 @@ export const resources = {
     filter: { field: "serviceType", values: serviceTypes },
     label: (d) => `${d.name} <${d.email}>`,
     updateSchema: enquiryUpdateSchema,
+  },
+  digitalEnquiries: {
+    kind: "inbox",
+    key: "digitalEnquiries",
+    entity: "digital project enquiry",
+    model: DigitalEnquiry,
+    statuses: digitalEnquiryStatuses,
+    searchFields: ["fullName", "companyName", "email", "mobile", "referenceNumber", "projectName", "projectType"],
+    filter: { field: "projectType", values: digitalProjectTypes },
+    label: (d) => `${d.fullName} — ${d.projectName || d.projectType} (${d.referenceNumber})`,
+    updateSchema: digitalEnquiryUpdateSchema,
   },
   staffing: {
     kind: "inbox",
@@ -215,6 +230,7 @@ export function buildFilter(res: Resource, query: ListQuery) {
   }
   if (query.employment && res.key === "staffing") where.employmentType = query.employment;
   if (query.experience && res.key === "candidates") where.experience = query.experience;
+  if (query.industry && res.key === "digitalEnquiries") where.industry = query.industry;
   if (query.availability && res.key === "candidates") {
     where.availability = new RegExp(escapeRegex(query.availability), "i");
   }

@@ -14,7 +14,7 @@ type MobileMenuProps = { open: boolean; onClose: () => void; pathname: string; l
 
 const primary = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
+  { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];
 

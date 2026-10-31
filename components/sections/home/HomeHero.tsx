@@ -1,146 +1,192 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
-import { ArrowDown } from "lucide-react";
+import Link from "next/link";
+import type { PointerEvent } from "react";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
 import { AnimatedButton, TextReveal } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
 
 type HomeHeroProps = {
-  eyebrow: string;
   title: string[];
   description: string;
   primaryCta: string;
   secondaryCta: string;
   logo: string;
+  ventures: { key: string; number: string; title: string; href: string }[];
 };
 
-export function HomeHero({ eyebrow, title, description, primaryCta, secondaryCta, logo }: HomeHeroProps) {
-  const ref = useRef<HTMLElement>(null);
+const ticks = Array.from({ length: 72 }, (_, i) => i * 5);
+
+/** Fixed positions (percent of the hero) so server and client markup match. */
+const sparks = [
+  [8, 22, 0],
+  [15, 68, 2.4],
+  [27, 14, 4.1],
+  [38, 82, 1.2],
+  [49, 30, 5.2],
+  [58, 11, 3.1],
+  [64, 74, 0.6],
+  [71, 26, 2],
+  [79, 88, 4.6],
+  [86, 15, 1.6],
+  [92, 58, 3.6],
+  [96, 34, 5.8],
+];
+
+function EmblemGeometry() {
+  return (
+    <svg aria-hidden viewBox="0 0 600 600" className="absolute inset-0 h-full w-full text-gold" fill="none" stroke="currentColor">
+      <g className="lux-spin [transform-box:view-box] origin-center">
+        {ticks.map((deg) => (
+          <line key={deg} x1="300" y1="6" x2="300" y2={deg % 30 === 0 ? 22 : 13} strokeOpacity={deg % 30 === 0 ? 0.75 : 0.28} transform={`rotate(${deg} 300 300)`} />
+        ))}
+      </g>
+      <motion.circle
+        cx="300"
+        cy="300"
+        r="272"
+        strokeOpacity=".35"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 2.2, ease: easeLux, delay: 0.2 }}
+      />
+      <motion.circle
+        cx="300"
+        cy="300"
+        r="236"
+        strokeOpacity=".14"
+        initial={{ pathLength: 0 }}
+        animate={{ pathLength: 1 }}
+        transition={{ duration: 2.2, ease: easeLux, delay: 0.5 }}
+      />
+      {/* One point on the ring for each business dimension */}
+      {[
+        [300, 28],
+        [572, 300],
+        [300, 572],
+        [28, 300],
+      ].map(([cx, cy]) => (
+        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="3.5" fill="currentColor" stroke="none" />
+      ))}
+    </svg>
+  );
+}
+
+export function HomeHero({ title, description, primaryCta, secondaryCta, logo, ventures }: HomeHeroProps) {
   const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start start", "end start"] });
-  const emblemY = useTransform(scrollYProgress, [0, 1], [0, 120]);
-  const emblemScale = useTransform(scrollYProgress, [0, 1], [1, 0.9]);
-  const ringRotate = useTransform(scrollYProgress, [0, 1], [0, 40]);
-  const contentY = useTransform(scrollYProgress, [0, 1], [0, -60]);
-  const contentOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const pointerX = useMotionValue(0);
+  const pointerY = useMotionValue(0);
+  const rotateY = useSpring(useTransform(pointerX, [-0.5, 0.5], [-7, 7]), { stiffness: 60, damping: 18 });
+  const rotateX = useSpring(useTransform(pointerY, [-0.5, 0.5], [6, -6]), { stiffness: 60, damping: 18 });
+
+  const tilt = (e: PointerEvent<HTMLElement>) => {
+    if (reduce || e.pointerType !== "mouse") return;
+    const r = e.currentTarget.getBoundingClientRect();
+    pointerX.set((e.clientX - r.left) / r.width - 0.5);
+    pointerY.set((e.clientY - r.top) / r.height - 0.5);
+  };
 
   return (
-    <section
-      ref={ref}
-      className="grain relative isolate flex min-h-[100svh] items-center overflow-hidden bg-forest pb-20 pt-32 text-ivory"
-    >
-      {/* Soft emerald light and fine gold lines */}
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_40%,rgba(6,75,56,0.9),transparent_60%)]" />
-      <div aria-hidden className="absolute inset-0 -z-10">
-        {[18, 50, 82].map((left, i) => (
-          <motion.span
-            key={left}
-            className="absolute top-0 h-full w-px origin-top bg-gradient-to-b from-transparent via-gold/20 to-transparent"
-            style={{ left: `${left}%` }}
-            initial={{ scaleY: 0 }}
-            animate={{ scaleY: 1 }}
-            transition={{ duration: 1.8, ease: easeLux, delay: 0.2 + i * 0.15 }}
-          />
-        ))}
-        <motion.span
-          className="absolute left-0 right-0 top-[62%] h-px origin-left bg-gradient-to-r from-transparent via-gold/25 to-transparent"
-          initial={{ scaleX: 0 }}
-          animate={{ scaleX: 1 }}
-          transition={{ duration: 2, ease: easeLux, delay: 0.5 }}
+    <section onPointerMove={tilt} className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-forest pt-28 text-ivory lg:pt-32">
+      <div aria-hidden className="lux-glow absolute -right-[12%] top-[-8%] -z-10 h-[75%] w-[70%] rounded-full bg-[radial-gradient(closest-side,rgba(11,107,80,0.95),transparent)]" />
+      <div aria-hidden className="absolute bottom-[-25%] left-[-15%] -z-10 h-[60%] w-[50%] rounded-full bg-[radial-gradient(closest-side,rgba(212,164,55,0.1),transparent)]" />
+      {sparks.map(([left, top, delay]) => (
+        <span
+          key={`${left}-${top}`}
+          aria-hidden
+          className="lux-spark absolute -z-10 h-1 w-1 rounded-full bg-gold opacity-40"
+          style={{ left: `${left}%`, top: `${top}%`, animationDelay: `${delay}s` }}
         />
-      </div>
+      ))}
 
-      <div className="container-lux grid items-center gap-14 lg:grid-cols-12">
-        <motion.div className="lg:col-span-7" style={reduce ? undefined : { y: contentY, opacity: contentOpacity }}>
+      <div className="container-lux grid flex-1 items-center gap-10 pb-12 lg:grid-cols-12 lg:gap-6 lg:pb-14">
+        <div className="lg:col-span-7">
           <motion.p
-            className="eyebrow text-[0.62rem] text-gold sm:text-[0.7rem]"
+            className="eyebrow flex items-center gap-3 text-[0.62rem] leading-relaxed text-gold sm:text-[0.7rem]"
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: easeLux, delay: 0.3 }}
+            transition={{ duration: 0.8, ease: easeLux, delay: 0.2 }}
           >
-            {eyebrow}
+            <motion.span
+              aria-hidden
+              className="hidden h-px w-10 origin-left bg-gold sm:block"
+              initial={{ scaleX: 0 }}
+              animate={{ scaleX: 1 }}
+              transition={{ duration: 1, ease: easeLux, delay: 0.3 }}
+            />
+            Goldenfalcone · A Diversified Business Group
           </motion.p>
 
           <TextReveal
             as="h1"
             immediate
-            delay={0.45}
+            delay={0.3}
             lines={title}
-            className="mt-7 text-[3.1rem] leading-[0.98] xs:text-6xl sm:text-7xl xl:text-[5.6rem]"
             accentIndex={title.length - 1}
+            accentClassName="italic text-champagne"
+            className="mt-6 text-[3.15rem] leading-[1] xs:text-[3.6rem] sm:text-7xl xl:text-[6.1rem]"
           />
 
           <motion.p
-            className="mt-8 max-w-xl text-base leading-relaxed text-ivory/70 sm:text-lg"
+            className="mt-7 max-w-xl text-base leading-relaxed text-ivory/75 sm:text-lg"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: easeLux, delay: 0.95 }}
+            transition={{ duration: 0.8, ease: easeLux, delay: 0.75 }}
           >
             {description}
           </motion.p>
 
           <motion.div
-            className="mt-11 flex flex-wrap gap-4"
+            className="mt-9 flex flex-col gap-3 xs:flex-row xs:flex-wrap sm:gap-4"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: easeLux, delay: 1.1 }}
+            transition={{ duration: 0.8, ease: easeLux, delay: 0.9 }}
           >
             <AnimatedButton href="#businesses">{primaryCta}</AnimatedButton>
-            <AnimatedButton href="/contact" variant="outline-light" arrow={false}>
+            <AnimatedButton href="/about" variant="outline-light" arrow={false}>
               {secondaryCta}
             </AnimatedButton>
           </motion.div>
-        </motion.div>
+        </div>
 
-        <motion.div
-          className="relative mx-auto aspect-square w-full max-w-[19rem] sm:max-w-sm lg:col-span-5 lg:max-w-none"
-          style={reduce ? undefined : { y: emblemY, scale: emblemScale }}
-        >
-          {/* Rotating ring is decorative and pauses for reduced motion */}
+        <div className="relative mx-auto aspect-square w-full max-w-[21rem] [perspective:1400px] sm:max-w-md lg:col-span-5 lg:max-w-none">
+          <EmblemGeometry />
           <motion.div
-            aria-hidden
-            className="absolute inset-0 rounded-full border border-gold/25"
-            style={reduce ? undefined : { rotate: ringRotate }}
+            className="absolute inset-[11%] [transform-style:preserve-3d]"
+            style={reduce ? undefined : { rotateX, rotateY }}
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.4, ease: easeLux, delay: 0.2 }}
+            transition={{ duration: 1.5, ease: easeLux, delay: 0.1 }}
           >
-            {["left-1/2 top-0", "right-0 top-1/2", "bottom-0 left-1/2", "left-0 top-1/2"].map((pos) => (
-              <span key={pos} className={`absolute ${pos} h-1.5 w-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold`} />
-            ))}
+            <div aria-hidden className="absolute inset-[6%] rounded-full bg-gold/20 blur-3xl" />
+            <Image
+              src={logo}
+              alt="Goldenfalcone emblem: a golden eagle encircling a tree"
+              fill
+              priority
+              sizes="(min-width: 1024px) 34vw, 70vw"
+              className="object-contain drop-shadow-[0_24px_40px_rgba(0,0,0,0.45)]"
+            />
           </motion.div>
-          <motion.div
-            aria-hidden
-            className="absolute inset-[9%] rounded-full border border-champagne/10"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 1.4, delay: 0.5 }}
-          />
-          <motion.div
-            className="absolute inset-[14%]"
-            initial={{ opacity: 0, scale: 0.88 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.6, ease: easeLux, delay: 0.1 }}
-          >
-            <div aria-hidden className="absolute inset-[8%] rounded-full bg-gold/15 blur-3xl" />
-            <Image src={logo} alt="Goldenfalcone eagle and tree emblem" fill priority sizes="(min-width: 1024px) 30vw, 70vw" className="relative object-contain drop-shadow-[0_30px_50px_rgba(0,0,0,0.35)]" />
-          </motion.div>
-        </motion.div>
+        </div>
       </div>
 
-      <motion.a
-        href="#introduction"
-        aria-label="Scroll to introduction"
-        className="absolute bottom-8 left-1/2 hidden -translate-x-1/2 flex-col items-center gap-3 text-[0.65rem] uppercase tracking-[0.3em] text-champagne/60 transition-colors hover:text-champagne sm:flex"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 1.6, duration: 0.8 }}
-      >
-        Scroll
-        <ArrowDown aria-hidden className="h-4 w-4" />
-      </motion.a>
+      <nav aria-label="Our businesses" className="border-t border-gold/20">
+        <ul className="container-lux grid grid-cols-2 gap-x-4 lg:grid-cols-4 lg:gap-x-6">
+          {ventures.map((v) => (
+            <li key={v.key}>
+              <Link
+                href={v.href}
+                className="group flex h-full items-baseline gap-3 py-4 text-sm leading-snug text-ivory/85 transition-colors hover:text-champagne sm:py-5 sm:text-[0.95rem]"
+              >
+                <span className="eyebrow text-gold">{v.number}</span>
+                <span className="link-underline">{v.title}</span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </nav>
     </section>
   );
 }

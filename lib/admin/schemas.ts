@@ -6,6 +6,8 @@ import {
   communicationChannels,
   communicationParties,
   connectionStatuses,
+  digitalEnquiryStatuses,
+  digitalIndustries,
   enquiryStatuses,
   interviewStatuses,
   orderStatuses,
@@ -17,6 +19,11 @@ import {
  * Admin validation schemas — shared by admin forms (client) and admin route handlers (server).
  * Zod strips unknown keys, so only the fields listed here can ever be written (no mass assignment).
  */
+
+const optionalDate = z.preprocess(
+  (value) => (value === "" || value === null || value === undefined ? undefined : value),
+  z.coerce.date({ invalid_type_error: "Enter a valid date" }).optional(),
+);
 
 const str = (label: string, min: number, max: number) =>
   z
@@ -111,15 +118,24 @@ export const profileSchema = z.object({ name: str("Name", 2, 80) });
 export const noteSchema = z.object({ body: str("Note", 1, 2000) });
 
 export const enquiryUpdateSchema = z.object({ status: z.enum(enquiryStatuses) });
+export const digitalEnquiryUpdateSchema = z.object({
+  status: z.enum(digitalEnquiryStatuses).optional(),
+  assignedTo: z
+    .object({
+      adminId: objectId.optional(),
+      adminName: z.string().max(100).optional(),
+    })
+    .optional(),
+  followUpDate: optionalDate,
+});
+export const digitalEnquiryHistorySchema = z.object({
+  channel: z.enum(["call", "whatsapp", "email", "meeting"]),
+  notes: str("Notes", 1, 1000),
+});
 export const staffingUpdateSchema = z.object({ status: z.enum(staffingStatuses) });
 export const candidateUpdateSchema = z.object({ status: z.enum(candidateStatuses) });
 
 // ---------- Candidate ↔ salon connections ----------
-
-const optionalDate = z.preprocess(
-  (value) => (value === "" || value === null || value === undefined ? undefined : value),
-  z.coerce.date({ invalid_type_error: "Enter a valid date" }).optional(),
-);
 
 export const connectionUpsertSchema = z.object({
   candidateId: objectId,
@@ -345,6 +361,7 @@ export const listQuerySchema = z.object({
   experience: z.enum(experienceOptions).optional().catch(undefined),
   availability: z.string().trim().max(60).optional().catch(undefined),
   skill: z.string().trim().max(100).optional().catch(undefined),
+  industry: z.enum(digitalIndustries).optional().catch(undefined),
   from: dateParam,
   to: dateParam,
   sort: z.enum(["newest", "oldest"]).catch("newest").default("newest"),

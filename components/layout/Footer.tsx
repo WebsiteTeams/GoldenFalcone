@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { Globe, Mail, MapPin, MessageCircle, Phone } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
@@ -26,13 +27,19 @@ export async function Footer() {
   const hasContact = Boolean(email || phone || address || whatsapp);
 
   return (
-    <footer className="grain relative overflow-hidden bg-forest text-ivory">
+    <footer className="grain relative isolate overflow-hidden bg-forest text-ivory">
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
-      <div className="container-lux grid gap-12 py-20 md:grid-cols-12">
-        <div className="md:col-span-5">
-          <Logo size={52} src={config.logo} />
-          <p className="mt-6 font-serif text-2xl italic text-champagne">{content.footer.tagline}</p>
-          <p className="mt-4 max-w-sm text-sm leading-relaxed text-ivory/65">{content.footer.description}</p>
+      <Image src={config.logo} alt="" width={720} height={720} aria-hidden className="pointer-events-none absolute -bottom-40 -right-32 -z-10 h-[34rem] w-[34rem] opacity-[0.07] sm:h-[44rem] sm:w-[44rem]" />
+      <div className="container-lux relative pt-14 sm:pt-16">
+        <p className="border-b border-gold/20 pb-14 font-serif text-4xl leading-[1.08] text-ivory sm:pb-16 sm:text-6xl">
+          One Vision. <span className="italic text-champagne">Four Dimensions of Business.</span>
+        </p>
+      </div>
+      <div className="container-lux relative grid gap-12 py-14 md:grid-cols-12 lg:py-16">
+        <div className="md:col-span-12 lg:col-span-5">
+          <Logo size={60} src={config.logo} />
+          <p className="mt-5 font-serif text-2xl italic text-champagne">{content.footer.tagline}</p>
+          <p className="mt-4 max-w-sm text-sm leading-relaxed text-ivory/70">{content.footer.description}</p>
           {config.social.length ? (
             <ul className="mt-6 flex flex-wrap gap-x-5 gap-y-2 text-sm">
               {config.social.map(([key, url]) => (
@@ -52,7 +59,7 @@ export async function Footer() {
           ) : null}
         </div>
 
-        <div className="md:col-span-3">
+        <div className="md:col-span-5 lg:col-span-3">
           <h2 className="eyebrow font-sans text-gold">Our Businesses</h2>
           <ul className="mt-5 space-y-3 text-sm">
             {divisions.map((d) => (
@@ -65,7 +72,7 @@ export async function Footer() {
           </ul>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-3 lg:col-span-2">
           <h2 className="eyebrow font-sans text-gold">Company</h2>
           <ul className="mt-5 space-y-3 text-sm">
             {company.map((item) => (
@@ -78,7 +85,7 @@ export async function Footer() {
           </ul>
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-4 lg:col-span-2">
           <h2 className="eyebrow font-sans text-gold">Get in Touch</h2>
           <ul className="mt-5 space-y-3 text-sm text-ivory/75">
             {email ? (
@@ -118,8 +125,8 @@ export async function Footer() {
         </div>
       </div>
 
-      <div className="border-t border-ivory/10">
-        <div className="container-lux flex flex-col gap-4 py-6 text-xs text-ivory/55 sm:flex-row sm:items-center sm:justify-between">
+      <div className="relative border-t border-ivory/10">
+        <div className="container-lux flex flex-col gap-4 py-6 text-xs text-ivory/65 sm:flex-row sm:items-center sm:justify-between">
           <p>
             © {new Date().getFullYear()} {site.legalName}. All rights reserved.
           </p>

@@ -28,6 +28,79 @@ export type AdminRole = (typeof adminRoles)[number];
 
 export const enquiryStatuses = ["new", "contacted", "in-progress", "converted", "closed"] as const;
 
+/** Digital Solutions project enquiry lifecycle */
+export const digitalEnquiryStatuses = [
+  "new",
+  "reviewing",
+  "requirement-discussion",
+  "proposal-preparation",
+  "proposal-sent",
+  "negotiation",
+  "approved",
+  "in-development",
+  "completed",
+  "on-hold",
+  "not-proceeding",
+  "rejected",
+] as const;
+export type DigitalEnquiryStatus = (typeof digitalEnquiryStatuses)[number];
+
+export const digitalEnquiryStatusLabels: Record<DigitalEnquiryStatus, string> = {
+  new: "New",
+  reviewing: "Reviewing",
+  "requirement-discussion": "Requirement Discussion",
+  "proposal-preparation": "Proposal Preparation",
+  "proposal-sent": "Proposal Sent",
+  negotiation: "Negotiation",
+  approved: "Approved",
+  "in-development": "In Development",
+  completed: "Completed",
+  "on-hold": "On Hold",
+  "not-proceeding": "Not Proceeding",
+  rejected: "Rejected",
+};
+
+export const digitalProjectTypes = [
+  "Website Development",
+  "Mobile App Development",
+  "Web Application Development",
+  "Custom Software Development",
+  "Other",
+] as const;
+export type DigitalProjectType = (typeof digitalProjectTypes)[number];
+
+export const digitalIndustries = [
+  "Retail",
+  "Education",
+  "Hospitality",
+  "Healthcare",
+  "Real Estate",
+  "Beauty & Salon",
+  "Manufacturing",
+  "Trading",
+  "Other",
+] as const;
+export type DigitalIndustry = (typeof digitalIndustries)[number];
+
+export const digitalBudgetRanges = [
+  "Under ₹50,000",
+  "₹50,000 – ₹1,00,000",
+  "₹1,00,000 – ₹2,50,000",
+  "₹2,50,000 – ₹5,00,000",
+  "₹5,00,000+",
+  "Flexible / To be discussed",
+] as const;
+
+export const digitalTimelines = [
+  "Immediate (Within 2–4 weeks)",
+  "1–2 Months",
+  "2–3 Months",
+  "3–6 Months",
+  "Flexible",
+] as const;
+
+export const digitalContactMethods = ["Any", "Email", "Phone", "WhatsApp"] as const;
+
 /** Hiring requirement lifecycle. */
 export const staffingStatuses = [
   "new",

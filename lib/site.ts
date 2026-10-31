@@ -15,7 +15,7 @@ export const site = {
   description:
     "Goldenfalcone is a diversified business brand spanning whole-spice export and import, trading mentorship, digital solutions and salon staffing.",
   url: (clean(process.env.NEXT_PUBLIC_SITE_URL) ?? "http://localhost:3000").replace(/\/$/, ""),
-  logo: "/logo.png",
+  logo: "/brand/emblem.webp",
   values: ["Integrity", "Loyalty", "Respect", "Strength", "Legacy"],
   contact: {
     email: clean(process.env.NEXT_PUBLIC_CONTACT_EMAIL),
@@ -36,6 +36,6 @@ export type NavItem = { label: string; href: string };
 
 export const mainNav: NavItem[] = [
   { label: "Home", href: "/" },
-  { label: "About", href: "/about" },
+  { label: "About Us", href: "/about" },
   { label: "Contact", href: "/contact" },
 ];

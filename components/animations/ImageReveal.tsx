@@ -10,26 +10,25 @@ type ImageRevealProps = Omit<ImageProps, "fill"> & {
   direction?: "up" | "left";
 };
 
-/** Masked image reveal with a gentle 1.06 → 1 settle. */
+/**
+ * Masked image reveal with a gentle 1.06 → 1 settle.
+ * The in-view trigger sits on the unclipped wrapper: a fully clipped element never registers as
+ * intersecting, so observing the clipped layer itself would leave the image hidden forever.
+ */
 export function ImageReveal({ wrapperClassName, direction = "up", className, alt, ...image }: ImageRevealProps) {
   const reduce = useReducedMotion();
   const hiddenClip = direction === "up" ? "inset(100% 0% 0% 0%)" : "inset(0% 100% 0% 0%)";
 
   return (
-    <motion.div
-      data-reveal
-      className={`relative overflow-hidden ${wrapperClassName ?? ""}`}
-      initial={reduce ? false : { clipPath: hiddenClip }}
-      whileInView={{ clipPath: "inset(0% 0% 0% 0%)" }}
-      viewport={viewportOnce}
-      transition={{ duration: 1.1, ease: easeLux }}
-    >
+    <motion.div className={`relative overflow-hidden ${wrapperClassName ?? ""}`} initial={reduce ? false : "hidden"} whileInView="visible" viewport={viewportOnce}>
       <motion.div
+        data-reveal
         className="absolute inset-0"
-        initial={reduce ? false : { scale: 1.06 }}
-        whileInView={{ scale: 1 }}
-        viewport={viewportOnce}
-        transition={{ duration: 1.4, ease: easeLux }}
+        variants={{
+          hidden: { clipPath: hiddenClip, scale: 1.06 },
+          visible: { clipPath: "inset(0% 0% 0% 0%)", scale: 1 },
+        }}
+        transition={{ duration: 1.1, ease: easeLux }}
       >
         <Image fill alt={alt} className={`object-cover ${className ?? ""}`} {...image} />
       </motion.div>

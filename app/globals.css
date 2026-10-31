@@ -114,3 +114,161 @@
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
   }
 }
+
+/* ---------- Digital Solutions page ----------
+   Remaps the site tokens inside this page only, so shared forms, buttons and headings
+   take on the navy/blue palette without changing any other page. */
+@theme {
+  --color-navy: #06152e;
+  --color-navy-2: #071d3a;
+  --color-tech-blue: #0866d9;
+  --color-tech-blue-dark: #0757ba;
+  --color-tech-bright: #168bfa;
+  --color-tech-light: #eaf4ff;
+  --color-tech-soft: #f7fafe;
+}
+
+@layer components {
+  .digital-theme {
+    --color-forest: #06152e;
+    --color-forest-deep: #040f22;
+    --color-emerald: #0757ba;
+    --color-gold-dark: #0866d9;
+    --color-champagne: #bcdcff;
+    --color-ivory: #ffffff;
+    --color-ivory-dark: #f7fafe;
+    --color-ink: #152238;
+    --color-muted: #64748b;
+    --color-line: #dde7f3;
+    --font-serif: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
+    background: #ffffff;
+    color: var(--color-ink);
+  }
+  .digital-theme :is(h1, h2, h3, h4) {
+    font-weight: 700;
+    letter-spacing: -0.025em;
+  }
+  .digital-grid {
+    background-image:
+      linear-gradient(rgba(148, 197, 255, 0.09) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(148, 197, 255, 0.09) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 75% 70% at 50% 35%, #000 25%, transparent 100%);
+  }
+  .digital-chart-text {
+    font-family: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .digital-grid {
+      animation: digital-drift 28s linear infinite;
+    }
+    .digital-node {
+      animation: digital-pulse 4.5s ease-in-out infinite;
+    }
+    .digital-float {
+      animation: digital-float 7s ease-in-out infinite;
+    }
+    .digital-flow {
+      stroke-dasharray: 5 7;
+      animation: digital-flow 2.4s linear infinite;
+    }
+  }
+}
+
+@keyframes digital-drift {
+  to {
+    background-position: 56px 56px;
+  }
+}
+@keyframes digital-pulse {
+  0%,
+  100% {
+    opacity: 0.3;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+@keyframes digital-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+@keyframes digital-flow {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+/* ---------- Homepage ---------- */
+@theme {
+  /* Gold dark enough for small text on ivory (5:1). */
+  --color-gold-deep: #8a6412;
+}
+
+@layer components {
+  /* Re-themes the shared product mockups to the brand palette. */
+  .mock-forest {
+    --mock-navy: #062f25;
+    --mock-navy-2: #064b38;
+    --mock-blue: #0b6a50;
+    --mock-bright: #d4a437;
+    --mock-light: #e9f1ec;
+    --mock-soft: #faf8f2;
+    --mock-line: #e4dfd2;
+    --mock-text: #17221d;
+    --mock-muted: #69756e;
+  }
+  .outline-numeral {
+    -webkit-text-fill-color: transparent;
+    -webkit-text-stroke: 1px currentColor;
+    font-family: var(--font-serif);
+    font-variant-numeric: lining-nums;
+    font-weight: 400;
+    line-height: 0.8;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .lux-glow {
+      animation: lux-glow 16s ease-in-out infinite alternate;
+    }
+    .lux-spin {
+      animation: lux-spin 140s linear infinite;
+    }
+    .lux-spark {
+      animation: lux-spark 7s ease-in-out infinite;
+    }
+  }
+}
+
+@keyframes lux-glow {
+  from {
+    transform: translate3d(-3%, -2%, 0) scale(1);
+    opacity: 0.75;
+  }
+  to {
+    transform: translate3d(3%, 2%, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+@keyframes lux-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes lux-spark {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 0.9;
+    transform: translateY(-14px);
+  }
+}

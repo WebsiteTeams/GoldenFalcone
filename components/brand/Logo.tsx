@@ -24,13 +24,13 @@ export function Logo({ tone = "light", size = 44, withWordmark = true, className
         width={size}
         height={size}
         priority={priority}
-        className="shrink-0 object-contain transition-transform duration-500 ease-[var(--ease-lux)] group-hover:scale-[1.04] rounded-2xl"
+        className="shrink-0 object-contain transition-transform duration-500 ease-[var(--ease-lux)] group-hover:scale-[1.04]"
         style={{ width: size, height: size }}
       />
       {withWordmark ? (
         <span
           className={cn(
-            "font-serif text-[1.2rem] font-semibold tracking-[0.18em] transition-colors duration-300",
+            "font-serif text-[0.95rem] font-semibold tracking-[0.12em] transition-colors duration-300 xs:text-[1.05rem] sm:text-[1.2rem] sm:tracking-[0.18em]",
             tone === "light" ? "text-ivory" : "text-forest",
           )}
         >

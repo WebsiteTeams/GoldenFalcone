@@ -8,12 +8,13 @@ import { cn } from "@/lib/utils";
 
 type Item = { q: string; a: string };
 
-export function Accordion({ items }: { items: Item[] }) {
+export function Accordion({ items, tone = "light" }: { items: Item[]; tone?: "light" | "dark" }) {
   const [open, setOpen] = useState<number | null>(0);
   const baseId = useId();
+  const dark = tone === "dark";
 
   return (
-    <div className="divide-y divide-line border-y border-line">
+    <div className={cn("divide-y border-y", dark ? "divide-white/15 border-white/15" : "divide-line border-line")}>
       {items.map((item, i) => {
         const expanded = open === i;
         const buttonId = `${baseId}-b${i}`;
@@ -27,13 +28,20 @@ export function Accordion({ items }: { items: Item[] }) {
                 aria-expanded={expanded}
                 aria-controls={panelId}
                 onClick={() => setOpen(expanded ? null : i)}
-                className="flex w-full items-center justify-between gap-6 py-6 text-left font-serif text-xl text-forest transition-colors hover:text-gold-dark sm:text-2xl"
+                className={cn(
+                  "flex w-full items-center justify-between gap-6 py-6 text-left font-serif transition-colors",
+                  dark ? "text-base font-semibold text-white hover:text-tech-light sm:text-lg" : "text-xl text-forest hover:text-gold-dark sm:text-2xl",
+                )}
               >
                 {item.q}
                 <span
                   className={cn(
                     "inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition-[transform,background-color,border-color] duration-300",
-                    expanded ? "rotate-45 border-gold bg-gold text-forest" : "border-line text-forest",
+                    expanded
+                      ? "rotate-45 border-gold bg-gold text-forest"
+                      : dark
+                        ? "border-white/30 text-white"
+                        : "border-line text-forest",
                   )}
                 >
                   <Plus aria-hidden className="h-4 w-4" />
@@ -52,7 +60,7 @@ export function Accordion({ items }: { items: Item[] }) {
                   transition={{ duration: 0.4, ease: easeLux }}
                   className="overflow-hidden"
                 >
-                  <p className="max-w-3xl pb-7 leading-relaxed text-muted">{item.a}</p>
+                  <p className={cn("max-w-3xl pb-7 leading-relaxed", dark ? "text-white/75" : "text-muted")}>{item.a}</p>
                 </motion.div>
               ) : null}
             </AnimatePresence>
