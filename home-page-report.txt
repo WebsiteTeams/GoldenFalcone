@@ -1,0 +1,394 @@
+# GOLDENFALCONE — HOME PAGE COMPLETE REPORT
+
+## Project Overview
+
+The Goldenfalcone home page (`app/(site)/page.tsx`) serves as the flagship landing experience for the premium diversified business brand. It showcases the brand's four core values, three primary business ventures, and a compelling narrative that connects them all under one vision.
+
+The home page is composed of these sections (in order of appearance):
+
+1. **HomeHero** — Hero section with animated tilt effect, emblem geometry, spark particles, and CTA
+2. **BrandIntro** — Introduction with values diagram, quote, and gold rule separator
+3. **Ventures** — Interactive hexagon carousel of business divisions
+4. **BrandValues** — Five core values displayed in a staggered grid
+5. **WhyGoldenfalcone** — (Currently commented out) Five reasons to choose Goldenfalcone
+6. **HomeCta** — (Currently commented out) Secondary CTA section
+
+Note: `WhyGoldenfalcone` and `HomeCta` are currently commented out in `app/(site)/page.tsx` but their components remain fully implemented.
+
+---
+
+## 1. HomeHero — Hero Section
+
+**File**: `components/sections/home/HomeHero.tsx`
+
+### Visual Design
+- **Background**: `bg-forest` (deep forest green `#062F25`)
+- **Overlay elements**:
+  - Lux glow: `radial-gradient` semi-transparent gold at `-right-[12%] top-[-8%]`
+  - Bottom radial: `radial-gradient` at `bottom-[-25%] left-[-15%]`
+  - 12 animated "lux-spark" gold dots positioned across the hero
+- **Emblem geometry**: Central golden circle with rotating lines (72 ticks, 5° increments)
+- **Pointer tilt effect**: When mouse moves over the hero, the content tilts subtly via `rotateX`/`rotateY` springs driven by `useMotionValue`
+- **Reduced motion**: All tilt animation respects `prefers-reduced-motion` — reduces to static state
+
+### Layout Structure (Grid)
+| Element | Desktop (lg) | Mobile |
+|---------|-------------|--------|
+| Main content area | `lg:col-span-7` | Full width |
+| Emblem/geometry | `mx-auto aspect-square w-full max-w-[21rem] sm:max-w-md lg:col-span-5` | Centered, responsive sizing |
+
+### Typography
+| Element | Style |
+|---------|-------|
+| Eyebrow | `text-[0.62rem] leading-relaxed text-gold` |
+| Main headline | `text-[3.15rem] leading-[1] xs:[3.6rem] sm:text-[3.6rem] xl:[6.1rem]` — lines revealed with `TextReveal`, last line italic `text-champagne` |
+| Description | `text-base leading-relaxed text-ivory/75 sm:text-lg` |
+
+### CTA Buttons
+| Button | Purpose | Styles |
+|--------|---------|--------|
+| Primary | "Explore Our Businesses" | Full `AnimatedButton`, linked to `#businesses` |
+| Secondary | "Discover Goldenfalcone" | `variant="outline-light"`, linked to `/about` |
+
+### Business Navigation (below headline)
+- Grid of 4 division links (spices, mentorship, staffing + digital-solutions implied)
+- Each: `text-sm leading-snug text-ivory/85 hover:text-champagne`
+- Shows number (01/02/03) + title
+- Used to quickly navigate to divisional routes
+
+### Motion & Animation
+- **Spark particles**: Pre-positioned with `animationDelay` ranging 0–5.8s, continuous subtle movement
+- **Emblem rotation**: `motion.circle` with `pathLength` animation (2.2s duration, `easeLux`)
+- **Text reveals**: `TextReveal` with `easeLux` staggered delays (0.2, 0.3, 0.75, 0.9s)
+- **Emblem tilt**: Pointer-driven `rotateX`/`rotateY` springs (stiffness: 60, damping: 18)
+- **All transitions**: Use the shared `easeLux` cubic-bezier `[0.22, 1, 0.36, 1]`
+
+### Data Flow
+- Receives from `HomePage`:
+  - `title: string[]` (hero title lines, e.g. `["One Vision.", "Four Dimensions of Business."]`)
+  - `description: string` (hero subtitle text)
+  - `primaryCta: string` (e.g. `"Explore Our Businesses"`)
+  - `secondaryCta: string` (e.g. `"Discover Goldenfalcone"`)
+  - `logo: string` (emblem image URL)
+  - `ventures: { key, number, title, href }[]` (4 divisions from `lib/content.ts`)
+
+---
+
+## 2. BrandIntro — Introduction Section
+
+**File**: `components/sections/home/BrandIntro.tsx`
+
+### Position & Background
+- `id="introduction"`
+- `bg-ivory` (`#FAF8F2`)
+- Top margin: `scroll-mt-20` (offset to account for fixed header)
+- Padding: `pb-20 pt-20 sm:pb-28 sm:pt-28`
+
+### Visual Elements
+| Element | Description |
+|---------|-------------|
+| **Dimensions Diagram** | Central logo surrounded by 4 division badges positioned at compass points (left, right, bottom, left) using `orbit` positions: `["left-1/2 top-0 -translate-x-1/2", "right-0 top-1/2 -translate-y-1/2", ...]` |
+| **Division badges**: ivory background `bg-ivory`, gold text `text-gold-deep`, number (`01`/`02`/`03`) + short title |
+| **Quote block**: "The eagle for vision and strength; the tree for roots, growth and legacy." — gold italic, with gold left border `border-l-2 border-gold` |
+| **Values footer**: Five brand values displayed as clickable/champagne text at bottom |
+
+### Typography
+| Element | Style |
+|---------|-------|
+| Section title "About Goldenfalcone" | `eyebrow text-gold-deep` |
+| Main headline | `text-[2.75rem] leading-[1.02] text-forest xs:text-5xl sm:text-7xl xl:text-[5.75rem]` with `TextReveal`, last line italic `text-gold-dark` |
+| Intro lead | `text-2xl leading-snug text-forest sm:[2rem]` |
+| Blockquote | `text-xl italic leading-snug text-gold-deep sm:text-2xl` |
+| Values footer | `text-[0.6rem] font-semibold uppercase tracking-[0.16em] text-forest` joining values with `·` |
+
+### Motion & Animation
+- **RevealUp** for each major element with `distance={14}` and staggered delays
+- **GoldRule** component: animated self-drawing gold line (`scaleX: 0 → 1`) with `viewportOnce` intersection observer
+- **StaggerContainer** / **StaggerItem** for values grid
+
+### Data Flow
+- Receives from `getSiteContent()`:
+  - `home.introTitle` (e.g. `"A Diversified Brand,\nBuilt With Purpose."` → lines `["A Diversified Brand", "Built With Purpose"]`)
+  - `home.introLead` (introduction lead text)
+  - `home.introBody` (optional body paragraph)
+  - `values: BrandValue[]` (the 5 values: Integrity, Loyalty, Respect, Strength, Legacy)
+- Also uses `lines()` utility to split `\n`-separated headings
+
+---
+
+## 3. Ventures — Business Carousel
+
+**File**: `components/sections/home/Ventures.tsx`
+
+### Position & Background
+- `id="businesses"`
+- `bg-forest-deep` (darker forest green)
+- `py-20 sm:py-28` (padding)
+- `scroll-mt-20` (offset for header)
+
+### Layout Structure
+- **VenturesHeader**: 
+  - Eyebrow "Our Business Ventures" + champagne text
+  - Heading "Four Dimensions., One Vision." (revealed via TextReveal)
+  - Description paragraph: "Discover the diverse business ventures of Goldenfalcone..."
+- **CardCarousel**: Interactive hexagon carousel with 3-mode layout
+
+### CardCarousel Mechanics
+- **State**: `activeIndex` (0, 1, or 2 for 3 divisions at a time)
+- **Layout**: 
+  - Centre card: full raised state (`scale: 1`, `opacity: 1`, z-index: 3)
+  - Side cards: scaled down (`scale: 0.86`), opacity `1` or `0`, pointer-events-none
+  - Positions: `x: -50 + offset * 78%` where offset = `(i - activeIndex + count + 1) % count - 1`
+- **Navigation**:
+  - Left/right arrows (`ArrowLeft`/`ArrowRight` key support, plus click)
+  - Dot indicators showing all 4 divisions with `aria-current={i === activeIndex ? "true" : undefined}`
+  - Panning support: horizontal swipe/pan to navigate
+- **Looping**: Index wraps around via modulo arithmetic
+
+### Card Design (HexBadge + Card)
+| Element | Style |
+|---------|-------|
+| **HexBadge** | Tinted glass hexagon (`points: M44,6.5 Q50,3...`) with division icon in center, ivory text number |
+| **Card container** | `rounded-3xl border bg-forest p-3` (active: `border-ivory/25 shadow-[0_40px_70px_-25px_rgba(0,0,0,0.85)]`)
+- Image: `object-cover` with subtle `motion-safe:group-hover:scale-[1.04]`
+- Gradient overlay: `bg-gradient-to-t from-forest-deep/90 via-forest-deep/35 to-forest-deep/10`
+- Gold linear accent: `bg-[linear-gradient(115deg,rgba(255,255,255,0.28)_0%,...)]`
+- HexBadge with division icon + number
+- Title: `text-[1.85rem] leading-[1.1] text-ivory sm:[2.2rem]`
+- Description: `text-sm leading-relaxed text-ivory/75 sm:[0.95rem]`
+- CTA: `AnimatedButton` with outline-light variant
+
+### Motion & Animation
+- **Card entrance**: `initial` → `animate` with `easeLux` over 0.7s, translating x by `78%` increments, scaling
+- **Hover image zoom**: `motion-safe:group-hover:scale-[1.04]`
+- **Arrow hover**: `border-champagne/40 text-ivory → border-gold bg-gold text-forest`
+- **Dot indicators**: `h-1 rounded-full transition-all duration-500` → `w-7 bg-gold` when active
+
+### Data Flow
+- **Inline data** (not from CMS): `businessDivisions` array with 3 divisions:
+  1. **Spices** (Leaf icon) — `/spices`
+  2. **Trading Mentorship** (GraduationCap icon) — `/trading-mentorship`
+  3. **Salon Staffing** (Scissors icon) — `/salon-staffing`
+- Each has: `key, icon, title, description, href, cta, image, imageAlt`
+- Used independently of CMS state
+
+### Accessibility
+- `role="group"` + `aria-roledescription="carousel"` + `aria-label="Our business ventures"`
+- `aria-live="polite"` announcing `Showing X of Y: DivisionTitle`
+- Keyboard: ArrowLeft/ArrowRight navigation, dot indicator clicks
+- `inert` prop on non-active cards to remove from DOM tab order
+
+---
+
+## 4. BrandValues — Core Values Section
+
+**File**: `components/sections/home/BrandValues.tsx`
+
+### Position & Background
+- `bg-ivory` (`#FAF8F2`)
+- `py-20 sm:py-28`
+
+### Layout Structure
+- **Top row**: 
+  - Left: "Our Philosophy" eyebrow + `TextReveal` heading "Built on Values., Driven by Vision."
+  - Right: Dimensions diagram (same as BrandIntro `DimensionsDiagram`)
+- **GoldRule** separator: `mt-12 sm:mt-16`
+- **Values grid**: `StaggerContainer` with dynamic column count based on `values.length` (5 values = 5 columns)
+
+### Value Display
+Each value shows:
+- **Icon**: Mapped from `icons` record:
+  - Integrity → `Gem`
+  - Loyalty → `Handshake`
+  - Respect → `Landmark`
+  - Strength → `Shield`
+  - Legacy → `TreeDeciduous`
+- **Title**: `text-[2rem] text-gold-dark lg:[2.4rem]` (e.g. "Integrity")
+- **Description**: `text-sm leading-relaxed text-muted` (e.g. the value's text paragraph)
+
+### Motion & Animation
+- **RevealUp** for section title and text
+- **StaggerContainer** with `grid divide-y divide-line` — each value gets vertical divider
+- **StaggerItem** with `grid grid-cols-[3.25rem_1fr] gap-x-3 py-7 lg:block lg:px-6 lg:py-10 lg:first:pl-0 lg:last:pr-0`
+- **Icon animation**: `group-hover:-translate-y-1 motion-reduce:group-hover:translate-y-0`, `transition-transform duration-500`
+- Icon sits at `h-8 w-8 text-gold-dark` above the title
+
+### Data Flow
+- Receives `values: BrandValue[]` from `getSiteContent()`
+- `BrandValue` type: `{ name: string; text: string }` (from `lib/content.ts`)
+- The 5 values come from `lib/site.ts`: Integrity, Loyalty, Respect, Strength, Legacy
+
+---
+
+## 5. WhyGoldenfalcone — (Commented Out) Reasons Section
+
+**File**: `components/sections/home/WhyGoldenfalcone.tsx`
+
+**Current status**: Commented out in `app/(site)/page.tsx`, but component fully implemented.
+
+### If Uncommented, Would Render:
+- **Background**: `bg-emerald` (emerald green)
+- **Layout**: Two-column grid
+  - Left: Sticky container (`lg:sticky lg:top-32 lg:col-span-5 lg:self-start`) with:
+    - Eyebrow "Why Goldenfalcone" + heading "A Vision That Connects, Different Opportunities."
+    - 5 reasons displayed in `StaggerList`:
+      1. Diversified Business Ventures
+      2. Purpose-Driven Approach
+      3. Commitment to Quality
+      4. Customer-Focused Service
+      5. Long-Term Relationships
+  - Right: 6-column wide list of reasons with:
+    - Number badge (01–05)
+    - Title (e.g. "Diversified Business Ventures")
+    - Description paragraph
+
+### Design Rationale
+Each reason includes:
+- **Icon**: matching the value icon system (Gem/Handshake/Landmark/Shield/TreeDeciduous)
+- **Title**: transition on hover to `text-champagne`
+- **Description**: `text-ivory/75` paragraph
+
+---
+
+## 6. HomeCta — (Commented Out) Secondary CTA Section
+
+**File**: `components/sections/home/HomeCta.tsx`
+
+**Current status**: Commented out in `app/(site)/page.tsx`, but component fully implemented.
+
+### If Uncommented, Would Render:
+- **Background**: `bg-ivory` (`#FAF8F2`)
+- **Two-column layout**:
+  - Left: Text content with:
+    - Eyebrow "Start a Conversation"
+    - Large headline text from CMS `cta.title` (e.g. `"Let's Build Something\nMeaningful Together."`)
+    - Body text from `cta.text`
+    - Two CTA buttons: "Discuss Your Project" (primary, linked to `#enquiry` on contact) and "Contact Us" (outline, linked to `/contact`)
+  - Right: Large gold logo image positioned `-right-16 -top-10` with gradient background
+
+### Data Flow
+- Receives from `getSiteContent()`:
+  - `cta.title`: `"Let's Build Something\nMeaningful Together."`
+  - `cta.text`: `"Have a business enquiry, partnership opportunity, or project in mind? Connect with Goldenfalcone and start a conversation."`
+  - `cta.buttonLabel`: `"Discuss Your Project"`
+- Also uses `lines()` to split the multi-line title
+
+---
+
+## 7. Data Architecture & CMS Integration
+
+### Source of Truth
+| Data Type | Source | Fallback |
+|-----------|--------|----------|
+| Hero title/description | CMS `SiteContent.home` | `defaults.ts` hardcoded |
+| Intro title/lead/body | CMS `SiteContent.home` | `defaults.ts` hardcoded |
+| CTA title/text/button | CMS `SiteContent.cta` | `defaults.ts` hardcoded |
+| Brand values | CMS `SiteContent.values` + `lib/site.ts` | `defaults.ts` + `lib/content.ts` |
+| Business divisions | `lib/content.ts` + CMS descriptions | `lib/content.ts` raw data |
+| Site config (logo, contacts) | `lib/site.ts` + CMS `getSiteConfig()` | `site.logo` emblem, env vars for contacts |
+| Division descriptions (admin-editable) | CMS `getDivisions()` | `lib/content.ts` original descriptions |
+
+### Caching & Performance
+- `getSiteContent()`: `unstable_cache` with `revalidate: 3600` (1 hour)
+- `getDivisions()`: cached within `getSiteContent()`
+- `getSiteConfig()`: cached with `revalidate: 3600`
+- All public data has fallback to `defaultContent`/`defaultSettings` if MongoDB unavailable
+
+### Type Safety
+- `SiteContent` schema validated via `siteContentSchema` from `lib/admin/schemas`
+- Type-safe `getSiteContent()` returns `Content` type
+- `lines()` utility safely splits `\n`-separated headings into display lines
+
+---
+
+## 8. Responsive Breakpoints
+
+| Breakpoint | HomeHero | BrandIntro | Ventures | BrandValues | Notes |
+|------------|----------|------------|----------|-------------|-------|
+| **375px** (mobile) | Full-width grid, emblem `70vw`, title `3.15rem` → `3.6rem` | Single column, diagram full-width, values `1fr` | Carousel `h-[32rem]` → `h-[33rem]`, dots navigable | Single column grid, values full-width | Touch/panning support on carousel |
+| **390px** | Same as 375px | Same | Same | Same | Minimum test point |
+| **430px** | Same | Same | Same | Same | |
+| **768px** | `lg:grid-cols-12`, emblem `lg:col-span-5`, title `3.6rem sm:[3.6rem] sm:text-7xl` | Diagram `max-w-[30rem]`, orbit positions adjusted | Carousel `sm:h-[33rem]`, dots full-width | Grid `lg:grid-cols-[repeat(var(--count),minmax(0,1fr)]` | First tablet breakpoint |
+| **1024px** | Emblem `34vw`, title `xl:[6.1rem]` | Values grid begins, 5-column layout | Carousel `lg:w-[25rem]` | Values `lg:grid-cols-[repeat(var(--count),...]` | Standard laptop |
+| **1280px** | Full luxury experience | Full grid, quote block visible | Carousel centered, arrows visible | Full 5-column values | |
+| **1440px** | | | | | |
+| **1920px** | | | | | |
+
+---
+
+## 9. Motion Design & Animation Quality
+
+### Principles Applied
+- ✅ **Short and responsive** — all transitions under 2.2s
+- ✅ **Natural easing** — `easeLux` [0.22, 1, 0.36, 1] throughout
+- ✅ **No excessive bounce** — spring physics used sparingly (tilt effect only)
+- ✅ **No large sliding distances** — carousel offsets in 78% increments
+- ✅ **No flicker** — intersection observer via `viewportOnce` for GoldRule
+- ✅ **Respects `prefers-reduced-motion`** — tilt disabled, animations simplified
+- ✅ **Shared motion system** — all components use `easeLux`, `revealTransition`, `stagger` from `components/animations/motion.ts`
+
+### Key Animations
+1. **Spark particles**: Pre-staggered `animationDelay` 0–5.8s, continuous
+2. **Emblem rotation**: 2.2s pathLength animate, `easeLux` with 0.2s delay
+3. **Text reveals**: `TextReveal` with `easeLux` and incremental delays (0.2, 0.3, 0.75, 0.9s)
+4. **Card carousel**: 0.7s `easeLux` translate/scale based on active state
+5. **GoldRule**: `viewportOnce` intersection → self-drawing over 1.4s
+6. **Pointer tilt**: Spring-driven `rotateX`/`rotateY` (stiffness 60, damping 18)
+7. **Value icons**: `group-hover` translate-y-1 with 500ms ease
+
+---
+
+## 10. Accessibility Summary
+
+| Feature | Implementation |
+|---------|---------------|
+| **Reduced motion** | `useReducedMotion()` disables pointer tilt; all `useMotionValue` animations simplified |
+| **Keyboard navigation** | Carousel: ArrowLeft/ArrowRight, dot clicks; Arrows have `aria-label` |
+| **Screen readers** | `aria-label="Our business ventures"` on carousel, `aria-live="polite"` for current slide |
+| **Color contrast** | Forest on ivory (WCAG AA large text), gold on dark forest for headings, ivory on forest-deep |
+| **Focus visible** | Default focus styles preserved, no custom removal without replacement |
+| **Inert non-active cards** | `inert` prop on carousel side cards removes from tab order |
+| **Semantic HTML** | `<section id="...">`, `<header>`, `<nav>`, `<p>`, `<blockquote>` all used appropriately |
+| **Skip links** | Fixed in navbar: `Skip to content` link targets `#main` |
+
+---
+
+## 11. Pre-existing Notes & Observations
+
+### Commented-Out Sections
+- **WhyGoldenfalcone**: Fully implemented but not rendered on home page currently. Would add 5 reason cards with sticky sidebar on lg+
+- **HomeCta**: Fully implemented but not rendered. Would add secondary CTA section with form and large logo placement
+
+### Design Consistency
+- All sections share the same brand palette: forest green, ivory, gold, champagne gold
+- Consistent typography scale across all pages
+- Shared motion system (`easeLux`, `revealTransition`, `stagger`)
+- Consistent use of `container-lux` max-width container
+
+### Technical Observations
+- Home page works independently of CMS (Ventures uses inline `businessDivisions` data)
+- `HomeHero` depends on received props from `HomePage` which fetches from CMS
+- All sections use `RevealUp`/`TextReveal` from `components/animations` for consistent reveal behavior
+- `GoldRule` component is reusable and appears in both `BrandIntro` and `BrandValues`
+- Emblem geometry is shared between `HomeHero` and potentially other pages
+
+### Routes That Home Page Supports (via navigation)
+- `/` — Home (current page)
+- `/about` — About Us
+- `/spices` — Whole Spices Export & Import
+- `/trading-mentorship` — Trading Mentorship
+- `/salon-staffing` — Salon Staffing
+- `/contact` — Contact (CTA targets)
+
+### CMS Editability
+Admins can modify via CMS:
+- Hero title and description
+- Primary/secondary CTA text
+- Intro lead/body text
+- Brand values (though these are also in `lib/site.ts`)
+- All other textual content
+
+### Production Build
+- All home page components compile without TypeScript errors (verified during navbar redevelopment)
+- No console errors expected on first render
+- Animated elements respect `prefers-reduced-motion` media query

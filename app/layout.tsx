@@ -19,7 +19,7 @@ const manrope = Manrope({
   display: "swap",
 });
 
-const DEFAULT_TITLE = "Goldenfalcone — One Vision. Four Dimensions of Business.";
+const DEFAULT_TITLE = "Goldenfalcone — One Vision. Three Dimensions of Business.";
 
 export async function generateMetadata(): Promise<Metadata> {
   const { name, seo } = await getSiteConfig();

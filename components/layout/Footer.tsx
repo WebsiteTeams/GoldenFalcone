@@ -32,7 +32,7 @@ export async function Footer() {
       <Image src={config.logo} alt="" width={720} height={720} aria-hidden className="pointer-events-none absolute -bottom-40 -right-32 -z-10 h-[34rem] w-[34rem] opacity-[0.07] sm:h-[44rem] sm:w-[44rem]" />
       <div className="container-lux relative pt-14 sm:pt-16">
         <p className="border-b border-gold/20 pb-14 font-serif text-4xl leading-[1.08] text-ivory sm:pb-16 sm:text-6xl">
-          One Vision. <span className="italic text-champagne">Four Dimensions of Business.</span>
+          One Vision. <span className="italic text-champagne">Three Dimensions of Business.</span>
         </p>
       </div>
       <div className="container-lux relative grid gap-12 py-14 md:grid-cols-12 lg:py-16">

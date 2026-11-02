@@ -10,7 +10,12 @@ import { divisions } from "@/lib/content";
 import { site } from "@/lib/site";
 import { cn } from "@/lib/utils";
 
-type MobileMenuProps = { open: boolean; onClose: () => void; pathname: string; logo?: string };
+type MobileMenuProps = {
+  open: boolean;
+  onClose: () => void;
+  pathname: string;
+  logo?: string;
+};
 
 const primary = [
   { label: "Home", href: "/" },
@@ -19,6 +24,7 @@ const primary = [
 ];
 
 export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
+  const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -52,7 +58,7 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
     };
   }, [open, onClose]);
 
-  const active = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
+  const divisionActive = divisions.some((d) => active(d.href));
 
   return (
     <AnimatePresence>
@@ -72,7 +78,7 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Site menu"
-            className="grain absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-y-auto bg-forest px-6 pb-8 pt-5 text-ivory"
+            className="grain absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-y-auto bg-forest-deep px-6 pb-8 pt-5 text-ivory text-base"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -99,11 +105,17 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
             >
               <ul className="space-y-1">
                 {primary.map((item) => (
-                  <motion.li key={item.href} variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}>
+                  <motion.li
+                    key={item.href}
+                    variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
+                  >
                     <Link
                       href={item.href}
                       aria-current={active(item.href) ? "page" : undefined}
-                      className={cn("block py-2 font-serif text-3xl transition-colors", active(item.href) ? "text-gold" : "text-ivory hover:text-champagne")}
+                      className={cn(
+                        "block py-3 font-serif text-3xl transition-colors",
+                        active(item.href) ? "text-gold" : "text-ivory hover:text-champagne",
+                      )}
                     >
                       {item.label}
                     </Link>
@@ -111,14 +123,20 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
                 ))}
               </ul>
 
-              <p className="eyebrow mt-10 text-champagne/70">Our Businesses</p>
+              <p className="eyebrow mt-6 text-champagne/70">Our Businesses</p>
               <ul className="mt-4 divide-y divide-ivory/10 border-y border-ivory/10">
                 {divisions.map((d) => (
-                  <motion.li key={d.key} variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}>
+                  <motion.li
+                    key={d.key}
+                    variants={{ hidden: { opacity: 0, x: 20 }, visible: { opacity: 1, x: 0 } }}
+                  >
                     <Link
                       href={d.href}
                       aria-current={active(d.href) ? "page" : undefined}
-                      className={cn("flex items-baseline gap-4 py-4 transition-colors", active(d.href) ? "text-gold" : "text-ivory/90 hover:text-champagne")}
+                      className={cn(
+                        "flex items-baseline gap-4 py-4 transition-colors",
+                        active(d.href) ? "text-gold" : "text-ivory/90 hover:text-champagne",
+                      )}
                     >
                       <span className="eyebrow text-gold">{d.number}</span>
                       <span className="text-base">{d.title}</span>
@@ -128,13 +146,9 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
               </ul>
             </motion.nav>
 
-            <Link
-              href="/contact"
-              className="mt-10 inline-flex items-center justify-center rounded-full bg-gold px-6 py-3.5 text-sm font-semibold text-forest transition-colors hover:bg-champagne"
-            >
-              Discuss Your Project
-            </Link>
-            <p className="mt-6 text-center text-xs tracking-[0.2em] text-champagne/60 uppercase">{site.values.join(" · ")}</p>
+            <p className="mt-8 text-center text-xs tracking-[0.2em] text-champagne/60 uppercase">
+              {site.values.join(" · ")}
+            </p>
           </motion.div>
         </div>
       ) : null}

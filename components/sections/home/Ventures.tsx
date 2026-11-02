@@ -2,32 +2,30 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { motion } from "framer-motion";
-import { ArrowLeft, ArrowRight, GraduationCap, Leaf, type LucideIcon, Scissors } from "lucide-react";
-import { AnimatedButton, RevealUp, TextReveal } from "@/components/animations";
+import Link from "next/link";
+import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import { AnimatedButton, RevealUp } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
 import { images } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
-/**
- * Business division data shown in the carousel.
- * Using inline data so the homepage works independently of CMS state.
- */
 const businessDivisions = [
   {
     key: "spices",
-    icon: Leaf,
-    title: "Whole Spices",
+    number: "01",
+    title: "Imports & Exports",
+    short: "Imports & Exports",
     description: "Discover authentic Indian spices and our dedicated spices shopping experience.",
     href: "/spices",
-    cta: "Explore Spices",
+    cta: "Explore Imports & Exports",
     image: images.spicesMarket,
     imageAlt: "Bowls of assorted whole Indian spices at a market",
   },
   {
     key: "mentorship",
-    icon: GraduationCap,
+    number: "02",
     title: "Trading Mentorship",
+    short: "Mentorship",
     description: "Build your understanding of financial markets through structured trading education and mentorship.",
     href: "/trading-mentorship",
     cta: "Explore Mentorship",
@@ -36,196 +34,246 @@ const businessDivisions = [
   },
   {
     key: "staffing",
-    icon: Scissors,
+    number: "03",
     title: "Salon Staffing",
+    short: "Staffing",
     description: "Connecting salon businesses with skilled beauty professionals through dedicated staffing services.",
     href: "/salon-staffing",
     cta: "Explore Staffing",
     image: images.salonChairs,
     imageAlt: "Bright modern salon interior with styling chairs and mirrors",
   },
+
 ];
 
 type Division = (typeof businessDivisions)[number];
 
-const hexagon = "M44,6.5 Q50,3 56,6.5 L89,25.5 Q95,29 95,36 L95,74 Q95,81 89,84.5 L56,103.5 Q50,107 44,103.5 L11,84.5 Q5,81 5,74 L5,36 Q5,29 11,25.5 Z";
+const hexClip = "polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%)";
 
-/** Tinted glass-style badge carrying the division icon. */
-function HexBadge({ icon: Icon }: { icon: LucideIcon }) {
-  return (
-    <div aria-hidden className="absolute left-1/2 top-1/2 h-[110px] w-[100px] -translate-x-1/2 -translate-y-1/2">
-      <svg viewBox="0 0 100 110" fill="none" className="absolute inset-0 h-full w-full text-ivory/45">
-        <path d={hexagon} stroke="currentColor" className="fill-forest-deep/50" />
-      </svg>
-      <Icon className="absolute left-1/2 top-1/2 h-9 w-9 -translate-x-1/2 -translate-y-1/2 text-ivory" strokeWidth={1.25} />
-    </div>
-  );
-}
+const tints: Record<string, string> = {
+  spices: "from-[#7a5a1c] via-[#3d3a1c] to-[#0b1f19]",
+  mentorship: "from-[#1f6b55] via-[#12392f] to-[#0b1f19]",
+  staffing: "from-[#6b5a3a] via-[#2e3a2f] to-[#0b1f19]",
+};
 
-/** Card – inset image with glass badge, title, description and CTA. Only the centred card can be tabbed into. */
+const icons: Record<string, React.ReactNode> = {
+  spices: (
+    <>
+      <path d="M5 17h22c0 5-4.5 9-11 9S5 22 5 17Z" />
+      <path d="M9 13c1-3 3-4 7-4s6 1 7 4" />
+      <path d="M21 5l3 6M12 6l-1 5" />
+    </>
+  ),
+  mentorship: (
+    <>
+      <path d="M5 5v22h22" />
+      <path d="M11 22v-6M11 12v-2M17 22v-9M17 10V8M23 22v-4M23 15v-3" />
+      <rect x="9.5" y="12" width="3" height="4" />
+      <rect x="15.5" y="10" width="3" height="3" />
+      <rect x="21.5" y="15" width="3" height="3" />
+    </>
+  ),
+  staffing: (
+    <>
+      <circle cx="9" cy="23" r="3.5" />
+      <circle cx="9" cy="9" r="3.5" />
+      <path d="M11.5 11.5 26 24M11.5 20.5 26 8" />
+    </>
+  ),
+};
+
 function Card({ division, isActive }: { division: Division; isActive: boolean }) {
+  const reduce = useReducedMotion();
+  const px = useMotionValue(0);
+  const py = useMotionValue(0);
+  const rotateY = useSpring(useTransform(px, [-0.5, 0.5], [-9, 9]), { stiffness: 120, damping: 16 });
+  const rotateX = useSpring(useTransform(py, [-0.5, 0.5], [8, -8]), { stiffness: 120, damping: 16 });
+  const sheenX = useTransform(px, [-0.5, 0.5], ["-20%", "120%"]);
+
+  const track = (e: React.PointerEvent<HTMLElement>) => {
+    if (reduce || !isActive || e.pointerType !== "mouse") return;
+    const r = e.currentTarget.getBoundingClientRect();
+    px.set((e.clientX - r.left) / r.width - 0.5);
+    py.set((e.clientY - r.top) / r.height - 0.5);
+  };
+  const reset = () => {
+    px.set(0);
+    py.set(0);
+  };
+
   return (
-    <article
+    <motion.article
       inert={!isActive}
+      onPointerMove={track}
+      onPointerLeave={reset}
+      style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
       className={cn(
-        "group flex h-full flex-col overflow-hidden rounded-3xl border bg-forest p-3 transition-[border-color,box-shadow,filter] duration-500 sm:p-4",
-        isActive ? "border-ivory/25 shadow-[0_40px_70px_-25px_rgba(0,0,0,0.85)]" : "border-ivory/10 brightness-75",
+        "group relative flex h-full flex-col rounded-[1.75rem] border bg-gradient-to-b from-[#10261f] to-[#081712] p-3 transition-[border-color,box-shadow] duration-500",
+        isActive
+          ? "border-gold/30 shadow-[0_50px_90px_-25px_rgba(0,0,0,0.75),0_0_60px_-20px_rgba(212,164,55,0.35)]"
+          : "border-white/10 shadow-[0_30px_60px_-25px_rgba(0,0,0,0.6)]",
       )}
     >
-      <div className="relative h-52 shrink-0 overflow-hidden rounded-2xl border border-ivory/20 sm:h-60">
+      {/* moving glass sheen */}
+      <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden rounded-[1.75rem]" style={{ opacity: isActive ? 1 : 0 }}>
+        <motion.div
+          className="absolute -top-1/2 h-[200%] w-24 rotate-[18deg] bg-gradient-to-r from-transparent via-white/[0.07] to-transparent"
+          style={{ left: sheenX }}
+        />
+      </div>
+
+      <div
+        className={cn("relative h-52 shrink-0 overflow-hidden rounded-2xl border border-white/15 bg-gradient-to-br sm:h-60", tints[division.key])}
+        style={{ transform: "translateZ(24px)" }}
+      >
         <Image
           src={division.image}
           alt={division.imageAlt}
           fill
-          sizes="(min-width: 1024px) 25rem, (min-width: 640px) 23rem, 80vw"
-          className="object-cover transition-transform duration-700 ease-[var(--ease-lux)] motion-safe:group-hover:scale-[1.04]"
+          sizes="(min-width: 640px) 25rem, 80vw"
+          className="object-cover opacity-25 mix-blend-luminosity transition-transform duration-700 group-hover:scale-105"
         />
-        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-forest-deep/90 via-forest-deep/35 to-forest-deep/10" />
-        <div aria-hidden className="absolute inset-0 bg-[linear-gradient(115deg,rgba(255,255,255,0.28)_0%,transparent_28%,rgba(255,255,255,0.14)_36%,transparent_52%)]" />
-        <HexBadge icon={division.icon} />
+        <div
+          aria-hidden
+          className="absolute inset-0 opacity-70 [background:repeating-linear-gradient(115deg,transparent_0_26px,rgba(255,255,255,0.10)_26px_44px,transparent_44px_90px)] [mask-image:linear-gradient(to_bottom,#000,transparent_85%)]"
+        />
+        <div aria-hidden className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
       </div>
-      <div className="flex flex-1 flex-col items-start px-3 pb-3 pt-6 sm:px-4 sm:pb-4 sm:pt-7">
-        <h3 className="text-[1.85rem] leading-[1.1] text-ivory sm:text-[2.2rem]">{division.title}</h3>
-        <p className="mt-3 text-sm leading-relaxed text-ivory/75 sm:text-[0.95rem]">{division.description}</p>
-        <div className="mt-auto pt-5">
-          <AnimatedButton href={division.href} variant="outline-light" arrow={false}>
-            {division.cta}
-          </AnimatedButton>
+
+      {/* floating hexagon badge, lifted off the card */}
+      <div
+        className="absolute left-1/2 top-[7.4rem] h-28 w-28 sm:top-[8.4rem] sm:h-32 sm:w-32"
+        style={{ transform: "translate(-50%, -50%) translateZ(70px)" }}
+      >
+        <div className="relative h-full w-full drop-shadow-[0_18px_22px_rgba(0,0,0,0.55)]">
+          <div className="absolute inset-0 bg-gradient-to-br from-gold/70 via-white/30 to-gold/30" style={{ clipPath: hexClip }} />
+          <div className="absolute inset-[2px] bg-gradient-to-br from-[#2b4a3f]/90 to-[#0e211b]/90 backdrop-blur-md" style={{ clipPath: hexClip }} />
+          <div className="absolute inset-[2px] bg-gradient-to-br from-white/25 via-transparent to-transparent" style={{ clipPath: hexClip }} />
+          <svg viewBox="0 0 32 32" fill="none" stroke="#f4e9c8" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="absolute inset-0 m-auto h-11 w-11 sm:h-12 sm:w-12">
+            {icons[division.key]}
+          </svg>
         </div>
       </div>
-    </article>
+
+      <div className="flex flex-1 flex-col px-3 pb-3 pt-6" style={{ transform: "translateZ(36px)" }}>
+        <h3 className="mb-3 text-[1.7rem] leading-[1.15] text-ivory sm:text-[1.9rem]">{division.title}</h3>
+        <p className="mb-5 line-clamp-3 text-sm leading-relaxed text-ivory/65">{division.description}</p>
+        <div className="mt-auto">
+          <Link
+            href={division.href}
+            className="inline-flex items-center rounded-full border border-white/15 bg-white/[0.06] px-5 py-2.5 text-sm font-medium text-ivory transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-forest"
+          >
+            Learn more
+          </Link>
+        </div>
+      </div>
+    </motion.article>
   );
 }
 
-/**
- * CardCarousel – the active card sits raised in the centre with its neighbours behind it.
- * The carousel loops; with more than three cards the rest wait out of view.
- */
 function CardCarousel({ divisions }: { divisions: Division[] }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const count = divisions.length;
 
   const prev = () => setActiveIndex((i) => (i - 1 + count) % count);
   const next = () => setActiveIndex((i) => (i + 1) % count);
-  const arrowClass =
-    "inline-flex h-11 w-11 items-center justify-center rounded-full border border-champagne/40 text-ivory transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-forest";
 
   return (
-    <div
-      role="group"
-      aria-roledescription="carousel"
-      aria-label="Our business ventures"
-      onKeyDown={(e) => {
-        if (e.key === "ArrowLeft") prev();
-        if (e.key === "ArrowRight") next();
-      }}
-    >
-      <motion.div
-        className="relative h-[32rem] touch-pan-y sm:h-[33rem]"
-        onPanEnd={(_, info) => {
-          if (Math.abs(info.offset.x) < 60 || Math.abs(info.offset.x) < Math.abs(info.offset.y)) return;
-          if (info.offset.x < 0) next();
-          else prev();
-        }}
-      >
-        {divisions.map((division, i) => {
-          // -1 left, 0 centre, 1 right, anything further is out of view.
-          const offset = ((i - activeIndex + count + 1) % count) - 1;
-          const isActive = offset === 0;
-          const isSide = Math.abs(offset) === 1;
+    <section className="pt-6">
+      <div className="relative overflow-hidden py-8">
+        <motion.div
+          className="relative h-[31rem] touch-pan-y [perspective:1600px] sm:h-[32rem] sm:touch-pan-x"
+          onPanEnd={(_, info) => {
+            const swipeX = Math.abs(info.offset.x);
+            const swipeY = Math.abs(info.offset.y);
+            if (swipeX < 40 || swipeX < swipeY) return;
+            if (info.offset.x < 0) next();
+            else prev();
+          }}
+        >
+          {divisions.map((division, i) => {
+            const offset = ((i - activeIndex + count + 1) % count) - 1;
+            const isActive = offset === 0;
 
-          return (
-            <motion.div
-              key={division.key}
-              initial={false}
-              animate={{
-                x: `${-50 + offset * 78}%`,
-                scale: isActive ? 1 : 0.86,
-                opacity: isActive || isSide ? 1 : 0,
-              }}
-              transition={{ duration: 0.7, ease: easeLux }}
-              style={{ zIndex: isActive ? 3 : isSide ? 2 : 1 }}
-              className={cn("absolute left-1/2 top-0 h-full w-[min(80vw,21rem)] sm:w-[23rem] lg:w-[25rem]", !isActive && !isSide && "pointer-events-none")}
-            >
-              <Card division={division} isActive={isActive} />
-              {isSide ? (
-                <button
-                  type="button"
-                  tabIndex={-1}
-                  aria-hidden
-                  onClick={() => setActiveIndex(i)}
-                  className="absolute inset-0 cursor-pointer rounded-3xl"
-                />
-              ) : null}
-            </motion.div>
-          );
-        })}
-      </motion.div>
-
-      <div className="mt-8 flex items-center justify-center gap-4">
-        <button type="button" onClick={prev} aria-label="Previous venture" className={arrowClass}>
-          <ArrowLeft aria-hidden className="h-4 w-4" />
-        </button>
-        <div className="flex items-center">
-          {divisions.map((division, i) => (
+            return (
+              <motion.div
+                key={division.key}
+                initial={false}
+                animate={{
+                  x: `${offset * 90}%`,
+                  scale: isActive ? 1 : 0.84,
+                  rotateY: offset * -26,
+                  z: isActive ? 0 : -140,
+                  opacity: isActive ? 1 : 0.8,
+                }}
+                transition={{ duration: 0.7, ease: easeLux }}
+                style={{ zIndex: isActive ? 3 : 2, transformStyle: "preserve-3d" }}
+                className="absolute left-1/2 top-0 -ml-[min(40vw,12rem)] h-full w-[min(80vw,24rem)] sm:-ml-[11rem] sm:w-[22rem] lg:-ml-[12.5rem] lg:w-[25rem]"
+              >
+                <Card division={division} isActive={isActive} />
+                {!isActive && (
+                  <button
+                    type="button"
+                    aria-label={`Show ${division.title}`}
+                    className="absolute inset-0 z-10 cursor-pointer rounded-[1.75rem]"
+                    onClick={() => setActiveIndex(i)}
+                  />
+                )}
+              </motion.div>
+            );
+          })}
+        </motion.div>
+        <div className="mt-6 flex items-center justify-center gap-2" role="tablist" aria-label="Choose a venture">
+          {divisions.map((d, i) => (
             <button
-              key={division.key}
+              key={d.key}
               type="button"
+              role="tab"
+              aria-selected={i === activeIndex}
+              aria-label={d.title}
               onClick={() => setActiveIndex(i)}
-              aria-label={`Show ${division.title}`}
-              aria-current={i === activeIndex ? "true" : undefined}
-              className="flex h-11 w-9 items-center justify-center"
-            >
-              <span aria-hidden className={cn("h-1 rounded-full transition-all duration-500", i === activeIndex ? "w-7 bg-gold" : "w-3 bg-ivory/35")} />
-            </button>
+              className={cn("h-2 rounded-full transition-all duration-300", i === activeIndex ? "w-8 bg-gold" : "w-2 bg-ivory/30 hover:bg-ivory/60")}
+            />
           ))}
         </div>
-        <button type="button" onClick={next} aria-label="Next venture" className={arrowClass}>
-          <ArrowRight aria-hidden className="h-4 w-4" />
-        </button>
       </div>
-
-      <p aria-live="polite" className="sr-only">
-        {`Showing ${activeIndex + 1} of ${count}: ${divisions[activeIndex].title}`}
-      </p>
-    </div>
+    </section>
   );
 }
 
-/** Header section – eyebrow, heading, description */
 function VenturesHeader() {
   return (
     <header className="mx-auto mb-12 max-w-3xl text-center sm:mb-16">
       <RevealUp distance={14}>
-        <p className="eyebrow flex items-center justify-center gap-3 text-champagne">
-          <span aria-hidden className="h-px w-8 bg-current" />
-          Our Business Ventures
+        <p className="eyebrow flex items-center justify-center gap-3 text-emerald">
+          <span aria-hidden className="h-px w-8 bg-current" />OUR BUSINESS VENTURES
           <span aria-hidden className="h-px w-8 bg-current" />
         </p>
       </RevealUp>
-      <TextReveal
-        lines={["Four Dimensions.", "One Vision."]}
-        accentIndex={1}
-        className="mt-6 text-[2.75rem] leading-[1.05] text-ivory xs:text-5xl sm:text-6xl lg:text-7xl"
-      />
+      <RevealUp delay={0.1} className="mt-4 text-center">
+        <h2 className="text-[2.5rem] leading-[1.1] text-ivory sm:text-4xl">
+          Three Dimensions.<span className="italic text-gold"> One Vision.</span>
+        </h2>
+      </RevealUp>
       <RevealUp delay={0.15}>
-        <p className="mx-auto mt-6 max-w-2xl leading-relaxed text-ivory/75 sm:text-lg">
+        <p className="mt-6 mx-auto max-w-2xl leading-relaxed text-ivory/60 sm:text-lg">
           Discover the diverse business ventures of Goldenfalcone, each built around a shared commitment to purpose, quality, and growth.
         </p>
       </RevealUp>
     </header>
-  );
+  )
 }
 
-/** Main Ventures section – combines header + carousel */
 export function Ventures() {
   return (
-    <section id="businesses" aria-label="Our business ventures" className="grain relative scroll-mt-20 overflow-hidden bg-forest-deep py-20 text-ivory sm:py-28">
+    <section
+      id="businesses"
+      aria-label="Our business ventures"
+      className="grain relative overflow-hidden bg-emerald py-20 sm:py-28"
+    >
       <div className="container-lux relative">
         <VenturesHeader />
-        <RevealUp delay={0.1}>
-          <CardCarousel divisions={businessDivisions} />
-        </RevealUp>
+        <CardCarousel divisions={businessDivisions} />
       </div>
     </section>
   );

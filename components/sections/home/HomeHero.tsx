@@ -1,11 +1,15 @@
 "use client";
 
+import { useRef, useState } from "react";
+import type { PointerEvent, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import type { PointerEvent } from "react";
-import { motion, useMotionValue, useReducedMotion, useSpring, useTransform } from "framer-motion";
+import { motion } from "framer-motion";
 import { AnimatedButton, TextReveal } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
+import { images } from "@/lib/content";
+import { HeroVisual } from "./hero3d/HeroVisual";
+import type { StationKey } from "./hero3d/Stations";
 
 type HomeHeroProps = {
   title: string[];
@@ -16,105 +20,94 @@ type HomeHeroProps = {
   ventures: { key: string; number: string; title: string; href: string }[];
 };
 
-const ticks = Array.from({ length: 72 }, (_, i) => i * 5);
+const isStation = (key: string): key is StationKey => key === "spices" || key === "mentorship" || key === "staffing";
 
-/** Fixed positions (percent of the hero) so server and client markup match. */
-const sparks = [
-  [8, 22, 0],
-  [15, 68, 2.4],
-  [27, 14, 4.1],
-  [38, 82, 1.2],
-  [49, 30, 5.2],
-  [58, 11, 3.1],
-  [64, 74, 0.6],
-  [71, 26, 2],
-  [79, 88, 4.6],
-  [86, 15, 1.6],
-  [92, 58, 3.6],
-  [96, 34, 5.8],
+const icons: Record<StationKey, ReactNode> = {
+  spices: (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 17h22c0 5-4.5 9-11 9S5 22 5 17Z" />
+      <path d="M9 13c1-3 3-4 7-4s6 1 7 4" />
+      <path d="M21 5l3 6M12 6l-1 5" />
+    </svg>
+  ),
+  mentorship: (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <path d="M5 5v22h22" />
+      <path d="M11 22v-6M11 12v-2M17 22v-9M17 10V8M23 22v-4M23 15v-3" />
+      <rect x="9.5" y="12" width="3" height="4" />
+      <rect x="15.5" y="10" width="3" height="3" />
+      <rect x="21.5" y="15" width="3" height="3" />
+    </svg>
+  ),
+  staffing: (
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+      <circle cx="9" cy="23" r="3.5" />
+      <circle cx="9" cy="9" r="3.5" />
+      <path d="M11.5 11.5 26 24M11.5 20.5 26 8" />
+    </svg>
+  ),
+};
+
+const thumbs: Record<StationKey, string> = {
+  spices: images.spicesMarket,
+  mentorship: images.tradingCandles,
+  staffing: images.salonChairs,
+};
+
+const taglines: Record<StationKey, string> = {
+  spices: "Authentic spices, sourced with care",
+  mentorship: "Structured market education",
+  staffing: "Skilled beauty professionals",
+};
+
+const pillars = [
+  { name: "Integrity", note: "Honest dealings", d: "M16 4 6 8v8c0 6 4 10 10 12 6-2 10-6 10-12V8L16 4Zm-3.5 12 2.5 2.5 5-5" },
+  { name: "Loyalty", note: "Lasting relationships", d: "M11 15a4 4 0 1 1 5-3.8M21 15a4 4 0 1 0-5-3.8M7 26c0-4 4-6 9-6s9 2 9 6" },
+  { name: "Respect", note: "For every client", d: "M16 6c-5 0-9 4-9 9v4l-2 3h22l-2-3v-4c0-5-4-9-9-9Zm-3 20a3 3 0 0 0 6 0" },
+  { name: "Strength", note: "Steady delivery", d: "M18 3 7 18h8l-2 11 12-16h-8l1-10Z" },
 ];
 
-function EmblemGeometry() {
-  return (
-    <svg aria-hidden viewBox="0 0 600 600" className="absolute inset-0 h-full w-full text-gold" fill="none" stroke="currentColor">
-      <g className="lux-spin [transform-box:view-box] origin-center">
-        {ticks.map((deg) => (
-          <line key={deg} x1="300" y1="6" x2="300" y2={deg % 30 === 0 ? 22 : 13} strokeOpacity={deg % 30 === 0 ? 0.75 : 0.28} transform={`rotate(${deg} 300 300)`} />
-        ))}
-      </g>
-      <motion.circle
-        cx="300"
-        cy="300"
-        r="272"
-        strokeOpacity=".35"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 2.2, ease: easeLux, delay: 0.2 }}
-      />
-      <motion.circle
-        cx="300"
-        cy="300"
-        r="236"
-        strokeOpacity=".14"
-        initial={{ pathLength: 0 }}
-        animate={{ pathLength: 1 }}
-        transition={{ duration: 2.2, ease: easeLux, delay: 0.5 }}
-      />
-      {/* One point on the ring for each business dimension */}
-      {[
-        [300, 28],
-        [572, 300],
-        [300, 572],
-        [28, 300],
-      ].map(([cx, cy]) => (
-        <circle key={`${cx}-${cy}`} cx={cx} cy={cy} r="3.5" fill="currentColor" stroke="none" />
-      ))}
-    </svg>
-  );
-}
+const glass = "border border-white/15 bg-white/[0.07] backdrop-blur-xl";
 
 export function HomeHero({ title, description, primaryCta, secondaryCta, logo, ventures }: HomeHeroProps) {
-  const reduce = useReducedMotion();
-  const pointerX = useMotionValue(0);
-  const pointerY = useMotionValue(0);
-  const rotateY = useSpring(useTransform(pointerX, [-0.5, 0.5], [-7, 7]), { stiffness: 60, damping: 18 });
-  const rotateX = useSpring(useTransform(pointerY, [-0.5, 0.5], [6, -6]), { stiffness: 60, damping: 18 });
+  const pointer = useRef({ x: 0, y: 0 });
+  const [active, setActive] = useState<StationKey | null>(null);
+  const routes = useRef(Object.fromEntries(ventures.map((v) => [v.key, v.href])) as Record<StationKey, string>).current;
 
-  const tilt = (e: PointerEvent<HTMLElement>) => {
-    if (reduce || e.pointerType !== "mouse") return;
+  const stations = ventures.filter((v) => isStation(v.key)) as (HomeHeroProps["ventures"][number] & { key: StationKey })[];
+  const shown = stations.find((v) => v.key === active) ?? stations[0];
+  const shownIndex = Math.max(1, stations.findIndex((v) => v.key === shown?.key) + 1);
+
+  const track = (e: PointerEvent<HTMLElement>) => {
+    if (e.pointerType !== "mouse") return;
     const r = e.currentTarget.getBoundingClientRect();
-    pointerX.set((e.clientX - r.left) / r.width - 0.5);
-    pointerY.set((e.clientY - r.top) / r.height - 0.5);
+    pointer.current = { x: (e.clientX - r.left) / r.width - 0.5, y: (e.clientY - r.top) / r.height - 0.5 };
   };
 
   return (
-    <section onPointerMove={tilt} className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-forest pt-28 text-ivory lg:pt-32">
-      <div aria-hidden className="lux-glow absolute -right-[12%] top-[-8%] -z-10 h-[75%] w-[70%] rounded-full bg-[radial-gradient(closest-side,rgba(11,107,80,0.95),transparent)]" />
-      <div aria-hidden className="absolute bottom-[-25%] left-[-15%] -z-10 h-[60%] w-[50%] rounded-full bg-[radial-gradient(closest-side,rgba(212,164,55,0.1),transparent)]" />
-      {sparks.map(([left, top, delay]) => (
-        <span
-          key={`${left}-${top}`}
-          aria-hidden
-          className="lux-spark absolute -z-10 h-1 w-1 rounded-full bg-gold opacity-40"
-          style={{ left: `${left}%`, top: `${top}%`, animationDelay: `${delay}s` }}
-        />
-      ))}
+    <section
+      onPointerMove={track}
+      onPointerLeave={() => (pointer.current = { x: 0, y: 0 })}
+      className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-forest pt-28 text-ivory lg:pt-32"
+    >
+      {/* backdrop: the art keeps its subjects (laptop, salon) on the right, clear of the headline */}
+      <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden bg-forest">
+        <Image src="/bgimg.png" alt="" fill priority sizes="100vw" className="object-cover object-[78%_50%]" />
+        {/* left to right: deep forest green, black, gray, transparent */}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,#04281f_0%,rgba(0,0,0,0.88)_30%,rgba(75,85,99,0.5)_62%,transparent_100%)]" />
+      </div>
 
-      <div className="container-lux grid flex-1 items-center gap-10 pb-12 lg:grid-cols-12 lg:gap-6 lg:pb-14">
-        <div className="lg:col-span-7">
+      <div className="container-lux flex flex-1 flex-col lg:justify-center lg:pb-40">
+        <div className="relative z-10 lg:max-w-[32rem] xl:max-w-[36rem]">
           <motion.p
-            className="eyebrow flex items-center gap-3 text-[0.62rem] leading-relaxed text-gold sm:text-[0.7rem]"
+            className={`inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-[0.62rem] font-semibold uppercase leading-none tracking-[0.18em] text-gold sm:text-[0.7rem] ${glass}`}
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: easeLux, delay: 0.2 }}
           >
-            <motion.span
-              aria-hidden
-              className="hidden h-px w-10 origin-left bg-gold sm:block"
-              initial={{ scaleX: 0 }}
-              animate={{ scaleX: 1 }}
-              transition={{ duration: 1, ease: easeLux, delay: 0.3 }}
-            />
+            <svg viewBox="0 0 16 16" aria-hidden className="h-3.5 w-3.5 shrink-0" fill="currentColor">
+              <path d="M8 0l1.8 5.2L15 7l-5.2 1.8L8 14l-1.8-5.2L1 7l5.2-1.8L8 0Z" />
+            </svg>
             Goldenfalcone · A Diversified Business Group
           </motion.p>
 
@@ -123,13 +116,13 @@ export function HomeHero({ title, description, primaryCta, secondaryCta, logo, v
             immediate
             delay={0.3}
             lines={title}
-            accentIndex={title.length - 1}
+            accentFrom={1}
             accentClassName="italic text-champagne"
-            className="mt-6 text-[3.15rem] leading-[1] xs:text-[3.6rem] sm:text-7xl xl:text-[6.1rem]"
+            className="mt-6 text-[3rem] leading-[1.02] xs:text-[3.4rem] sm:text-7xl lg:text-[3.6rem] xl:text-[3.6rem] 2xl:text-[4.2rem]"
           />
 
           <motion.p
-            className="mt-7 max-w-xl text-base leading-relaxed text-ivory/75 sm:text-lg"
+            className="mt-4 max-w-md text-base leading-relaxed text-ivory/75 sm:text-lg"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: easeLux, delay: 0.75 }}
@@ -138,55 +131,45 @@ export function HomeHero({ title, description, primaryCta, secondaryCta, logo, v
           </motion.p>
 
           <motion.div
-            className="mt-9 flex flex-col gap-3 xs:flex-row xs:flex-wrap sm:gap-4"
+            className="mt-7 flex flex-col gap-3 xs:flex-row xs:flex-wrap xs:items-center sm:gap-4"
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, ease: easeLux, delay: 0.9 }}
           >
             <AnimatedButton href="#businesses">{primaryCta}</AnimatedButton>
-            <AnimatedButton href="/about" variant="outline-light" arrow={false}>
+            <Link href="/about" className="group inline-flex items-center gap-3 self-start text-sm font-medium text-ivory transition-colors hover:text-champagne xs:self-auto">
+              <span className={`flex h-11 w-11 items-center justify-center rounded-full transition-colors group-hover:border-gold ${glass}`}>
+                <svg viewBox="0 0 16 16" aria-hidden className="ml-0.5 h-3.5 w-3.5" fill="currentColor">
+                  <path d="M3 1.5v13l11-6.5L3 1.5Z" />
+                </svg>
+              </span>
               {secondaryCta}
-            </AnimatedButton>
+            </Link>
           </motion.div>
-        </div>
 
-        <div className="relative mx-auto aspect-square w-full max-w-[21rem] [perspective:1400px] sm:max-w-md lg:col-span-5 lg:max-w-none">
-          <EmblemGeometry />
-          <motion.div
-            className="absolute inset-[11%] [transform-style:preserve-3d]"
-            style={reduce ? undefined : { rotateX, rotateY }}
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 1.5, ease: easeLux, delay: 0.1 }}
+          <motion.ul
+            className="mt-7 hidden grid-cols-4 gap-4 sm:grid [@media(max-height:900px)]:lg:hidden"
+            aria-label="What we stand for"
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, ease: easeLux, delay: 1.05 }}
           >
-            <div aria-hidden className="absolute inset-[6%] rounded-full bg-gold/20 blur-3xl" />
-            <Image
-              src={logo}
-              alt="Goldenfalcone emblem: a golden eagle encircling a tree"
-              fill
-              priority
-              sizes="(min-width: 1024px) 34vw, 70vw"
-              className="object-contain drop-shadow-[0_24px_40px_rgba(0,0,0,0.45)]"
-            />
-          </motion.div>
+            {pillars.map((p) => (
+              <li key={p.name} className="flex flex-col items-start gap-2">
+                <span className="flex h-10 w-10 items-center justify-center rounded-full border border-gold/40 bg-gold/5 text-gold">
+                  <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden className="h-5 w-5">
+                    <path d={p.d} />
+                  </svg>
+                </span>
+                <span className="text-sm font-semibold leading-tight">{p.name}</span>
+                <span className="-mt-1.5 text-xs leading-snug text-ivory/60">{p.note}</span>
+              </li>
+            ))}
+          </motion.ul>
         </div>
       </div>
 
-      <nav aria-label="Our businesses" className="border-t border-gold/20">
-        <ul className="container-lux grid grid-cols-2 gap-x-4 lg:grid-cols-4 lg:gap-x-6">
-          {ventures.map((v) => (
-            <li key={v.key}>
-              <Link
-                href={v.href}
-                className="group flex h-full items-baseline gap-3 py-4 text-sm leading-snug text-ivory/85 transition-colors hover:text-champagne sm:py-5 sm:text-[0.95rem]"
-              >
-                <span className="eyebrow text-gold">{v.number}</span>
-                <span className="link-underline">{v.title}</span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </nav>
+      
     </section>
   );
 }

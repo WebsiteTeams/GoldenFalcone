@@ -1,7 +1,7 @@
 import { RevealUp, StaggerList, StaggerListItem, TextReveal } from "@/components/animations";
 
 const reasons = [
-  { title: "Diversified Business Ventures", text: "Four distinct ventures under one brand, each focused on its own field." },
+  { title: "Diversified Business Ventures", text: "Three distinct ventures under one brand, each focused on its own field." },
   { title: "Purpose-Driven Approach", text: "Every venture exists to serve a clear need for the people it works with." },
   { title: "Commitment to Quality", text: "The same standard of care applies across every venture, from the first enquiry onward." },
   { title: "Customer-Focused Service", text: "We listen first, then respond to what each customer actually needs." },

@@ -9,7 +9,7 @@ import { site } from "@/lib/site";
  */
 export const defaultContent: SiteContent = {
   home: {
-    heroTitle: "One Vision.\nFour Dimensions of Business.",
+    heroTitle: "One Vision.\nThree Dimensions\nof Business.",
     heroDescription:
       "A diversified business group bringing together opportunities across spices, trading education and salon staffing — driven by purpose, integrity, and a vision for growth.",
     heroPrimaryCta: "Explore Our Businesses",
