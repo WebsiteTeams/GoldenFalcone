@@ -8,8 +8,9 @@ import {
   motion,
   useMotionValueEvent,
   useScroll,
+  useSpring,
 } from "framer-motion";
-import { ChevronDown, Leaf, GraduationCap, Scissors } from "lucide-react";
+import { ArrowRight, ChevronDown, Leaf, GraduationCap, Scissors } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { AnimatedButton } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
@@ -31,6 +32,15 @@ const divisionIcons: Record<ServiceKey, typeof Leaf> = {
 const isActive = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname.startsWith(href);
 
+function Underline() {
+  return (
+    <span
+      aria-hidden
+      className="absolute inset-x-0 -bottom-0.5 h-px origin-center scale-x-0 bg-gradient-to-r from-transparent via-gold to-transparent transition-transform duration-500 ease-[var(--ease-lux)] group-hover:scale-x-100 group-aria-[current=page]:scale-x-100"
+    />
+  );
+}
+
 export function Navbar({ logo }: { logo?: string }) {
   const pathname = usePathname();
   const { scrollY } = useScroll();
@@ -42,7 +52,20 @@ export function Navbar({ logo }: { logo?: string }) {
   const closeTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   // Scroll-based header state
-  useMotionValueEvent(scrollY, "change", (y) => setScrolled(y > 24));
+  const lastY = useRef(0);
+  const [hidden, setHidden] = useState(false);
+  const { scrollYProgress } = useScroll();
+  const progress = useSpring(scrollYProgress, { stiffness: 120, damping: 30, restDelta: 0.001 });
+
+  // Hide on scroll down, reveal on scroll up.
+  useMotionValueEvent(scrollY, "change", (y) => {
+    setScrolled(y > 24);
+    const delta = y - lastY.current;
+    if (Math.abs(delta) > 6) {
+      setHidden(delta > 0 && y > 240);
+      lastY.current = y;
+    }
+  });
 
   useEffect(() => {
     setScrolled(window.scrollY > 24);
@@ -75,6 +98,7 @@ export function Navbar({ logo }: { logo?: string }) {
   }, [menuOpen]);
 
   const solid = scrolled || menuOpen;
+  const hide = hidden && !menuOpen && !mobileOpen;
   const divisionActive = divisions.some((d) => pathname.startsWith(d.href));
 
   const openWithHover = () => {
@@ -88,9 +112,9 @@ export function Navbar({ logo }: { logo?: string }) {
   /** Class for navigation link text, varying by active state. */
   const linkClass = (active: boolean) =>
     cn(
-      "relative py-2.5 text-[0.875rem] font-medium tracking-[0.02em] uppercase transition-colors duration-300",
-      "text-ivory/80 hover:text-ivory",
-      active && "text-ivory",
+      "group relative py-2.5 text-[0.8rem] font-medium tracking-[0.14em] uppercase transition-colors duration-300",
+      "text-ivory/75 hover:text-champagne",
+      active ? "text-champagne" : "",
     );
 
   /** Class for the CTA button, varying by header state. */
@@ -104,12 +128,14 @@ export function Navbar({ logo }: { logo?: string }) {
 
   return (
     <>
-      <header
+      <motion.header
+        animate={{ y: hide ? "-110%" : "0%" }}
+        transition={{ duration: 0.45, ease: easeLux }}
         className={cn(
-          "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,padding,border-color] duration-500 ease-[var(--ease-lux)]",
+          "fixed inset-x-0 top-0 z-50 transition-[background-color,box-shadow,padding,border-color,backdrop-filter] duration-500 ease-[var(--ease-lux)]",
           solid
-            ? "border-b border-line/80 bg-forest py-3 shadow-[0_8px_30px_-18px_rgba(6,47,37,0.35)] backdrop-blur-md"
-            : "border-b border-transparent bg-transparent py-5",
+            ? "border-b border-gold/20 bg-[#04201a]/85 py-2.5 shadow-[0_12px_40px_-16px_rgba(0,0,0,0.7)] backdrop-blur-xl backdrop-saturate-150"
+            : "border-b border-white/10 bg-black/55 py-4 backdrop-blur-md",
         )}
       >
         <a
@@ -132,10 +158,11 @@ export function Navbar({ logo }: { logo?: string }) {
               <li>
                 <Link
                   href="/"
-                  className={linkClass(pathname === "/")}
-                  aria-current={pathname === "/" ? "page" : undefined}
+                  className={linkClass(isActive(pathname, "/"))}
+                  aria-current={isActive(pathname, "/") ? "page" : undefined}
                 >
                   Home
+                  <Underline />
                 </Link>
               </li>
               <li>
@@ -145,6 +172,7 @@ export function Navbar({ logo }: { logo?: string }) {
                   aria-current={isActive(pathname, "/about") ? "page" : undefined}
                 >
                   About Us
+                  <Underline />
                 </Link>
               </li>
 
@@ -161,8 +189,8 @@ export function Navbar({ logo }: { logo?: string }) {
                     aria-controls={menuId}
                     onClick={() => setMenuOpen((o) => !o)}
                     className={cn(
-                      "flex items-center gap-2 rounded-full border border-gold/30 hover:bg-gold/10 transition-colors",
-                      "py-2.5 px-4 text-sm font-medium hover:text-ivory",
+                      "flex items-center gap-1 rounded-full border border-gold/40 bg-white/[0.03] backdrop-blur-sm transition-all duration-300 hover:border-gold hover:bg-gold/10",
+                      "py-2.5 pl-5 pr-3.5 text-[0.8rem] font-medium uppercase tracking-[0.14em] hover:text-champagne",
                       divisionActive || menuOpen ? "text-ivory" : "text-ivory/80",
                     )}
                   >
@@ -183,73 +211,45 @@ export function Navbar({ logo }: { logo?: string }) {
                         animate={{ opacity: 1, x: "-50%", y: 0 }}
                         exit={{ opacity: 0, x: "-50%", y: 4 }}
                         transition={{ duration: 0.22, ease: easeLux }}
-                        className="absolute left-1/2 top-full z-30 w-full max-w-[24rem] pt-4 transform-negative translate-x-1/2"
+                        className="absolute left-1/2 top-full z-30 w-[22rem] pt-4 transform-negative translate-x-1/2"
                       >
-                        <div className="rounded-2xl bg-white p-4 shadow-[0_20px_45px_-12px_rgba(6,47,37,0.3)] backdrop-blur-sm">
-                          <div className="space-y-4">
-                            <div className="flex items-start gap-3">
-                              <svg
-                                className="h-5 w-5 text-gold flex-shrink-0 mt-0.5"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="1.5"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
-                                <line x1="3" y1="9" x2="21" y2="9" />
-                                <line x1="3" y1="15" x2="21" y2="15" />
-                              </svg>
-                              <div>
-                                <p className="text-xs uppercase tracking-[0.1em] text-ivory/60">EXPLORE GOLDENFALCONE</p>
-                                <p className="font-medium text-forest">Our Business Ventures</p>
-                                <p className="text-xs text-ivory/60">
-                                  Three distinct ventures, connected by one vision.
-                                </p>
-                              </div>
-                            </div>
-
-                            <div className="grid gap-3 md:grid-cols-2">
-                              {divisions.map((d) => {
-                                const Icon = divisionIcons[d.key];
-                                const current = pathname.startsWith(d.href);
-                                return (
-                                  <motion.a
-                                    key={d.key}
+                        <div className="overflow-hidden rounded-2xl border border-gold/25 bg-[#051f19]/95 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.85)] backdrop-blur-xl">
+                          <div className="border-b border-white/10 px-5 py-4">
+                            <p className="text-[0.65rem] font-semibold uppercase tracking-[0.22em] text-gold">Explore Goldenfalcone</p>
+                            <p className="mt-1 font-serif text-xl text-ivory">Our Business Ventures</p>
+                          </div>
+                          <ul className="p-2">
+                            {divisions.map((d) => {
+                              const Icon = divisionIcons[d.key];
+                              const current = pathname.startsWith(d.href);
+                              return (
+                                <li key={d.key}>
+                                  <Link
                                     href={d.href}
-                                    whileHover={{ y: -2 }}
-                                    whileTap={{ scale: 0.95 }}
-                                    transition={{ duration: 0.15 }}
                                     aria-current={current ? "page" : undefined}
                                     className={cn(
-                                      "group flex flex-col rounded-xl px-4 py-3.5 text-[0.9rem] transition-colors duration-200",
-                                      "hover:bg-forest/[0.04] hover:text-forest focus-visible:bg-forest/[0.04] focus-visible:text-forest",
-                                      current ? "bg-forest/[0.04] text-forest" : "text-muted",
+                                      "group/item flex items-center gap-4 rounded-xl px-3 py-3 transition-colors duration-200",
+                                      "hover:bg-gold/10 focus-visible:bg-gold/10",
+                                      current && "bg-gold/10",
                                     )}
                                   >
-                                    <div className="flex items-center gap-3 mb-2">
-                                      <Icon
-                                        aria-hidden
-                                        className="h-5 w-5 shrink-0 text-gold"
-                                        strokeWidth={1.25}
-                                      />
-                                      <span className="text-base font-medium forest">{d.title}</span>
-                                    </div>
-                                    <p className="text-xs text-ivory/60">{d.short}</p>
-                                    <span
-                                      className="mt-1 flex items-center justify-between text-gold/70 hover:text-gold transition-colors duration-200"
-                                    >
-                                      <span>Explore</span>
-                                      <ChevronDown
-                                        className="h-3.5 w-3.5 ml-1 transition-transform"
-                                      />
+                                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-gold/30 bg-gold/10 text-gold transition-colors duration-200 group-hover/item:bg-gold group-hover/item:text-forest">
+                                      <Icon aria-hidden className="h-5 w-5" strokeWidth={1.5} />
                                     </span>
-                                  </motion.a>
-                                );
-                              })}
-                            </div>
-                          </div>
+                                    <span className="min-w-0 flex-1">
+                                      <span className="block text-[0.95rem] font-medium text-ivory">{d.title}</span>
+                                      <span className="mt-0.5 line-clamp-1 block text-xs text-ivory/60">{d.short === d.title ? "" : d.description}</span>
+                                    </span>
+                                    <ArrowRight aria-hidden className="h-4 w-4 shrink-0 -translate-x-1 text-gold opacity-0 transition-all duration-200 group-hover/item:translate-x-0 group-hover/item:opacity-100" />
+                                  </Link>
+                                </li>
+                              );
+                            })}
+                          </ul>
+                          <Link href="/contact" className="flex items-center justify-between border-t border-white/10 bg-white/[0.03] px-5 py-3 text-xs uppercase tracking-[0.16em] text-ivory/70 transition-colors hover:text-champagne">
+                            Start a conversation
+                            <ArrowRight aria-hidden className="h-3.5 w-3.5 text-gold" />
+                          </Link>
                         </div>
                       </motion.div>
                     ) : null}
@@ -264,6 +264,7 @@ export function Navbar({ logo }: { logo?: string }) {
                   aria-current={isActive(pathname, "/contact") ? "page" : undefined}
                 >
                   Contact
+                  <Underline />
                 </Link>
               </li>
             </ul>
@@ -298,7 +299,12 @@ export function Navbar({ logo }: { logo?: string }) {
 
           </div>
         </nav>
-      </header>
+              <motion.span
+          aria-hidden
+          style={{ scaleX: progress }}
+          className="absolute inset-x-0 bottom-0 h-px origin-left bg-gradient-to-r from-gold/0 via-gold to-champagne"
+        />
+      </motion.header>
 
       <MobileMenu
         open={mobileOpen}

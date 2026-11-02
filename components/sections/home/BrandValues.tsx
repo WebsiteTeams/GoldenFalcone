@@ -1,7 +1,6 @@
 import { Gem, Handshake, Landmark, type LucideIcon, Shield, TreeDeciduous } from "lucide-react";
 import { RevealUp, StaggerContainer, StaggerItem, TextReveal } from "@/components/animations";
 import type { BrandValue } from "@/lib/content";
-import { GoldRule } from "./GoldRule";
 
 const icons: Record<string, LucideIcon> = {
   integrity: Gem,
@@ -11,15 +10,21 @@ const icons: Record<string, LucideIcon> = {
   legacy: TreeDeciduous,
 };
 
+const numerals = ["I", "II", "III", "IV", "V"];
+
+/** Each value stands as a pillar; the row steps down in a gentle stagger on large screens. */
 export function BrandValues({ values }: { values: BrandValue[] }) {
   return (
-    <section className="bg-ivory py-20 sm:py-28">
-      <div className="container-lux">
-        <div className="grid items-end gap-6 lg:grid-cols-12">
-          <div className="lg:col-span-8">
+    <section className="relative overflow-hidden bg-ivory py-24 sm:py-32">
+      <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
+      <div aria-hidden className="absolute -right-40 top-10 h-[34rem] w-[34rem] rounded-full bg-gold/[0.07] blur-3xl" />
+
+      <div className="container-lux relative">
+        <div className="grid items-end gap-8 lg:grid-cols-12">
+          <div className="lg:col-span-7">
             <RevealUp distance={14}>
-              <p className="eyebrow flex items-center gap-3 text-gold-deep">
-                <span aria-hidden className="h-px w-8 bg-current" />
+              <p className="eyebrow flex items-center gap-4 text-gold-deep">
+                <span aria-hidden className="h-px w-12 bg-gold" />
                 Our Philosophy
               </p>
             </RevealUp>
@@ -27,25 +32,33 @@ export function BrandValues({ values }: { values: BrandValue[] }) {
               lines={["Built on Values.", "Driven by Vision."]}
               accentIndex={1}
               accentClassName="italic text-gold-dark"
-              className="mt-6 text-[2.75rem] leading-[1.03] text-forest xs:text-5xl sm:text-7xl"
+              className="mt-7 text-[2.75rem] leading-[1.03] text-forest xs:text-5xl sm:text-7xl"
             />
           </div>
+          <RevealUp delay={0.15} className="lg:col-span-4 lg:col-start-9">
+            <p className="border-l border-gold/60 pl-6 font-serif text-xl italic leading-snug text-forest/80 sm:text-2xl">
+              Five principles that shape every conversation, agreement and relationship.
+            </p>
+          </RevealUp>
         </div>
 
-        <GoldRule className="mt-12 sm:mt-16" />
-        <StaggerContainer
-          className="grid divide-y divide-line lg:grid-cols-[repeat(var(--count),minmax(0,1fr))] lg:divide-x lg:divide-y-0"
-          style={{ "--count": values.length } as React.CSSProperties}
-        >
-          {values.map((value) => {
+        <StaggerContainer className="mt-16 grid gap-5 sm:grid-cols-2 lg:mt-24 lg:grid-cols-5 lg:items-start lg:gap-4">
+          {values.map((value, i) => {
             const Icon = icons[value.name.toLowerCase()] ?? Gem;
             return (
-              <StaggerItem key={value.name} className="group grid grid-cols-[3.25rem_1fr] gap-x-3 py-7 lg:block lg:px-6 lg:py-10 lg:first:pl-0 lg:last:pr-0">
-                <Icon aria-hidden className="h-8 w-8 text-gold-dark transition-transform duration-500 group-hover:-translate-y-1 motion-reduce:group-hover:translate-y-0" strokeWidth={1.15} />
-                <div>
-                  <h3 className="text-[2rem] leading-none text-gold-dark lg:mt-7 xl:text-[2.4rem]">{value.name}</h3>
-                  <p className="mt-3 text-sm leading-relaxed text-muted lg:mt-4">{value.text}</p>
-                </div>
+              <StaggerItem key={value.name} className={i % 2 === 1 ? "lg:mt-14" : ""}>
+                <article className="group relative flex h-full min-h-[22rem] flex-col overflow-hidden rounded-t-[5rem] rounded-b-2xl border border-gold/30 bg-[linear-gradient(180deg,#0b4a39_0%,#062f25_55%,#031c15_100%)] px-6 pb-8 pt-12 shadow-[0_30px_60px_-30px_rgba(6,47,37,0.8)] transition-all duration-500 hover:-translate-y-2 hover:border-gold/70 hover:shadow-[0_40px_80px_-25px_rgba(212,164,55,0.35)] motion-reduce:hover:translate-y-0">
+                  <div aria-hidden className="absolute inset-x-6 top-3 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
+                  <span aria-hidden className="absolute -right-2 bottom-0 select-none font-serif text-[7rem] italic leading-none text-gold/[0.08] transition-colors duration-500 group-hover:text-gold/[0.16]">
+                    {numerals[i] ?? i + 1}
+                  </span>
+                  <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full border border-gold/50 bg-gold/10 text-gold transition-colors duration-500 group-hover:bg-gold group-hover:text-forest">
+                    <Icon aria-hidden className="h-6 w-6" strokeWidth={1.3} />
+                  </span>
+                  <h3 className="mt-7 text-center text-[1.9rem] leading-none text-champagne">{value.name}</h3>
+                  <span aria-hidden className="mx-auto mt-4 h-px w-10 bg-gold/60 transition-all duration-500 group-hover:w-20" />
+                  <p className="relative mt-5 text-center text-sm leading-relaxed text-ivory/70">{value.text}</p>
+                </article>
               </StaggerItem>
             );
           })}

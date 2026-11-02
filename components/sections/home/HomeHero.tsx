@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { AnimatedButton, TextReveal } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
 import { images } from "@/lib/content";
-import { HeroVisual } from "./hero3d/HeroVisual";
+import { HERO_OVERLAY } from "./HeroBackdrop";
 import type { StationKey } from "./hero3d/Stations";
 
 type HomeHeroProps = {
@@ -88,11 +88,13 @@ export function HomeHero({ title, description, primaryCta, secondaryCta, logo, v
     <section
       onPointerMove={track}
       onPointerLeave={() => (pointer.current = { x: 0, y: 0 })}
-      className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-forest pt-28 text-ivory lg:pt-32"
+      className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-black pt-28 text-ivory lg:pt-32"
     >
       {/* backdrop: the art keeps its subjects (laptop, salon) on the right, clear of the headline */}
-      <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden bg-forest">
-        <Image src="/bgimg.png" alt="" fill priority sizes="100vw" className="object-cover object-[78%_50%]" />
+      <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden bg-black">
+        <Image src="/bgimg1.png" alt="" fill priority sizes="100vw" className="object-cover object-[78%_50%]" />
+        {/* dark forest overlay, top to bottom */}
+        <div className="absolute inset-0 opacity-60" style={{ background: HERO_OVERLAY }} />
         {/* left to right: deep forest green, black, gray, transparent */}
         <div className="absolute inset-0 bg-[linear-gradient(90deg,#04281f_0%,rgba(0,0,0,0.88)_30%,rgba(75,85,99,0.5)_62%,transparent_100%)]" />
       </div>

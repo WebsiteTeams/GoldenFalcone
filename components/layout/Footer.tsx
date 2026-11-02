@@ -29,12 +29,33 @@ export async function Footer() {
   return (
     <footer className="grain relative isolate overflow-hidden bg-forest text-ivory">
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
-      <Image src={config.logo} alt="" width={720} height={720} aria-hidden className="pointer-events-none absolute -bottom-40 -right-32 -z-10 h-[34rem] w-[34rem] opacity-[0.07] sm:h-[44rem] sm:w-[44rem]" />
-      <div className="container-lux relative pt-14 sm:pt-16">
-        <p className="border-b border-gold/20 pb-14 font-serif text-4xl leading-[1.08] text-ivory sm:pb-16 sm:text-6xl">
-          One Vision. <span className="italic text-champagne">Three Dimensions of Business.</span>
-        </p>
-      </div>
+      <Image src={config.logo} alt="" width={620} height={620} aria-hidden className="pointer-events-none absolute bottom-12 right-10 -z-10 h-[14rem] w-[14rem] opacity-[0.07] sm:h-[20rem] sm:w-[20rem]" />
+      {/* <div className="container-lux relative pt-16 sm:pt-24">
+        <div className="grid items-end gap-10 border-b border-gold/20 pb-14 sm:pb-20 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <p className="eyebrow flex items-center gap-4 text-gold">
+              <span aria-hidden className="h-px w-12 bg-gold" />
+              Let&apos;s talk
+            </p>
+            <p className="mt-6 font-serif text-4xl leading-[1.05] text-ivory sm:text-6xl xl:text-7xl">
+              One Vision. <span className="block italic text-champagne">Three Dimensions of Business.</span>
+            </p>
+          </div>
+          <div className="lg:col-span-4 lg:justify-self-end">
+            <Link
+              href="/contact"
+              className="group inline-flex items-center gap-5 rounded-full border border-gold/50 bg-gold/[0.07] py-3 pl-8 pr-3 font-serif text-xl text-ivory backdrop-blur-sm transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-forest"
+            >
+              Start a conversation
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold text-forest transition-all duration-300 group-hover:bg-forest group-hover:text-gold">
+                <svg viewBox="0 0 16 16" aria-hidden className="h-5 w-5 -rotate-45 transition-transform duration-300 group-hover:rotate-0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+              </span>
+            </Link>
+          </div>
+        </div>
+      </div> */}
       <div className="container-lux relative grid gap-12 py-14 md:grid-cols-12 lg:py-16">
         <div className="md:col-span-12 lg:col-span-5">
           <Logo size={60} src={config.logo} />
@@ -123,6 +144,10 @@ export async function Footer() {
             ) : null}
           </ul>
         </div>
+      </div>
+
+      <div aria-hidden className="relative select-none overflow-hidden text-center font-serif text-[8.5vw] font-medium uppercase leading-[0.8] tracking-[0.02em] text-transparent [-webkit-text-stroke:1px_rgba(212,164,55,0.22)] sm:text-[7.6vw]">
+        Goldenfalcone
       </div>
 
       <div className="relative border-t border-ivory/10">
