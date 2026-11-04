@@ -6,10 +6,18 @@ import {
   communicationChannels,
   communicationParties,
   connectionStatuses,
+  availabilityValues,
+  contactMethods,
   DEFAULT_PRODUCTS_PER_PAGE,
-  digitalEnquiryStatuses,
-  digitalIndustries,
+  deliveryMethodValues,
+  deliveryStatuses,
   enquiryStatuses,
+  licenceTypeValues,
+  paymentStatuses,
+  softwareCategoryValues,
+  softwarePlatformValues,
+  SUPPORTED_CURRENCIES,
+  tradingMarketValues,
   interviewStatuses,
   LAB_REPORT_MAX_BYTES,
   LAB_REPORT_TYPES,
@@ -127,20 +135,6 @@ export const profileSchema = z.object({ name: str("Name", 2, 80) });
 export const noteSchema = z.object({ body: str("Note", 1, 2000) });
 
 export const enquiryUpdateSchema = z.object({ status: z.enum(enquiryStatuses) });
-export const digitalEnquiryUpdateSchema = z.object({
-  status: z.enum(digitalEnquiryStatuses).optional(),
-  assignedTo: z
-    .object({
-      adminId: objectId.optional(),
-      adminName: z.string().max(100).optional(),
-    })
-    .optional(),
-  followUpDate: optionalDate,
-});
-export const digitalEnquiryHistorySchema = z.object({
-  channel: z.enum(["call", "whatsapp", "email", "meeting"]),
-  notes: str("Notes", 1, 1000),
-});
 export const staffingUpdateSchema = z.object({ status: z.enum(staffingStatuses) });
 export const candidateUpdateSchema = z.object({ status: z.enum(candidateStatuses) });
 
@@ -362,44 +356,132 @@ export const orderUpdateSchema = z.object({
   internalNote: z.string().max(2000).optional(),
 });
 
-export const mentorshipProgramSchema = z.object({
-  title: str("Programme title", 2, 120),
+// ---------- Trading software ----------
+
+const licenceOption = z.object({
+  // Present for saved licences so orders keep pointing at the right one; the server assigns ids to new ones.
+  id: objectId.optional(),
+  name: str("Licence name", 2, 80),
+  licenceType: z.enum(licenceTypeValues, { errorMap: () => ({ message: "Select a licence type" }) }),
+  price: z.coerce
+    .number({ required_error: "Price is required", invalid_type_error: "Price must be a number" })
+    .min(0, "Price must be 0 or greater")
+    .max(100000000, "Price is too large"),
+  description: optional(300),
+  active: z.boolean().default(true),
+});
+export type LicenceOptionInput = z.input<typeof licenceOption>;
+
+const softwareFaq = z.object({ question: str("Question", 3, 200), answer: str("Answer", 3, 1500) });
+
+export const tradingSoftwareSchema = z.object({
+  name: str("Software name", 2, 100),
   slug,
-  description: str("Description", 10, 2000),
-  topics: list(12, 100),
-  format: optional(120),
-  duration: optional(80),
-  availability: optional(120),
-  ctaLabel: optional(40),
+  category: z.enum(softwareCategoryValues, { errorMap: () => ({ message: "Select a category" }) }),
+  markets: z.array(z.enum(tradingMarketValues)).max(tradingMarketValues.length).default([]),
+  shortDescription: str("Short description", 10, 400),
+  description: optional(6000),
+  thumbnail: image.nullable().default(null),
+  screenshots: z.array(image).max(8, "Up to 8 screenshots").default([]),
+  demoVideo: url,
+  features: list(20, 160),
+  supportedPlatforms: z.array(z.enum(softwarePlatformValues)).default([]),
+  systemRequirements: optional(2000),
+  installationNotes: optional(3000),
+  supportInfo: optional(1500),
+  licenceTerms: optional(3000),
+  faqs: z.array(softwareFaq).max(12, "Up to 12 questions").default([]),
+  licenceOptions: z.array(licenceOption).max(8, "Up to 8 licence options").default([]),
+  currency: z.enum(SUPPORTED_CURRENCIES).default("INR"),
+  availability: z.enum(availabilityValues).default("available"),
+  featured: z.boolean().default(false),
+  featuredOrder: z.coerce.number().int().min(0).max(9999).default(0),
   status,
   order,
   seo,
 });
+export type TradingSoftwareInput = z.input<typeof tradingSoftwareSchema>;
 
-export const digitalServiceSchema = z.object({
-  title: str("Service title", 2, 100),
-  slug,
-  category: optional(60),
-  description: str("Description", 10, 1000),
-  image: image.nullable().default(null),
-  startingPrice: optional(60),
-  features: list(10, 100),
-  status,
-  order,
-  seo,
+type SoftwarePublishCandidate = {
+  thumbnail?: unknown;
+  licenceOptions?: Array<{ active?: boolean; price?: unknown }> | null;
+};
+
+/** What must be true before a product goes live. Drafts may be incomplete. */
+export function softwarePublishErrors(product: SoftwarePublishCandidate): Record<string, string> | null {
+  const errors: Record<string, string> = {};
+  if (!product.thumbnail) errors.thumbnail = "Upload a thumbnail before publishing";
+  (product.licenceOptions ?? []).forEach((l, i) => {
+    if (l.active !== false && !(Number(l.price) > 0)) errors[`licenceOptions.${i}.price`] = "Enter a price for every active licence, or switch it off";
+  });
+  return Object.keys(errors).length ? errors : null;
+}
+
+const optionalField = (max: number) => z.string().max(max, `Must be ${max} characters or fewer`).transform(sanitize).optional();
+
+/** Admin updates to a software order. Every field is optional, so each panel saves only what it changed. */
+export const softwareOrderUpdateSchema = z.object({
+  status: z.enum(orderStatuses).optional(),
+  paymentStatus: z.enum(paymentStatuses).optional(),
+  deliveryMethod: z.enum(["", ...deliveryMethodValues]).optional(),
+  deliveryStatus: z.enum(deliveryStatuses).optional(),
+  licenceKey: optionalField(500),
+  activationInstructions: optionalField(3000),
+  downloadUrl: z
+    .string()
+    .trim()
+    .max(500)
+    .refine((v) => v === "" || /^https:\/\/[^\s]+$/i.test(v), "Use a full https:// link")
+    .optional(),
 });
 
-export const portfolioProjectSchema = z.object({
-  title: str("Project title", 2, 100),
-  slug,
-  category: optional(80),
-  description: optional(600),
-  image: image.nullable().default(null),
-  projectUrl: url,
-  isConcept: z.boolean().default(true),
-  status,
-  order,
+export const softwareEnquiryUpdateSchema = z.object({ status: z.enum(enquiryStatuses) });
+
+// ---------- Public software forms ----------
+
+const publicPhone = z
+  .string()
+  .trim()
+  .min(7, "Phone number is required")
+  .max(20)
+  .regex(/^\+?[0-9\s\-()]{7,20}$/, "Enter a valid phone number");
+const publicEmail = z.string().trim().toLowerCase().min(1, "Email is required").email("Enter a valid email address").max(160);
+const spam = {
+  website: z.string().max(0, "Invalid submission").optional().or(z.literal("")),
+  startedAt: z.number().int().positive(),
+};
+
+export const softwareDemoRequestSchema = z.object({
+  name: str("Full name", 2, 100),
+  email: publicEmail,
+  phone: publicPhone,
+  company: optional(120),
+  software: objectId.optional().or(z.literal("")),
+  tradingMarket: z.enum(["", ...tradingMarketValues]).optional().default(""),
+  message: str("Message", 10, 3000),
+  preferredContactMethod: z.enum(contactMethods, { errorMap: () => ({ message: "Select a contact method" }) }),
+  consent: z.literal(true, { errorMap: () => ({ message: "Please accept the privacy notice to continue" }) }),
+  ...spam,
 });
+export type SoftwareDemoRequestInput = z.input<typeof softwareDemoRequestSchema>;
+
+export const softwarePurchaseSchema = z.object({
+  productId: objectId,
+  licenceId: objectId,
+  // The price the customer saw. Only used to detect a change: the charged price always comes from the database.
+  expectedPrice: z.number().min(0).optional(),
+  customer: z.object({
+    name: str("Full name", 2, 100),
+    email: publicEmail,
+    phone: publicPhone,
+    company: optional(120),
+    country: optional(80),
+  }),
+  notes: optional(2000),
+  consent: z.literal(true, { errorMap: () => ({ message: "Please accept the terms to continue" }) }),
+  ...spam,
+});
+export type SoftwarePurchaseInput = z.input<typeof softwarePurchaseSchema>;
 
 // ---------- Website content ----------
 
@@ -497,7 +579,6 @@ export const listQuerySchema = z.object({
   experience: z.enum(experienceOptions).optional().catch(undefined),
   availability: z.string().trim().max(60).optional().catch(undefined),
   skill: z.string().trim().max(100).optional().catch(undefined),
-  industry: z.enum(digitalIndustries).optional().catch(undefined),
   from: dateParam,
   to: dateParam,
   sort: z.enum(["newest", "oldest"]).catch("newest").default("newest"),

@@ -41,26 +41,26 @@ const sections: LegalSection[] = [
     body: (
       <p>
         Submitting an enquiry, request or application does not create a binding agreement or guarantee a particular outcome.
-        Any engagement — a spice supply order, a mentorship programme or a staffing arrangement — is
+        Any engagement — a spice supply order, a trading software licence or a staffing arrangement — is
         governed by the separate terms agreed between you and Goldenfalcone for that engagement.
       </p>
     ),
   },
   {
-    id: "mentorship",
-    heading: "Trading mentorship disclaimer",
+    id: "trading-software",
+    heading: "Trading software disclaimer",
     body: (
       <>
         <p>
-          Our trading mentorship is educational only. It is not financial, investment, tax or legal advice, and nothing on
-          this website is a recommendation to buy or sell any financial instrument.
+          Goldenfalcone sells trading software. We do not provide trading signals, investment advice or managed accounts, and
+          nothing on this website is a recommendation to buy or sell any financial instrument.
         </p>
         <p>
           Trading involves substantial risk, and you may lose some or all of your capital. Past performance does not
-          indicate future results, and we do not guarantee profits. You are solely responsible for your own trading
-          decisions. See the full{" "}
-          <Link href="/trading-mentorship" className={link}>
-            risk disclosure
+          indicate future results, and we do not guarantee profits or that any software will suit your needs. You are solely
+          responsible for your own trading decisions. Licence and usage conditions for each product are shown on its{" "}
+          <Link href="/trading-software" className={link}>
+            product page
           </Link>
           .
         </p>

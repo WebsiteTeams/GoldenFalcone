@@ -13,7 +13,7 @@ export const site = {
   legalName: "GOLDENFALCONE",
   tagline: "Integrity, Loyalty, Respect, Strength, Legacy.",
   description:
-    "Goldenfalcone is a diversified business brand spanning whole-spice export and import, trading mentorship and salon staffing.",
+    "Goldenfalcone is a diversified business brand spanning whole-spice export and import, trading software and salon staffing.",
   url: (clean(process.env.NEXT_PUBLIC_SITE_URL) ?? "http://localhost:3000").replace(/\/$/, ""),
   logo: "/brand/emblem.webp",
   values: ["Integrity", "Loyalty", "Respect", "Strength", "Legacy"],

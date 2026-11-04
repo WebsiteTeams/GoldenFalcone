@@ -95,17 +95,7 @@ export default async function SpicesPage() {
         </ul>
       </section>
 
-      {/* Brand introduction */}
-      <section className="py-20 sm:py-28">
-        <RevealUp className="container-lux max-w-3xl text-center">
-          <p className="eyebrow text-gold-dark">Our Approach</p>
-          <h2 className="mt-4 text-4xl leading-tight text-forest sm:text-5xl">The same spice can mean very different things. We show you the difference.</h2>
-          <p className="mt-6 text-lg leading-relaxed text-muted">
-            Goldenfalcone offers spice powders and whole spices at more than one quality level, so you can buy what suits your
-            kitchen or your business. Every level has its own figures, its own sourcing and its own lab report, all in one place.
-          </p>
-        </RevealUp>
-      </section>
+     
 
       <FeaturedSection
         type="powder"

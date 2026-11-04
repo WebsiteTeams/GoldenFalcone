@@ -7,7 +7,7 @@ import {
   CalendarCheck,
   ClipboardList,
   FileText,
-  GraduationCap,
+  Monitor,
   Handshake,
   Inbox,
   Leaf,
@@ -240,7 +240,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Pr
                 { icon: ShoppingBag, label: "Spice orders", href: "/admin/orders", text: `${s.orders.total} total · ${s.orders.pending} pending` },
                 { icon: MailOpen, label: "Enquiries", href: "/admin/enquiries", text: `${s.enquiries.total} total · ${s.enquiries.new} new` },
                 { icon: Leaf, label: "Spices catalogue", href: "/admin/spices", text: `${s.spices.published} published · ${s.spices.draft} draft` },
-                { icon: GraduationCap, label: "Mentorship programmes", href: "/admin/mentorship", text: `${s.mentorship.published} published · ${s.mentorship.draft} draft` },
+                { icon: Monitor, label: "Trading software", href: "/admin/trading-software", text: `${s.software.published} published · ${s.software.draft} draft · ${s.software.pendingOrders} orders pending · ${s.software.newEnquiries} new demo requests` },
                 {
                   icon: FileText,
                   label: "Website content",

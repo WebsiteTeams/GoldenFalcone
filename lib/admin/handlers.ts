@@ -123,8 +123,8 @@ export function itemRoute(res: Resource) {
         const before = await res.model.findById(id).lean<Record<string, any>>();
         if (!before) return notFound(capital(res.entity));
 
+        res.prepare?.(data, before);
         if (res.kind === "catalogue") {
-          res.prepare?.(data, before);
           const invalidSave = res.saveErrors?.({ ...before, ...data });
           if (invalidSave) return saveBlocked(invalidSave);
           const blocked = res.publishErrors?.({ ...before, ...data });

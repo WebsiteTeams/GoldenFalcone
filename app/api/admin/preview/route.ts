@@ -4,7 +4,7 @@ import { authorize } from "@/lib/admin/api";
 
 export const runtime = "nodejs";
 
-const previewable = ["/", "/about", "/spices", "/trading-mentorship", "/salon-staffing", "/contact"];
+const previewable = ["/", "/about", "/spices", "/trading-software", "/salon-staffing", "/contact"];
 
 /** Turns on draft preview for a signed-in admin and opens the requested public page. */
 export async function GET(request: Request) {

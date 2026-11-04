@@ -60,15 +60,15 @@ export const divisions: Division[] = [
   {
     key: "mentorship",
     number: "02",
-    title: "Trading Mentorship",
-    short: "Mentorship",
+    title: "Trading Software",
+    short: "Software",
     description:
-      "Supporting individuals who want to develop their understanding of financial markets through structured trading education and mentorship.",
-    href: "/trading-mentorship",
-    cta: "Explore Trading Mentorship",
+      "Professional trading software for market analysis, trading strategies and automated workflows, available to explore, demo and purchase.",
+    href: "/trading-software",
+    cta: "Explore Trading Software",
     image: images.tradingCandles,
     imageAlt: "Candlestick price chart displayed on a dark screen",
-    highlights: ["Trading Fundamentals", "Market Basics", "Risk Management Education", "One-to-One Mentorship"],
+    highlights: ["Market Analysis", "Trading Strategies", "Automated Workflows"],
   },
   {
     key: "staffing",
@@ -84,9 +84,9 @@ export const divisions: Division[] = [
   },
 ];
 
-export const serviceOptions: { value: ServiceKey | "general"; label: string }[] = [
+export const serviceOptions: { value: Exclude<ServiceKey, "mentorship"> | "software" | "general"; label: string }[] = [
   { value: "spices", label: "Whole Spices Export & Import" },
-  { value: "mentorship", label: "Trading Mentorship" },
+  { value: "software", label: "Trading Software" },
   { value: "staffing", label: "Salon Staffing" },
   { value: "general", label: "General Enquiry" },
 ];
@@ -155,48 +155,6 @@ export const spices: Spice[] = [
     summary:
       "Dried ginger offers a warm, earthy pungency and is used in spice mixes, beverages, baking and food manufacturing.",
     notes: ["Warm, earthy pungency", "Suited to blending and processing", "Form and finish discussed per enquiry"],
-  },
-];
-
-export const mentorshipTopics = [
-  {
-    title: "Trading Fundamentals",
-    text: "How markets are structured, how orders work, common terminology and the building blocks every learner should understand first.",
-  },
-  {
-    title: "Market Basics",
-    text: "Reading price charts, understanding trends and volatility, and learning how news and sentiment can influence markets.",
-  },
-  {
-    title: "Risk Management Education",
-    text: "Position sizing, the role of stop-losses, capital preservation and why managing risk matters more than any single trade.",
-  },
-  {
-    title: "One-to-One Mentorship",
-    text: "Focused sessions to discuss your learning goals, review concepts and build a structured personal study plan.",
-  },
-];
-
-export const mentorshipFaqs = [
-  {
-    q: "Is this financial advice?",
-    a: "No. The mentorship is educational only. We do not provide investment advice, trade signals or recommendations to buy or sell any financial instrument.",
-  },
-  {
-    q: "Do I need prior trading experience?",
-    a: "No. Learning can begin with the fundamentals. Tell us your current level in the enquiry form so we can discuss a suitable starting point.",
-  },
-  {
-    q: "Can you guarantee that I will make money?",
-    a: "No. Trading involves substantial risk, and no education programme can guarantee profits or prevent losses. Any decisions you make with your own capital are your responsibility.",
-  },
-  {
-    q: "How are sessions delivered?",
-    a: "Format, schedule and availability are confirmed individually after your enquiry. Share your preferences in the form and we will get back to you.",
-  },
-  {
-    q: "What does the mentorship cost?",
-    a: "Fees depend on the format and duration discussed. Details are shared transparently during your consultation, before any commitment.",
   },
 ];
 

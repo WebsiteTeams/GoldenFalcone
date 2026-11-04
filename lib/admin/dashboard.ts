@@ -4,10 +4,12 @@ import { normalizeOrderStatus, openStaffingStatuses, orderStatusValues } from ".
 import { ActivityLog } from "@/models/ActivityLog";
 import { CandidateApplication } from "@/models/CandidateApplication";
 import { Enquiry } from "@/models/Enquiry";
-import { MentorshipProgram } from "@/models/MentorshipProgram";
 import { SiteContent } from "@/models/SiteContent";
 import { SpiceOrder } from "@/models/SpiceOrder";
 import { SpiceProduct } from "@/models/SpiceProduct";
+import { TradingSoftware } from "@/models/TradingSoftware";
+import { TradingSoftwareEnquiry } from "@/models/TradingSoftwareEnquiry";
+import { TradingSoftwareOrder } from "@/models/TradingSoftwareOrder";
 import { StaffingConnection } from "@/models/StaffingConnection";
 import { StaffingRequest } from "@/models/StaffingRequest";
 import { toPlain } from "./api";
@@ -36,8 +38,10 @@ export async function getDashboardStats() {
     pendingOrders,
     publishedSpices,
     draftSpices,
-    activePrograms,
-    draftPrograms,
+    publishedSoftware,
+    draftSoftware,
+    pendingSoftwareOrders,
+    newSoftwareEnquiries,
     totalStaffing,
     openStaffing,
     newStaffing,
@@ -66,8 +70,10 @@ export async function getDashboardStats() {
     SpiceOrder.countDocuments({ status: { $in: orderStatusValues("pending") } }),
     SpiceProduct.countDocuments(published),
     SpiceProduct.countDocuments(draft),
-    MentorshipProgram.countDocuments(published),
-    MentorshipProgram.countDocuments(draft),
+    TradingSoftware.countDocuments(published),
+    TradingSoftware.countDocuments(draft),
+    TradingSoftwareOrder.countDocuments({ status: { $in: orderStatusValues("pending") } }),
+    TradingSoftwareEnquiry.countDocuments({ status: "new" }),
     StaffingRequest.countDocuments(),
     StaffingRequest.countDocuments({ status: { $in: openStaffingStatuses } }),
     StaffingRequest.countDocuments({ status: "new" }),
@@ -131,7 +137,7 @@ export async function getDashboardStats() {
     enquiries: { total: number; new: number };
     orders: { total: number; pending: number };
     spices: { published: number; draft: number };
-    mentorship: { published: number; draft: number };
+    software: { published: number; draft: number; pendingOrders: number; newEnquiries: number };
     staffing: { total: number; open: number; new: number; awaitingReview: number; last30: number; openVacancies: number };
     candidates: { total: number; new: number; reviewing: number; shortlisted: number; last30: number };
     matching: { active: number; interviews: number; placements: number; pendingFollowUps: number };
@@ -154,7 +160,7 @@ export async function getDashboardStats() {
     enquiries: { total: totalEnquiries, new: newEnquiries },
     orders: { total: totalOrders, pending: pendingOrders },
     spices: { published: publishedSpices, draft: draftSpices },
-    mentorship: { published: activePrograms, draft: draftPrograms },
+    software: { published: publishedSoftware, draft: draftSoftware, pendingOrders: pendingSoftwareOrders, newEnquiries: newSoftwareEnquiries },
     staffing: { total: totalStaffing, open: openStaffing, new: newStaffing, awaitingReview: staffingAwaitingReview, last30: staffingLast30, openVacancies },
     candidates: { total: totalCandidates, new: newCandidates, reviewing: reviewingCandidates, shortlisted: shortlistedCandidates, last30: candidatesLast30 },
     matching: { active: activeMatches, interviews: interviewsScheduled, placements, pendingFollowUps },

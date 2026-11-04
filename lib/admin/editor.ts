@@ -1,9 +1,8 @@
 import "server-only";
 import type { AnyZodObject } from "zod";
-import type { PublicPortfolioProject, PublicProgram, PublicSpice } from "@/lib/cms";
+import type { PublicSpice } from "@/lib/cms";
 import { getSettings, mapSpice } from "@/lib/cms";
-import { mediaUrl } from "@/lib/media";
-import { normalizeVariants, spiceProductSchema } from "./schemas";
+import { normalizeVariants, spiceProductSchema, tradingSoftwareSchema } from "./schemas";
 
 /* eslint-disable @typescript-eslint/no-explicit-any -- maps loosely typed lean documents */
 type Doc = Record<string, any>;
@@ -18,8 +17,6 @@ export async function newItemStatus() {
   const { publishing } = await getSettings();
   return publishing.newItemsAsDraft ? ("draft" as const) : ("published" as const);
 }
-
-const img = (i?: { mediaId?: string; alt?: string } | null) => (i?.mediaId ? { url: mediaUrl(i.mediaId), alt: i.alt ?? "" } : null);
 
 /** Editor values for a product, with exactly one row per quality level and no stored ids. */
 export function spiceEditorValues(doc: Doc) {
@@ -38,24 +35,23 @@ export function spiceEditorValues(doc: Doc) {
 // Preview mappers — the same shapes the public site renders.
 export const previewSpice = (d: Doc): PublicSpice => mapSpice(d, d.category ?? "");
 
-export const previewProgram = (d: Doc): PublicProgram => ({
-  id: d._id,
-  slug: d.slug,
-  title: d.title,
-  description: d.description,
-  topics: d.topics ?? [],
-  format: d.format ?? "",
-  duration: d.duration ?? "",
-  availability: d.availability ?? "",
-  ctaLabel: d.ctaLabel ?? "",
-});
-
-export const previewPortfolio = (d: Doc): PublicPortfolioProject => ({
-  id: d._id,
-  title: d.title,
-  category: d.category ?? "",
-  description: d.description ?? "",
-  image: img(d.image),
-  projectUrl: d.projectUrl ?? "",
-  isConcept: d.isConcept ?? true,
-});
+/** Editor values for a software product. Licences carry their stored id so orders keep pointing at them after a save. */
+export function softwareEditorValues(doc: Doc) {
+  return {
+    ...editorValues(tradingSoftwareSchema, doc),
+    thumbnail: doc.thumbnail ?? null,
+    screenshots: doc.screenshots ?? [],
+    markets: doc.markets ?? [],
+    supportedPlatforms: doc.supportedPlatforms ?? [],
+    features: doc.features ?? [],
+    faqs: doc.faqs ?? [],
+    licenceOptions: (doc.licenceOptions ?? []).map((l: Doc) => ({
+      id: String(l._id),
+      name: l.name,
+      licenceType: l.licenceType,
+      price: l.price,
+      description: l.description ?? "",
+      active: l.active !== false,
+    })),
+  };
+}

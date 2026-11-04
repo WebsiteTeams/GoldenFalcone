@@ -10,8 +10,6 @@ import { divisions } from "@/lib/content";
 import { mediaUrl } from "@/lib/media";
 import { connectToDatabase } from "@/lib/mongodb";
 import { site } from "@/lib/site";
-import { MentorshipProgram } from "@/models/MentorshipProgram";
-import { PortfolioProject } from "@/models/PortfolioProject";
 import { SiteContent } from "@/models/SiteContent";
 import { SiteSettings } from "@/models/SiteSettings";
 import { SpiceCategory } from "@/models/SpiceCategory";
@@ -23,7 +21,8 @@ import { defaultContent, defaultSettings } from "./defaults";
  * so the public site always renders. Results are cached and refreshed by tag when admins save changes.
  */
 
-const REVALIDATE = 3600;
+// In development, refresh almost immediately so data written outside the admin (seed scripts) shows up.
+const REVALIDATE = process.env.NODE_ENV === "production" ? 3600 : 1;
 
 async function safely<T>(scope: string, read: () => Promise<T>, fallback: T): Promise<T> {
   try {
@@ -366,78 +365,4 @@ export const getSpiceById = (id: string) =>
       return mapSpice(doc as Record<string, unknown>, await findCategoryName(doc.category));
     },
     null,
-  );
-
-export type PublicProgram = {
-  id: string;
-  slug: string;
-  title: string;
-  description: string;
-  topics: string[];
-  format: string;
-  duration: string;
-  availability: string;
-  ctaLabel: string;
-};
-
-export const getPublishedPrograms = () =>
-  safely(
-    "mentorship",
-    unstable_cache(
-      async (): Promise<PublicProgram[]> => {
-        await connectToDatabase();
-        const docs = await MentorshipProgram.find(published).sort(order).limit(50).lean();
-        return docs.map((d) => ({
-          id: String(d._id),
-          slug: d.slug,
-          title: d.title,
-          description: d.description,
-          topics: d.topics ?? [],
-          format: d.format ?? "",
-          duration: d.duration ?? "",
-          availability: d.availability ?? "",
-          ctaLabel: d.ctaLabel ?? "",
-        }));
-      },
-      ["public:mentorship"],
-      { tags: ["mentorship"], revalidate: REVALIDATE },
-    ),
-    [],
-  );
-
-export type PublicPortfolioProject = {
-  id: string;
-  title: string;
-  category: string;
-  description: string;
-  image: { url: string; alt: string } | null;
-  projectUrl: string;
-  isConcept: boolean;
-};
-
-export const getPublishedDigital = () =>
-  safely(
-    "mentorship",
-    unstable_cache(
-      async () => {
-        await connectToDatabase();
-        const projects = await PortfolioProject.find(published).sort(order).limit(50).lean();
-        return {
-          projects: projects.map(
-            (d): PublicPortfolioProject => ({
-              id: String(d._id),
-              title: d.title,
-              category: d.category ?? "",
-              description: d.description ?? "",
-              image: img(d.image as Img),
-              projectUrl: d.projectUrl ?? "",
-              isConcept: d.isConcept ?? true,
-            }),
-          ),
-        };
-      },
-      ["public:mentorship"],
-      { tags: ["mentorship"], revalidate: REVALIDATE },
-    ),
-    { projects: [] },
   );

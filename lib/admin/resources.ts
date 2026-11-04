@@ -6,34 +6,39 @@ import { connectToDatabase } from "@/lib/mongodb";
 import { serviceTypes } from "@/lib/validations";
 import { CandidateApplication } from "@/models/CandidateApplication";
 import { Enquiry } from "@/models/Enquiry";
-import { MentorshipProgram } from "@/models/MentorshipProgram";
-import { PortfolioProject } from "@/models/PortfolioProject";
 import { SpiceCategory } from "@/models/SpiceCategory";
 import { SpiceOrder } from "@/models/SpiceOrder";
 import { SpiceProduct } from "@/models/SpiceProduct";
+import { TradingSoftware } from "@/models/TradingSoftware";
+import { TradingSoftwareEnquiry } from "@/models/TradingSoftwareEnquiry";
+import { TradingSoftwareOrder } from "@/models/TradingSoftwareOrder";
 import { StaffingRequest } from "@/models/StaffingRequest";
 import { escapeRegex, toPlain } from "./api";
 import {
   candidateStatuses,
   enquiryStatuses,
-  orderSources,
+  deliveryStatuses,
   orderStatuses,
   orderStatusValues,
   PAGE_SIZE,
+  orderSources,
   publishStatuses,
+  softwareCategoryValues,
   staffingStatuses,
 } from "./constants";
 import {
   candidateUpdateSchema,
   enquiryUpdateSchema,
-  mentorshipProgramSchema,
   orderUpdateSchema,
-  portfolioProjectSchema,
   spiceCategorySchema,
   spiceFeaturedErrors,
+  softwareEnquiryUpdateSchema,
+  softwareOrderUpdateSchema,
+  softwarePublishErrors,
   spiceProductSchema,
   spicePublishErrors,
   staffingUpdateSchema,
+  tradingSoftwareSchema,
   type ListQuery,
 } from "./schemas";
 
@@ -51,6 +56,8 @@ type BaseResource = {
   label: (doc: AnyDoc) => string;
   /** Fields never sent to the browser, even to admins. */
   hidden?: string;
+  /** Server-side adjustments to validated data before it is saved. `before` is the stored record, or null on create. */
+  prepare?: (data: AnyDoc, before: AnyDoc | null) => void;
 };
 
 export type InboxResource = BaseResource & { kind: "inbox"; updateSchema: AnyZodObject };
@@ -64,8 +71,6 @@ export type CatalogueResource = BaseResource & {
   mediaIds: (doc: AnyDoc) => string[];
   /** Slugs that would collide with a fixed route. */
   reservedSlugs?: string[];
-  /** Server-side adjustments to validated data before it is saved. */
-  prepare?: (data: AnyDoc, before: AnyDoc | null) => void;
   /** Field errors that block a record from being published. */
   publishErrors?: (merged: AnyDoc) => Record<string, string> | null;
   /** Field errors that block any save, whatever the record's status. */
@@ -73,8 +78,6 @@ export type CatalogueResource = BaseResource & {
 };
 
 export type Resource = InboxResource | CatalogueResource;
-
-const singleImage = (doc: AnyDoc) => (doc.image?.mediaId ? [doc.image.mediaId as string] : []);
 
 /**
  * Variant ids are assigned here, never taken from the browser, and stay the same for each quality level across
@@ -104,6 +107,26 @@ function prepareSpice(data: AnyDoc, before: AnyDoc | null) {
     .sort((a: AnyDoc, b: AnyDoc) => a.sellingPrice - b.sellingPrice)[0];
   data.ourPrice = lowest?.sellingPrice ?? 0;
   data.marketPrice = lowest?.marketPrice ?? 0;
+}
+
+/**
+ * Licence ids are assigned here, never taken from the browser. A licence keeps its id across edits (the editor sends
+ * back the id it was given), so past orders keep pointing at the right one. An id that is not on this product is ignored.
+ */
+function prepareSoftware(data: AnyDoc, before: AnyDoc | null) {
+  if (!data.licenceOptions) return;
+  const known = new Set<string>((before?.licenceOptions ?? []).map((l: AnyDoc) => String(l._id)));
+  data.licenceOptions = data.licenceOptions.map(({ id, ...l }: AnyDoc) => ({ ...l, _id: id && known.has(String(id)) ? id : new Types.ObjectId() }));
+  const lowest = data.licenceOptions
+    .filter((l: AnyDoc) => l.active && l.price > 0)
+    .sort((a: AnyDoc, b: AnyDoc) => a.price - b.price)[0];
+  data.startingPrice = lowest?.price ?? null;
+}
+
+/** Stamps the delivery time when an order is first marked delivered, and clears it if that is undone. */
+function prepareSoftwareOrder(data: AnyDoc, before: AnyDoc | null) {
+  if (!data.deliveryStatus || data.deliveryStatus === before?.deliveryStatus) return;
+  data.deliveredAt = data.deliveryStatus === "delivered" ? new Date() : null;
 }
 
 export const resources = {
@@ -194,31 +217,43 @@ export const resources = {
     publishErrors: (merged) => (merged.status === "published" ? spicePublishErrors(merged) : null),
     saveErrors: spiceFeaturedErrors,
   },
-  mentorship: {
+  software: {
     kind: "catalogue",
-    key: "mentorship",
-    entity: "mentorship programme",
-    model: MentorshipProgram,
+    key: "software",
+    entity: "trading software",
+    model: TradingSoftware,
     statuses: publishStatuses,
-    searchFields: ["title", "slug", "description"],
-    label: (d) => d.title,
-    schema: mentorshipProgramSchema,
-    slugSource: "title",
-    revalidate: { tag: "mentorship", paths: ["/trading-mentorship"] },
-    mediaIds: () => [],
+    searchFields: ["name", "slug", "shortDescription", "description"],
+    filter: { field: "category", values: softwareCategoryValues },
+    label: (d) => d.name,
+    schema: tradingSoftwareSchema,
+    slugSource: "name",
+    revalidate: { tag: "software", paths: ["/trading-software", "/trading-software/[slug]", "/api/software", "/sitemap.xml"] },
+    mediaIds: (d) => [d.thumbnail?.mediaId, ...(d.screenshots ?? []).map((i: AnyDoc) => i.mediaId)].filter(Boolean),
+    prepare: prepareSoftware,
+    publishErrors: (merged) => (merged.status === "published" ? softwarePublishErrors(merged) : null),
   },
-  portfolio: {
-    kind: "catalogue",
-    key: "portfolio",
-    entity: "portfolio project",
-    model: PortfolioProject,
-    statuses: publishStatuses,
-    searchFields: ["title", "category", "description"],
-    label: (d) => d.title,
-    schema: portfolioProjectSchema,
-    slugSource: "title",
-    revalidate: { tag: "mentorship", paths: ["/trading-mentorship"] },
-    mediaIds: singleImage,
+  softwareOrders: {
+    kind: "inbox",
+    key: "softwareOrders",
+    entity: "software order",
+    model: TradingSoftwareOrder,
+    statuses: orderStatuses,
+    searchFields: ["orderNumber", "customer.name", "customer.email", "customer.phone", "customer.company", "items.name"],
+    filter: { field: "deliveryStatus", values: deliveryStatuses },
+    label: (d) => `${d.orderNumber} — ${d.customer?.name}`,
+    updateSchema: softwareOrderUpdateSchema,
+    prepare: prepareSoftwareOrder,
+  },
+  softwareEnquiries: {
+    kind: "inbox",
+    key: "softwareEnquiries",
+    entity: "demo request",
+    model: TradingSoftwareEnquiry,
+    statuses: enquiryStatuses,
+    searchFields: ["name", "email", "phone", "company", "softwareName"],
+    label: (d) => `${d.name} <${d.email}>`,
+    updateSchema: softwareEnquiryUpdateSchema,
   },
 } satisfies Record<string, Resource>;
 
@@ -244,6 +279,8 @@ export function buildFilter(res: Resource, query: ListQuery) {
       where[res.filter.field] = query.filter;
     } else if (res.key === "spices") {
       where.category = query.filter;
+    } else if (res.key === "softwareEnquiries" && /^[a-f0-9]{24}$/i.test(query.filter)) {
+      where.software = query.filter;
     }
   }
   if (query.location && (res.key === "staffing" || res.key === "candidates")) {

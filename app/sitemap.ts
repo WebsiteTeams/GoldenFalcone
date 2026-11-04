@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
 import { getPublishedSpices } from "@/lib/cms";
 import { site } from "@/lib/site";
+import { getSoftwareSlugs } from "@/lib/software/catalogue";
 
 export const revalidate = 3600;
 
@@ -11,7 +12,7 @@ const routes: { path: string; priority: number; changeFrequency: "weekly" | "mon
   { path: "/spices/shop", priority: 0.9, changeFrequency: "weekly" },
   { path: "/spices/shop?category=powder", priority: 0.8, changeFrequency: "weekly" },
   { path: "/spices/shop?category=solid", priority: 0.8, changeFrequency: "weekly" },
-  { path: "/trading-mentorship", priority: 0.9, changeFrequency: "monthly" },
+  { path: "/trading-software", priority: 0.9, changeFrequency: "monthly" },
 
   { path: "/salon-staffing", priority: 0.9, changeFrequency: "monthly" },
   { path: "/contact", priority: 0.8, changeFrequency: "yearly" },
@@ -21,7 +22,7 @@ const routes: { path: string; priority: number; changeFrequency: "weekly" | "mon
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const lastModified = new Date();
-  const products = await getPublishedSpices();
+  const [products, software] = await Promise.all([getPublishedSpices(), getSoftwareSlugs()]);
   return [
     ...routes.map(({ path, priority, changeFrequency }) => ({
       url: `${site.url}${path === "/" ? "" : path}`,
@@ -32,6 +33,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...products.map((p) => ({
       url: `${site.url}/spices/${p.slug}`,
       lastModified,
+      changeFrequency: "weekly" as const,
+      priority: 0.7,
+    })),
+    ...software.map((p) => ({
+      url: `${site.url}/trading-software/${p.slug}`,
+      lastModified: p.updatedAt,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     })),

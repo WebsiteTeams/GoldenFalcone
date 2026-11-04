@@ -11,7 +11,7 @@ export const generateMetadata = () =>
   pageMetadata("contact", {
     title: "Contact Us",
     description:
-      "Contact Goldenfalcone about whole spices, trading mentorship or salon staffing. Send an enquiry and we will respond personally.",
+      "Contact Goldenfalcone about whole spices, trading software or salon staffing. Send an enquiry and we will respond personally.",
     alternates: { canonical: "/contact" },
     openGraph: { title: "Contact Goldenfalcone", url: "/contact" },
   });
@@ -19,7 +19,7 @@ export const generateMetadata = () =>
 // Where each division's dedicated enquiry form lives.
 const divisionForms: Record<ServiceKey, string> = {
   spices: "/spices#bulk-enquiry",
-  mentorship: "/trading-mentorship#consultation",
+  mentorship: "/trading-software#demo",
   staffing: "/salon-staffing#salon-owners",
 };
 

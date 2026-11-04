@@ -20,6 +20,13 @@ const nextConfig: NextConfig = {
     ],
   },
   serverExternalPackages: ["mongoose"],
+  async redirects() {
+    // The page used to live at /trading-mentorship.
+    return [
+      { source: "/trading-mentorship", destination: "/trading-software", permanent: true },
+      { source: "/trading-mentorship/:slug", destination: "/trading-software/:slug", permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: "/:path*", headers: securityHeaders },

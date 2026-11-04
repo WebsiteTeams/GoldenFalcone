@@ -59,8 +59,6 @@ export type AdminRole = (typeof adminRoles)[number];
 
 export const enquiryStatuses = ["new", "contacted", "in-progress", "converted", "closed"] as const;
 
-/** Digital Solutions project enquiry lifecycle */
-
 export const staffingStatuses = [
   "new",
   "reviewing",
@@ -126,7 +124,8 @@ export const availabilityValues = availabilityOptions.map((a) => a.value) as [st
 
 export const serviceTypeLabels: Record<string, string> = {
   spices: "Spices Export & Import",
-  mentorship: "Trading Mentorship",
+  software: "Trading Software",
+  mentorship: "Trading (earlier enquiry)",
   staffing: "Salon Staffing",
   general: "General Enquiry",
 };
@@ -160,34 +159,64 @@ export const toOptions = (values: readonly string[], format: (v: string) => stri
 
 export const PAGE_SIZE = 20;
 export const IMAGE_MAX_BYTES = 4 * 1024 * 1024;
-export const digitalProjectTypes = [
-  "corporate-website",
-  "landing-page",
-  "web-application",
-  "booking-system",
-  "custom-software",
-  "maintenance-seo",
+// ---------- Trading software catalogue ----------
+
+export const softwareCategories = [
+  { value: "stock-market", label: "Stock Market Software", short: "Stock Market", description: "Tools for equity and index analysis, screening and workflow." },
+  { value: "forex", label: "Forex Software", short: "Forex", description: "Currency-market analysis and trade-management tools." },
+  { value: "crypto", label: "Cryptocurrency Software", short: "Crypto", description: "Software for digital-asset markets and exchange workflows." },
+  { value: "algorithmic", label: "Algorithmic Trading Software", short: "Algorithmic", description: "Automated and rules-based trading workflows." },
+  { value: "indicators-strategies", label: "Trading Indicators & Strategies", short: "Indicators", description: "Charting indicators and strategy packages for supported platforms." },
+  { value: "custom-tools", label: "Custom Trading Tools", short: "Custom Tools", description: "Purpose-built utilities for specific trading workflows." },
 ] as const;
-export type DigitalProjectType = (typeof digitalProjectTypes)[number];
-export const digitalIndustries = [
-  "corporate",
-  "e-commerce",
-  "finance",
-  "healthcare",
-  "education",
-  "technology",
-  " hospitality",
-  "retail",
+export type SoftwareCategory = (typeof softwareCategories)[number]["value"];
+export const softwareCategoryValues = softwareCategories.map((c) => c.value) as [SoftwareCategory, ...SoftwareCategory[]];
+export const softwareCategoryLabel = (value: string) => softwareCategories.find((c) => c.value === value)?.label ?? value;
+
+export const tradingMarkets = [
+  { value: "stocks", label: "Stocks" },
+  { value: "indices", label: "Indices" },
+  { value: "futures-options", label: "Futures & Options" },
+  { value: "forex", label: "Forex" },
+  { value: "crypto", label: "Cryptocurrency" },
+  { value: "commodities", label: "Commodities" },
 ] as const;
-export type DigitalIndustry = (typeof digitalIndustries)[number];
-export const digitalEnquiryStatuses = [
-  "new",
-  "contacted",
-  "in-progress",
-  "converted",
-  "closed",
+export const tradingMarketValues = tradingMarkets.map((m) => m.value) as [string, ...string[]];
+
+export const softwarePlatforms = [
+  { value: "windows", label: "Windows" },
+  { value: "macos", label: "macOS" },
+  { value: "linux", label: "Linux" },
+  { value: "web", label: "Web browser" },
+  { value: "android", label: "Android" },
+  { value: "ios", label: "iOS" },
+  { value: "metatrader-4", label: "MetaTrader 4" },
+  { value: "metatrader-5", label: "MetaTrader 5" },
+  { value: "tradingview", label: "TradingView" },
+  { value: "other", label: "Other" },
 ] as const;
-export type DigitalEnquiryStatus = (typeof digitalEnquiryStatuses)[number];
+export const softwarePlatformValues = softwarePlatforms.map((p) => p.value) as [string, ...string[]];
+
+export const licenceTypes = [
+  { value: "lifetime", label: "Lifetime licence" },
+  { value: "annual", label: "Annual licence" },
+  { value: "monthly", label: "Monthly licence" },
+  { value: "custom", label: "Custom / per agreement" },
+] as const;
+export const licenceTypeValues = licenceTypes.map((l) => l.value) as [string, ...string[]];
+
+export const deliveryMethods = [
+  { value: "licence-key", label: "Licence key" },
+  { value: "activation-instructions", label: "Activation instructions" },
+  { value: "download-link", label: "Private download link" },
+  { value: "manual", label: "Manual delivery" },
+] as const;
+export const deliveryMethodValues = deliveryMethods.map((d) => d.value) as [string, ...string[]];
+
+export const paymentStatuses = ["unpaid", "paid", "refunded"] as const;
+export const deliveryStatuses = ["pending", "ready", "delivered"] as const;
+export const contactMethods = ["Email", "Phone", "WhatsApp"] as const;
+
 export const IMAGE_TYPES = [
   "image/jpeg",
   "image/png",

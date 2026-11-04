@@ -10,7 +10,7 @@ import {
   useScroll,
   useSpring,
 } from "framer-motion";
-import { ArrowRight, ChevronDown, Leaf, GraduationCap, Scissors } from "lucide-react";
+import { ArrowRight, ChevronDown, Leaf, Monitor, Scissors } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { AnimatedButton } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
@@ -20,7 +20,7 @@ import { MobileMenu } from "./MobileMenu";
 
 const divisionIcons: Record<ServiceKey, typeof Leaf> = {
   spices: Leaf,
-  mentorship: GraduationCap,
+  mentorship: Monitor,
   staffing: Scissors,
 };
 

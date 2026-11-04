@@ -10,6 +10,8 @@
     "typecheck": "tsc --noEmit",
     "admin:create": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/admin.mjs create",
     "admin:reset-password": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/admin.mjs reset-password",
+    "seed": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed.mjs",
+    "seed:remove": "node --env-file-if-exists=.env --env-file-if-exists=.env.local scripts/seed.mjs --remove",
     "cloudinary:test": "node --env-file-if-exists=.env.local scripts/test-cloudinary.mjs"
   },
   "dependencies": {

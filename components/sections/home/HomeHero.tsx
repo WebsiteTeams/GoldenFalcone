@@ -56,7 +56,7 @@ const thumbs: Record<StationKey, string> = {
 
 const taglines: Record<StationKey, string> = {
   spices: "Authentic spices, sourced with care",
-  mentorship: "Structured market education",
+  mentorship: "Professional trading software",
   staffing: "Skilled beauty professionals",
 };
 

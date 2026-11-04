@@ -1,9 +1,9 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowUpRight, CalendarClock, Check, Clock, Leaf, MapPinned, Package, Users } from "lucide-react";
+import { ArrowUpRight, Leaf, MapPinned, Package } from "lucide-react";
 import { RevealUp, StaggerContainer, StaggerItem } from "@/components/animations";
 import { availabilityOptions, labelFor } from "@/lib/admin/constants";
-import type { PublicPortfolioProject, PublicProgram, PublicSpice } from "@/lib/cms";
+import type { PublicSpice } from "@/lib/cms";
 import type { Spice } from "@/lib/content";
 import { SpiceIllustration } from "./SpiceIllustration";
 
@@ -14,7 +14,7 @@ import { SpiceIllustration } from "./SpiceIllustration";
 
 const illustrated = new Set(["cardamom", "pepper", "cinnamon", "cloves", "ginger"]);
 
-function SpiceVisual({ spice, size = "lg" }: { spice: PublicSpice; size?: "sm" | "lg" }) {
+export function SpiceVisual({ spice, size = "lg" }: { spice: PublicSpice; size?: "sm" | "lg" }) {
   const image = spice.images[0];
   if (image) {
     return (
@@ -49,7 +49,7 @@ export function SpiceCard({ spice }: { spice: PublicSpice }) {
   return (
     <Link
       href={`/spices/${spice.slug}`}
-      className="group flex h-full flex-col rounded-[1.5rem] border border-ivory/10 bg-emerald/40 p-8 transition-[background-color,border-color,transform] duration-500 hover:-translate-y-1 hover:border-gold/50 hover:bg-emerald/70"
+      className="group flex h-full flex-col rounded-[2rem] border border-ivory/10 bg-emerald/40 p-10 transition-[background-color,border-color,transform] duration-500 hover:-translate-y-1.5 hover:border-gold/50 hover:bg-emerald/50 shadow-sm md:shadow-md motion-reduce:!transform-none motion-reduce:!shadow-[0_18px_30px_rgba(6,47,37,0.14)]"
     >
       <div className="flex items-start justify-between gap-3">
         <SpiceVisual spice={spice} size="sm" />
@@ -58,7 +58,7 @@ export function SpiceCard({ spice }: { spice: PublicSpice }) {
         </span>
       </div>
 
-      <h3 className="mt-6 text-2xl sm:text-3xl font-serif text-ivory group-hover:text-gold transition-colors">
+      <h3 className="mt-8 text-2xl sm:text-3xl font-serif text-ivory group-hover:text-gold transition-colors">
         {spice.name}
       </h3>
 
@@ -67,11 +67,11 @@ export function SpiceCard({ spice }: { spice: PublicSpice }) {
       </p>
 
       {/* Pricing row */}
-      <div className="mt-6 pt-4 border-t border-ivory/10 flex items-center justify-between flex-wrap gap-2">
+      <div className="mt-8 pt-6 border-t border-ivory/10 flex items-center justify-between flex-wrap gap-2">
         {hasPrice ? (
           <div>
             <div className="flex items-baseline gap-2">
-              <span className="text-xl font-bold text-ivory">
+              <span className="text-xl font-serif font-bold text-ivory">
                 {formatPrice(spice.ourPrice!, spice.currency)}
               </span>
               {spice.unit && <span className="text-xs text-ivory/60">/ {spice.unit}</span>}
@@ -82,7 +82,9 @@ export function SpiceCard({ spice }: { spice: PublicSpice }) {
                   {formatPrice(spice.marketPrice!, spice.currency)}
                 </span>
                 {discount > 0 && (
-                  <span className="text-gold font-semibold">({discount}% off)</span>
+                  <span className="rounded-full bg-gold/20 px-2 py-0.5 text-xs font-bold text-forest">
+                    Save {discount}%
+                  </span>
                 )}
               </div>
             )}
@@ -114,7 +116,7 @@ export function SpiceArticle({ spice, index, interactive = true }: { spice: Publ
   ].filter(Boolean) as { icon: typeof MapPinned; label: string; value: string }[];
 
   return (
-    <article id={spice.slug} className="grid scroll-mt-24 items-center gap-10 py-16 first:pt-0 last:pb-0 md:grid-cols-12">
+    <article id={spice.slug} className="grid scroll-mt-24 items-center gap-10 py-20 first:pt-0 last:pb-0 md:grid-cols-12">
       <RevealUp className={`md:col-span-4 ${flip ? "md:order-2 md:col-start-9" : ""}`}>
         <SpiceVisual spice={spice} />
       </RevealUp>
@@ -170,7 +172,7 @@ export function SpiceArticle({ spice, index, interactive = true }: { spice: Publ
         {spice.highlights.length ? (
           <StaggerContainer className="mt-7 flex flex-wrap gap-3" delay={0.1}>
             {spice.highlights.map((n) => (
-              <StaggerItem key={n} className="rounded-full border border-line bg-white px-4 py-2 text-sm text-ink">
+              <StaggerItem key={n} className="rounded-full border-line bg-white px-4 py-2 text-sm text-ink">
                 {n}
               </StaggerItem>
             ))}
@@ -179,17 +181,17 @@ export function SpiceArticle({ spice, index, interactive = true }: { spice: Publ
         {spice.images.length > 1 ? (
           <div className="mt-7 flex gap-3">
             {spice.images.slice(0, 4).map((img, i) => (
-              <div key={img.url} className="relative h-20 w-20 overflow-hidden rounded-xl border border-line">
+              <div key={img.url} className="relative h-24 w-24 overflow-hidden rounded-2xl border border-line">
                 <Image src={img.url} alt={img.alt || `${spice.name} ${i + 1}`} fill sizes="80px" className="object-cover" />
               </div>
             ))}
           </div>
         ) : null}
         {interactive ? (
-          <RevealUp delay={0.15} className="mt-8 flex flex-wrap items-center gap-4">
+          <RevealUp delay={0.15} className="mt-10 flex flex-wrap items-center gap-4">
             <Link
               href={`/spices/${spice.slug}`}
-              className="inline-flex items-center gap-2 rounded-full bg-forest px-6 py-3 text-sm font-semibold text-ivory hover:bg-gold hover:text-forest transition-colors"
+              className="inline-flex items-center gap-2 rounded-full bg-forest px-8 py-3.5 text-sm font-semibold text-ivory hover:bg-gold hover:text-forest transition-colors"
             >
               Order & Details <ArrowUpRight className="h-4 w-4" />
             </Link>
@@ -200,72 +202,5 @@ export function SpiceArticle({ spice, index, interactive = true }: { spice: Publ
         ) : null}
       </div>
     </article>
-  );
-}
-
-export function ProgrammeCard({ program }: { program: PublicProgram }) {
-  const meta = [
-    program.format && { icon: Users, text: program.format },
-    program.duration && { icon: Clock, text: program.duration },
-    program.availability && { icon: CalendarClock, text: program.availability },
-  ].filter(Boolean) as { icon: typeof Users; text: string }[];
-
-  return (
-    <article id={program.slug} className="flex h-full scroll-mt-24 flex-col rounded-[1.5rem] border border-line bg-white p-8 sm:p-10">
-      <h3 className="text-3xl text-forest">{program.title}</h3>
-      {meta.length ? (
-        <ul className="mt-4 flex flex-wrap gap-x-5 gap-y-2 text-sm text-muted">
-          {meta.map(({ icon: Icon, text }) => (
-            <li key={text} className="inline-flex items-center gap-2">
-              <Icon aria-hidden className="h-4 w-4 text-gold-dark" /> {text}
-            </li>
-          ))}
-        </ul>
-      ) : null}
-      <p className="mt-5 whitespace-pre-line leading-relaxed text-muted">{program.description}</p>
-      {program.topics.length ? (
-        <ul className="mt-6 flex-1 space-y-2.5">
-          {program.topics.map((t) => (
-            <li key={t} className="flex items-start gap-3 text-sm text-ink">
-              <Check aria-hidden className="mt-0.5 h-4 w-4 shrink-0 text-emerald" /> {t}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <div className="flex-1" />
-      )}
-      <Link href="#consultation" className="mt-8 inline-flex items-center gap-2 text-sm font-semibold text-forest">
-        <span className="link-underline">{program.ctaLabel || "Enquire about this programme"}</span>
-        <ArrowUpRight aria-hidden className="h-4 w-4" />
-      </Link>
-    </article>
-  );
-}
-
-export function PortfolioCard({ project }: { project: PublicPortfolioProject }) {
-  const label = [project.isConcept ? "Concept" : null, project.category].filter(Boolean).join(" · ");
-  return (
-    <div className="group">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-[1.5rem] bg-forest">
-        {project.image ? (
-          <Image
-            src={project.image.url}
-            alt={project.image.alt || project.title}
-            fill
-            sizes="(min-width: 768px) 33vw, 100vw"
-            className="object-cover transition-transform duration-[1200ms] ease-[var(--ease-lux)] group-hover:scale-[1.04]"
-          />
-        ) : null}
-      </div>
-      {label ? <p className="eyebrow mt-6 text-gold-dark">{label}</p> : null}
-      <h3 className="mt-2 text-3xl text-forest">{project.title}</h3>
-      {project.description ? <p className="mt-2 text-sm leading-relaxed text-muted">{project.description}</p> : null}
-      {project.projectUrl ? (
-        <a href={project.projectUrl} target="_blank" rel="noopener noreferrer" className="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-forest">
-          <span className="link-underline">Visit project</span>
-          <ArrowUpRight aria-hidden className="h-4 w-4" />
-        </a>
-      ) : null}
-    </div>
   );
 }

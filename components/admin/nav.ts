@@ -3,10 +3,10 @@ import {
   Code2,
   FileText,
   GitCompareArrows,
-  GraduationCap,
   Inbox,
   LayoutDashboard,
   Leaf,
+  Monitor,
   MonitorSmartphone,
   Settings,
   ShoppingBag,
@@ -35,7 +35,7 @@ export const adminNav: { group: string; items: AdminNavItem[] }[] = [
     items: [
       { label: "Categories", href: "/admin/categories", icon: Tags },
       { label: "Spices", href: "/admin/spices", icon: Leaf },
-      { label: "Mentorship", href: "/admin/mentorship", icon: GraduationCap },
+      { label: "Trading Software", href: "/admin/trading-software", icon: Monitor },
     ],
   },
   {

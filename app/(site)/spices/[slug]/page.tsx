@@ -85,11 +85,14 @@ export default async function SpiceDetailPage({
     .slice(0, 4);
 
   return (
-    <div className="min-h-screen bg-ivory pb-24">
+    <div className="min-h-screen bg-ivory relative pb-24">
+      {/* Subtle grain texture for premium feel */}
+      <div className="absolute inset-0 overflow-hidden grain-background" />
+
       {purchasable && spice.images.length ? (
         <script
           type="application/ld+json"
-          // Escaped so a value containing "</script>" cannot end the block early.
+          // Escaped so a value containing "</script>" can end the block early.
           dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd(spice)).replace(/</g, "\\u003c") }}
         />
       ) : null}
@@ -97,7 +100,7 @@ export default async function SpiceDetailPage({
       {/* Keeps the transparent site navigation readable, as on the other store pages. */}
       <div className="h-24 bg-forest-deep" />
 
-      <div className="container-lux pt-8">
+      <div className="container-lux pt-8 max-w-4xl mx-auto">
         <nav aria-label="Breadcrumb" className="mb-8 flex flex-wrap items-center gap-2 text-xs text-muted">
           <Link href="/spices" className="py-1 transition-colors hover:text-forest">Spices</Link>
           <ChevronRight aria-hidden className="h-3.5 w-3.5 text-muted/50" />
@@ -112,7 +115,7 @@ export default async function SpiceDetailPage({
 
         <div className="grid items-start gap-10 lg:grid-cols-2 lg:gap-14">
           {/* Left column: gallery */}
-          <div className="lg:sticky lg:top-28">
+          <div className="lg:sticky lg:top-28 lg:col-span-1">
             <ProductGallery images={spice.images} productName={spice.name} />
           </div>
 
@@ -121,19 +124,19 @@ export default async function SpiceDetailPage({
             {spice.productTypeLabel ? (
               <span className="inline-flex rounded-full bg-forest/10 px-3.5 py-1 text-xs font-semibold text-forest">{spice.productTypeLabel}</span>
             ) : null}
-            <h1 className="mt-3 text-5xl leading-[1.05] text-forest sm:text-6xl">{spice.name}</h1>
+            <h1 className="mt-3 text-5xl sm:text-6xl font-serif leading-[1.1] text-forest">{spice.name}</h1>
             <p className="mt-4 whitespace-pre-line text-lg leading-relaxed text-muted">{spice.shortDescription}</p>
 
             {purchasable ? (
               <QualityPurchasePanel spice={spice} whatsappEnabled={Boolean(whatsappNumber)} initialLevel={typeof quality === "string" ? quality : undefined} />
             ) : (
-              <div className="mt-8 rounded-[1.25rem] border border-line bg-white p-6">
-                <h2 className="text-2xl text-forest">Not available to order online yet</h2>
-                <p className="mt-2 text-sm leading-relaxed text-muted">
+              <div className="mt-8 rounded-[1.5rem] border border-line bg-white p-8">
+                <h2 className="text-2xl text-forest mb-3">Not available to order online yet</h2>
+                <p className="text-sm leading-relaxed text-muted">
                   Quality levels and pricing for this product are being updated.{enquiryHref ? " Message us and we will share the current details." : " Please check back soon."}
                 </p>
                 {enquiryHref ? (
-                  <a href={enquiryHref} target="_blank" rel="noopener noreferrer" className="mt-5 inline-flex items-center gap-2 rounded-full bg-forest px-7 py-3 text-sm font-semibold text-ivory transition-colors hover:bg-emerald">
+                  <a href={enquiryHref} target="_blank" rel="noopener noreferrer" className="mt-6 inline-flex items-center gap-2 rounded-full bg-forest px-8 py-3.5 text-sm font-semibold text-ivory transition-colors hover:bg-emerald">
                     <MessageCircle aria-hidden className="h-4 w-4" /> Enquire on WhatsApp
                   </a>
                 ) : null}

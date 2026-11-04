@@ -10,17 +10,15 @@ import { Checkbox, Field, Honeypot, Input, Select, Textarea } from "./fields";
 import { FormError, FormSuccess, PrivacyConsentLabel, SubmitButton, type SubmitState } from "./FormFeedback";
 import { submitToApi } from "./submit";
 
-type Variant = "general" | "spices" | "mentorship";
+type Variant = "general" | "spices";
 
 const variantService: Record<Exclude<Variant, "general">, ServiceType> = {
   spices: "spices",
-  mentorship: "mentorship",
 };
 
 const opts = (values: string[]) => values.map((v) => ({ value: v, label: v }));
 
 const productOptions = opts([...spices.map((s) => s.name), "Multiple spices", "Other whole spices"]);
-const levelOptions = opts(["Complete beginner", "Some self-study", "Some trading experience", "Experienced, looking to refine"]);
 
 const copy: Record<Variant, { message: string; placeholder: string; submit: string }> = {
   general: { message: "How can we help?", placeholder: "Tell us a little about your enquiry…", submit: "Send Enquiry" },
@@ -28,11 +26,6 @@ const copy: Record<Variant, { message: string; placeholder: string; submit: stri
     message: "Requirement details",
     placeholder: "Spices required, preferred grade or form, packaging, destination and expected timeline…",
     submit: "Send Bulk Enquiry",
-  },
-  mentorship: {
-    message: "Your learning goals",
-    placeholder: "What would you like to learn, and how do you prefer to learn (one-to-one, online, schedule)?",
-    submit: "Request a Consultation",
   },
 };
 
@@ -116,22 +109,11 @@ export function EnquiryForm({ variant = "general", defaultService }: EnquiryForm
           </>
         ) : null}
 
-        {variant === "mentorship" ? (
-          <Field label="Current experience" error={errors.experienceLevel?.message}>
-            {(p) => <Select id={p.id} invalid={p.invalid} describedBy={p.describedBy} options={levelOptions} {...register("experienceLevel")} />}
-          </Field>
-        ) : null}
       </div>
 
       <Field label={c.message} required error={errors.message?.message}>
         {(p) => <Textarea id={p.id} invalid={p.invalid} describedBy={p.describedBy} placeholder={c.placeholder} {...register("message")} />}
       </Field>
-
-      {variant === "mentorship" ? (
-        <p className="rounded-xl border border-gold/30 bg-champagne/20 px-4 py-3 text-xs leading-relaxed text-ink/80">
-          Mentorship is educational only and is not financial advice. Trading involves significant risk of loss.
-        </p>
-      ) : null}
 
       <Checkbox label={<PrivacyConsentLabel />} error={errors.consent?.message} {...register("consent")} />
 
