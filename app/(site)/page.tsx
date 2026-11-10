@@ -2,6 +2,7 @@ import { BrandIntro } from "@/components/sections/home/BrandIntro";
 import { BrandValues } from "@/components/sections/home/BrandValues";
 import { HomeCta } from "@/components/sections/home/HomeCta";
 import { HomeHero } from "@/components/sections/home/HomeHero";
+import { SectionJoin } from "@/components/sections/home/SectionJoin";
 import { Ventures } from "@/components/sections/home/Ventures";
 import { WhyGoldenfalcone } from "@/components/sections/home/WhyGoldenfalcone";
 import { getDivisions, getSiteConfig, getSiteContent } from "@/lib/cms";
@@ -28,8 +29,11 @@ export default async function HomePage() {
         logo={config.logo}
         ventures={divisions.map(({ key, number, title, href }) => ({ key, number, title, href }))}
       />
+      {/* <SectionJoin tone="dark" /> */}
       <BrandIntro />
+      {/* <SectionJoin /> */}
       <Ventures />
+      {/* <SectionJoin /> */}
       <BrandValues values={values} />
       {/* <WhyGoldenfalcone /> */}
       {/* <HomeCta /> */}

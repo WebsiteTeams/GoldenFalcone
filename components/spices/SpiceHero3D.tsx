@@ -59,7 +59,7 @@ export function SpiceHero3D({ products, whatsappHref }: { products: PublicSpice[
     <section
       onPointerMove={onPointerMove}
       onPointerLeave={onPointerLeave}
-      className="relative overflow-hidden bg-forest-deep pb-20 pt-32 text-ivory sm:pb-28 sm:pt-40"
+      className="relative overflow-hidden surface-forest fade-from-white fade-to-white relative-deep pb-20 pt-32 text-ivory sm:pb-28 sm:pt-40"
     >
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_70%_at_75%_40%,rgba(6,75,56,0.9),transparent_70%)]" />
 

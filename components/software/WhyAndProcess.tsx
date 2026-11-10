@@ -17,7 +17,7 @@ const reasons = [
 
 export function WhyGoldenfalcone() {
   return (
-    <section aria-label="Why Goldenfalcone" className="bg-ivory py-24 sm:py-32">
+    <section aria-label="Why Goldenfalcone" className="surface-white relative py-28 sm:py-36">
       <div className="container-lux grid gap-16 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <SectionHeading eyebrow="Why Goldenfalcone" title={["Technology Built Around", "Trading Workflows."]} intro="A software store that tells you what a product does, what it runs on and how you receive it." />
@@ -47,7 +47,7 @@ const steps = [
 
 export function HowItWorks() {
   return (
-    <section aria-label="How it works" className="bg-forest py-24 text-ivory sm:py-32">
+    <section aria-label="How it works" className="surface-forest fade-from-white fade-to-white relative py-28 text-ivory sm:py-36">
       <div className="container-lux">
         <SectionHeading tone="light" eyebrow="How It Works" title={["From first look", "to first launch."]} />
         <ol className="relative mt-16 grid gap-10 md:grid-cols-4 md:gap-6">

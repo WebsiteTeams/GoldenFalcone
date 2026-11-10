@@ -45,13 +45,13 @@ export function WhyChooseUsProcess() {
   return (
     <>
       {/* 1. Why Choose Us Section */}
-      <section className="py-20 sm:py-28 bg-[#FAF7F2] border-b border-line/60">
+      <section className="py-20 sm:py-28 surface-white relative">
         <div className="container-lux max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#2A1E17] font-semibold tracking-tight">
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#0A0A0A] font-semibold tracking-tight">
               Why Choose Us
             </h2>
-            <p className="mt-2 font-serif italic text-base text-[#8C6D53]">
+            <p className="mt-2 font-serif italic text-base text-[#6B6F6C]">
               &ldquo;What Makes Our Spices Special?&rdquo;
             </p>
           </div>
@@ -62,15 +62,15 @@ export function WhyChooseUsProcess() {
               return (
                 <div
                   key={item.title}
-                  className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-[#EBE3D7] shadow-xs transition-all duration-300 hover:border-[#D4AF37] hover:shadow-md"
+                  className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-[#E5E5E2] shadow-xs transition-all duration-300 hover:border-[#D4A437] hover:shadow-md"
                 >
-                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#D4AF37]/15 text-[#B8860B] mb-4">
+                  <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#D4A437]/15 text-[#A87D1E] mb-4">
                     <Icon className="h-7 w-7" strokeWidth={1.5} />
                   </div>
-                  <h3 className="font-serif text-lg font-medium text-[#2A1E17]">
+                  <h3 className="font-serif text-lg font-medium text-[#0A0A0A]">
                     {item.title}
                   </h3>
-                  <p className="mt-1 text-xs text-[#736357] leading-relaxed">
+                  <p className="mt-1 text-xs text-[#5F6662] leading-relaxed">
                     {item.desc}
                   </p>
                 </div>
@@ -81,13 +81,13 @@ export function WhyChooseUsProcess() {
       </section>
 
       {/* 2. Our Process Section */}
-      <section className="py-20 sm:py-28 bg-[#FAF7F2] border-b border-line/60">
+      <section className="py-20 sm:py-28 surface-white relative">
         <div className="container-lux max-w-5xl mx-auto px-4 sm:px-6">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="font-serif text-3xl sm:text-4xl text-[#2A1E17] font-semibold tracking-tight">
+            <h2 className="font-serif text-3xl sm:text-4xl text-[#0A0A0A] font-semibold tracking-tight">
               Our Process
             </h2>
-            <p className="mt-2 font-serif italic text-base text-[#8C6D53]">
+            <p className="mt-2 font-serif italic text-base text-[#6B6F6C]">
               &ldquo;From Indian Fields To Your Kitchen&rdquo;
             </p>
           </div>
@@ -96,16 +96,16 @@ export function WhyChooseUsProcess() {
             {processSteps.map((step) => (
               <div
                 key={step.number}
-                className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-[#EBE3D7] shadow-xs relative z-10"
+                className="flex flex-col items-center text-center p-6 rounded-2xl bg-white border border-[#E5E5E2] shadow-xs relative z-10"
               >
                 {/* Golden numbered badge */}
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4AF37] text-white font-serif font-bold text-lg shadow-md shadow-[#D4AF37]/25 mb-5">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[#D4A437] text-white font-serif font-bold text-lg shadow-md shadow-[#D4A437]/25 mb-5">
                   {step.number}
                 </div>
-                <h3 className="font-serif text-xl font-medium text-[#2A1E17]">
+                <h3 className="font-serif text-xl font-medium text-[#0A0A0A]">
                   {step.title}
                 </h3>
-                <p className="mt-1.5 text-xs text-[#736357] leading-relaxed">
+                <p className="mt-1.5 text-xs text-[#5F6662] leading-relaxed">
                   {step.desc}
                 </p>
               </div>

@@ -4,11 +4,10 @@ import { useRef, useState } from "react";
 import type { PointerEvent, ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { motion } from "framer-motion";
+import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { AnimatedButton, TextReveal } from "@/components/animations";
 import { easeLux } from "@/components/animations/motion";
 import { images } from "@/lib/content";
-import { HERO_OVERLAY } from "./HeroBackdrop";
 import type { StationKey } from "./hero3d/Stations";
 
 type HomeHeroProps = {
@@ -71,6 +70,16 @@ const glass = "border border-white/15 bg-white/[0.07] backdrop-blur-xl";
 
 export function HomeHero({ title, description, primaryCta, secondaryCta, logo, ventures }: HomeHeroProps) {
   const pointer = useRef({ x: 0, y: 0 });
+  const sectionRef = useRef<HTMLElement>(null);
+  const reduce = useReducedMotion();
+  // Scroll-linked depth: copy drifts up and fades, the emblem sinks slower and turns, the glow recedes.
+  const { scrollYProgress } = useScroll({ target: sectionRef, offset: ["start start", "end start"] });
+  const copyY = useTransform(scrollYProgress, [0, 1], [0, -90]);
+  const copyOpacity = useTransform(scrollYProgress, [0, 0.7], [1, 0]);
+  const emblemY = useTransform(scrollYProgress, [0, 1], [0, 140]);
+  const emblemRotate = useTransform(scrollYProgress, [0, 1], [0, 14]);
+  const emblemScale = useTransform(scrollYProgress, [0, 1], [1, 0.88]);
+  const glowScale = useTransform(scrollYProgress, [0, 1], [1, 1.4]);
   const [active, setActive] = useState<StationKey | null>(null);
   const routes = useRef(Object.fromEntries(ventures.map((v) => [v.key, v.href])) as Record<StationKey, string>).current;
 
@@ -86,20 +95,25 @@ export function HomeHero({ title, description, primaryCta, secondaryCta, logo, v
 
   return (
     <section
+      ref={sectionRef}
       onPointerMove={track}
       onPointerLeave={() => (pointer.current = { x: 0, y: 0 })}
-      className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden bg-black pt-28 text-ivory lg:pt-32"
+      className="grain relative isolate flex min-h-[100svh] flex-col overflow-hidden pt-28 text-ivory lg:pt-32"
     >
-      {/* backdrop: the art keeps its subjects (laptop, salon) on the right, clear of the headline */}
-      <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden bg-black">
-        <Image src="/bgimg1.png" alt="" fill priority sizes="100vw" className="object-cover object-[78%_50%]" />
-        {/* dark forest overlay, top to bottom */}
-        <div className="absolute inset-0 opacity-60" style={{ background: HERO_OVERLAY }} />
-        {/* left to right: deep forest green, black, gray, transparent */}
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,#04281f_0%,rgba(0,0,0,0.88)_30%,rgba(75,85,99,0.5)_62%,transparent_100%)]" />
+      {/* backdrop: plain black with a forest bloom and a gold glint; no photograph */}
+      <div aria-hidden className="surface-black absolute inset-0 -z-10 overflow-hidden">
+        <div className="absolute -right-6 top-1/2 hidden aspect-square w-[44rem] -translate-y-1/2 rounded-full border border-gold/15 lg:block" />
+        <div className="absolute right-15 top-1/2 hidden aspect-square w-[34rem] -translate-y-1/2 rounded-full border border-gold/25 lg:block" />
+        <motion.div style={reduce ? undefined : { scale: glowScale }} className="absolute right-[8%] top-1/2 hidden aspect-square w-[26rem] -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(13,77,58,0.75),transparent_68%)] lg:block" />
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold/50 to-transparent" />
+      </div>
+      <div aria-hidden className="pointer-events-none absolute right-[10%] top-1/2 -z-10 hidden aspect-square w-[22rem] -translate-y-1/2 lg:block xl:w-[26rem]">
+        <motion.div style={reduce ? undefined : { y: emblemY, rotate: emblemRotate, scale: emblemScale }} className="relative h-full w-full">
+          <Image src={logo} alt="" fill priority sizes="26rem" className="object-contain drop-shadow-[0_30px_60px_rgba(0,0,0,0.7)]" />
+        </motion.div>
       </div>
 
-      <div className="container-lux flex flex-1 flex-col lg:justify-center lg:pb-40">
+      <motion.div style={reduce ? undefined : { y: copyY, opacity: copyOpacity }} className="container-lux flex flex-1 flex-col lg:justify-center lg:pb-40">
         <div className="relative z-10 lg:max-w-[32rem] xl:max-w-[36rem]">
           <motion.p
             className={`inline-flex items-center gap-2.5 rounded-full px-4 py-2 text-[0.62rem] font-semibold uppercase leading-none tracking-[0.18em] text-gold sm:text-[0.7rem] ${glass}`}
@@ -119,7 +133,7 @@ export function HomeHero({ title, description, primaryCta, secondaryCta, logo, v
             delay={0.3}
             lines={title}
             accentFrom={1}
-            accentClassName="italic text-champagne"
+            accentClassName="italic gold-text"
             className="mt-6 text-[3rem] leading-[1.02] xs:text-[3.4rem] sm:text-7xl lg:text-[3.6rem] xl:text-[3.6rem] 2xl:text-[4.2rem]"
           />
 
@@ -169,7 +183,7 @@ export function HomeHero({ title, description, primaryCta, secondaryCta, logo, v
             ))}
           </motion.ul>
         </div>
-      </div>
+      </motion.div>
 
       
     </section>

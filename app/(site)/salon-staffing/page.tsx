@@ -123,7 +123,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
   return (
     <>
       {/* ── 01 · Editorial hero ─────────────────────────────────────────── */}
-      <section className="relative overflow-hidden border-b border-line/80 bg-ivory pb-16 pt-28 sm:pb-24 sm:pt-36">
+      <section className="relative overflow-hidden surface-white pb-16 pt-28 sm:pb-24 sm:pt-36">
         <span
           aria-hidden
           className="pointer-events-none absolute -right-24 top-16 hidden h-72 w-72 rounded-full border border-gold/15 lg:block"
@@ -210,7 +210,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </section>
 
       {/* ── Editorial ribbon ────────────────────────────────────────────── */}
-      <div className="border-b border-line/70 bg-white">
+      <div className="bg-white">
         <div className="container-lux flex flex-col gap-3 py-4 text-center sm:flex-row sm:items-center sm:justify-between sm:text-left">
           <p className="eyebrow text-gold-dark">Connecting beauty businesses with skilled professionals</p>
           <p className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1 text-xs text-muted">
@@ -224,7 +224,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </div>
 
       {/* ── 02 · Two journeys ───────────────────────────────────────────── */}
-      <section className="bg-white py-20 sm:py-28">
+      <section className="surface-white py-20 sm:py-28">
         <div className="container-lux">
           <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
             <div className="lg:col-span-7">
@@ -240,8 +240,8 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
             </p>
           </div>
 
-          <div className="mt-14 grid border-y border-line lg:grid-cols-2">
-            <RevealUp className="group flex flex-col border-b border-line px-6 py-9 transition-colors duration-300 hover:bg-ivory sm:px-9 lg:border-b-0 lg:border-r">
+          <div className="mt-14 grid lg:grid-cols-2">
+            <RevealUp className="group flex flex-col px-6 py-9 transition-colors duration-300 hover:bg-ivory sm:px-9 lg:border-b-0 lg:border-r">
               <div className="flex items-start justify-between gap-6">
                 <div>
                   <p className="eyebrow text-gold-dark">For salons &amp; studios</p>
@@ -311,9 +311,9 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </section>
 
       {/* ── 03 · Roles ──────────────────────────────────────────────────── */}
-      <section className="border-y border-line/80 bg-ivory py-20 sm:py-28">
+      <section className="surface-white py-20 sm:py-28">
         <div className="container-lux">
-          <div className="border-b border-line pb-8">
+          <div className="pb-8">
             <SectionHeading
               eyebrow="Who we place"
               title={["Eight disciplines.", "One standard."]}
@@ -339,7 +339,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </section>
 
       {/* ── 04 · Two workflows ──────────────────────────────────────────── */}
-      <section className="bg-forest py-20 text-ivory sm:py-28">
+      <section className="surface-forest fade-from-white fade-to-white relative py-20 text-ivory sm:py-28">
         <div className="container-lux">
           <div className="grid gap-8 lg:grid-cols-12 lg:items-end">
             <div className="lg:col-span-7">
@@ -417,7 +417,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </section>
 
       {/* ── 05 · Main forms ─────────────────────────────────────────────── */}
-      <section id="staffing-forms" className="scroll-mt-24 bg-white py-20 sm:py-28">
+      <section id="staffing-forms" className="scroll-mt-24 surface-white py-20 sm:py-28">
         <div className="container-lux">
           <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
             <aside className="lg:col-span-4">
@@ -482,7 +482,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </section>
 
       {/* ── 06 · Why Goldenfalcone ──────────────────────────────────────── */}
-      <section className="border-y border-line/80 bg-ivory-dark/45 py-20 sm:py-28">
+      <section className="surface-white relative py-20 sm:py-28">
         <div className="container-lux">
           <div className="grid gap-10 lg:grid-cols-12 lg:gap-16">
             <div className="lg:col-span-4">
@@ -527,7 +527,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </section>
 
       {/* ── 07 · FAQ ────────────────────────────────────────────────────── */}
-      <section className="bg-white py-20 sm:py-28">
+      <section className="surface-white py-20 sm:py-28">
         <div className="container-lux grid gap-12 lg:grid-cols-12 lg:gap-16">
           <div className="lg:col-span-4">
             <div className="lg:sticky lg:top-28">
@@ -557,7 +557,7 @@ export default async function SalonStaffingPage({ searchParams }: PageProps) {
       </section>
 
       {/* ── 08 · Final CTA ──────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-forest py-20 text-ivory sm:py-28">
+      <section className="relative overflow-hidden surface-forest fade-from-white fade-to-white relative py-20 text-ivory sm:py-28">
         <span aria-hidden className="pointer-events-none absolute -right-24 -top-24 h-80 w-80 rounded-full border border-gold/20" />
         <span aria-hidden className="pointer-events-none absolute -bottom-32 left-1/4 h-72 w-72 rounded-full border border-ivory/10" />
         <div className="container-lux relative z-10">

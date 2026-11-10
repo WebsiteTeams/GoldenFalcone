@@ -10,7 +10,7 @@ import { AvailabilityBadge, Chips, PriceLine, ProductVisual } from "./shared";
 export function FeaturedSoftware({ products }: { products: PublicSoftware[] }) {
   if (!products.length) return null;
   return (
-    <section aria-label="Featured software" className="bg-forest py-24 text-ivory sm:py-32">
+    <section aria-label="Featured software" className="surface-forest fade-from-white fade-to-white relative py-28 text-ivory sm:py-36">
       <div className="container-lux">
         <SectionHeading
           tone="light"

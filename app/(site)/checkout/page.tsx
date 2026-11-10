@@ -240,7 +240,7 @@ export default function CheckoutPage() {
                   href={success.waHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#128c4b] px-8 py-3.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#0f7a41]"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#0a3d2e] px-8 py-3.5 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#062a20]"
                 >
                   <MessageCircle aria-hidden className="h-4 w-4" />
                   Send Order on WhatsApp
@@ -405,7 +405,7 @@ export default function CheckoutPage() {
                 <button
                   type="submit"
                   disabled={loading || unavailable.length > 0}
-                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#128c4b] px-8 py-4 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#0f7a41] disabled:opacity-50"
+                  className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#0a3d2e] px-8 py-4 text-sm font-semibold text-white shadow-md transition-colors hover:bg-[#062a20] disabled:opacity-50"
                 >
                   {loading ? (
                     <>

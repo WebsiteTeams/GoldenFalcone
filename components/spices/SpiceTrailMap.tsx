@@ -83,16 +83,16 @@ export function SpiceTrailMap() {
   const [activeRegion, setActiveRegion] = useState<Region>(regions[5]); // Default Kerala
 
   return (
-    <section id="spice-trail" className="py-20 sm:py-28 bg-[#FAF7F2] border-b border-line/60">
+    <section id="spice-trail" className="py-20 sm:py-28 surface-white relative">
       <div className="container-lux max-w-6xl mx-auto px-4 sm:px-6">
         <div className="text-center max-w-2xl mx-auto mb-14">
-          <h2 className="font-serif text-3xl sm:text-4xl text-[#2A1E17] font-semibold tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-4xl text-[#0A0A0A] font-semibold tracking-tight">
             Regional Spice Trail
           </h2>
-          <p className="mt-2 font-serif italic text-base text-[#8C6D53]">
+          <p className="mt-2 font-serif italic text-base text-[#6B6F6C]">
             What Makes Our Spices Special?
           </p>
-          <p className="mt-3 text-sm text-[#736357]">
+          <p className="mt-3 text-sm text-[#5F6662]">
             Trace every pinch back to its geographic homeland across India&apos;s ancient spice-growing belts.
           </p>
         </div>
@@ -100,11 +100,11 @@ export function SpiceTrailMap() {
         <div className="grid gap-10 lg:grid-cols-12 items-center">
           {/* Map Visual with pins */}
           <div className="lg:col-span-7 relative flex justify-center">
-            <div className="relative w-full max-w-[500px] aspect-[4/5] rounded-3xl border border-[#E9DFD3] bg-[#F7F2E9]/60 p-6 sm:p-8 shadow-xs">
+            <div className="relative w-full max-w-[500px] aspect-[4/5] rounded-3xl border border-[#EDEDEA] bg-[#F5F5F3]/60 p-6 sm:p-8 shadow-xs">
               {/* Subtle Stylized India Contour Silhouette */}
               <svg
                 viewBox="0 0 400 500"
-                className="w-full h-full text-[#E0D5C5] fill-current opacity-70 filter drop-shadow-sm"
+                className="w-full h-full text-[#DCDCD8] fill-current opacity-70 filter drop-shadow-sm"
               >
                 {/* Simplified smooth aesthetic outline of Indian subcontinent */}
                 <path d="M140,40 Q170,20 180,50 Q200,60 210,80 Q225,120 200,140 Q250,150 280,140 Q340,140 340,180 Q320,200 270,190 Q250,210 230,220 Q230,260 210,310 Q190,360 170,410 Q160,450 150,470 Q140,450 130,400 Q120,330 110,280 Q80,260 70,220 Q80,180 100,160 Q110,120 130,80 Z" />
@@ -125,13 +125,13 @@ export function SpiceTrailMap() {
                   >
                     <div className="relative flex items-center justify-center">
                       {isSelected && (
-                        <span className="absolute h-8 w-8 rounded-full bg-[#D4AF37]/30 animate-ping" />
+                        <span className="absolute h-8 w-8 rounded-full bg-[#D4A437]/30 animate-ping" />
                       )}
                       <div
                         className={`flex h-7 w-7 items-center justify-center rounded-full border shadow-md transition-transform duration-200 group-hover:scale-125 ${
                           isSelected
-                            ? "bg-[#1E3A2B] text-[#D4AF37] border-[#D4AF37] scale-110"
-                            : "bg-white text-[#8C6D53] border-[#D8CEBF] hover:bg-[#FAF7F2]"
+                            ? "bg-[#0A3D2E] text-[#D4A437] border-[#D4A437] scale-110"
+                            : "bg-white text-[#6B6F6C] border-[#D9D9D5] hover:surface-white relative"
                         }`}
                       >
                         <MapPin className="h-3.5 w-3.5 fill-current" />
@@ -140,8 +140,8 @@ export function SpiceTrailMap() {
                     <span
                       className={`absolute top-full left-1/2 -translate-x-1/2 mt-1 whitespace-nowrap rounded-md px-1.5 py-0.5 text-[10px] font-semibold transition-all ${
                         isSelected
-                          ? "bg-[#2A1E17] text-[#FAF7F2]"
-                          : "bg-white/90 text-[#736357] opacity-80 group-hover:opacity-100"
+                          ? "bg-[#0A0A0A] text-[#FFFFFF]"
+                          : "bg-white/90 text-[#5F6662] opacity-80 group-hover:opacity-100"
                       }`}
                     >
                       {region.name}
@@ -154,32 +154,32 @@ export function SpiceTrailMap() {
 
           {/* Active Region Detail Card */}
           <div className="lg:col-span-5 space-y-4">
-            <div className="rounded-3xl border border-[#EBE3D7] bg-white p-7 sm:p-9 shadow-sm">
-              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#1E3A2B]/10 px-3 py-1 text-xs font-semibold text-[#1E3A2B]">
-                <Sparkles className="h-3.5 w-3.5 text-[#D4AF37]" />
+            <div className="rounded-3xl border border-[#E5E5E2] bg-white p-7 sm:p-9 shadow-sm">
+              <div className="inline-flex items-center gap-1.5 rounded-full bg-[#0A3D2E]/10 px-3 py-1 text-xs font-semibold text-[#0A3D2E]">
+                <Sparkles className="h-3.5 w-3.5 text-[#D4A437]" />
                 Single-Origin Provenance
               </div>
 
-              <h3 className="mt-4 font-serif text-2xl sm:text-3xl font-medium text-[#2A1E17]">
+              <h3 className="mt-4 font-serif text-2xl sm:text-3xl font-medium text-[#0A0A0A]">
                 {activeRegion.name}
               </h3>
 
               <div className="mt-2 flex items-baseline gap-2">
-                <span className="font-serif text-lg font-bold text-[#8C6D53]">
+                <span className="font-serif text-lg font-bold text-[#6B6F6C]">
                   {activeRegion.spice}
                 </span>
-                <span className="text-xs text-[#736357]">({activeRegion.localName})</span>
+                <span className="text-xs text-[#5F6662]">({activeRegion.localName})</span>
               </div>
 
-              <p className="mt-4 text-sm text-[#736357] leading-relaxed">
+              <p className="mt-4 text-sm text-[#5F6662] leading-relaxed">
                 {activeRegion.notes}
               </p>
 
-              <div className="mt-6 pt-5 border-t border-[#F0E8DD] flex items-center justify-between text-xs">
-                <span className="text-[#8C7B6E]">Certified Farm Direct</span>
+              <div className="mt-6 pt-5 border-t border-[#F5F5F3] flex items-center justify-between text-xs">
+                <span className="text-[#8A8E8B]">Certified Farm Direct</span>
                 <a
                   href="#top-picks"
-                  className="font-semibold text-[#1E3A2B] hover:text-[#D4AF37] transition-colors"
+                  className="font-semibold text-[#0A3D2E] hover:text-[#D4A437] transition-colors"
                 >
                   Shop This Origin →
                 </a>
@@ -195,8 +195,8 @@ export function SpiceTrailMap() {
                   onClick={() => setActiveRegion(r)}
                   className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all ${
                     activeRegion.id === r.id
-                      ? "bg-[#1E3A2B] text-white"
-                      : "bg-white border border-[#EBE3D7] text-[#736357] hover:border-[#D4AF37]"
+                      ? "bg-[#0A3D2E] text-white"
+                      : "bg-white border border-[#E5E5E2] text-[#5F6662] hover:border-[#D4A437]"
                   }`}
                 >
                   {r.name}

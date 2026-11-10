@@ -84,7 +84,7 @@ export default async function SpicesPage() {
       <SpiceHero3D products={[...powder.slice(0, 1), ...solid.slice(0, 1)]} whatsappHref={waLink} />
 
       {/* Trust indicators: statements the store itself backs up on every product page. */}
-      <section aria-label="What you get with every order" className="border-b border-line bg-white">
+      <section aria-label="What you get with every order" className="border-b border-line surface-white">
         <ul className="container-lux grid grid-cols-2 gap-x-6 gap-y-5 py-7 lg:grid-cols-4">
           {trustIndicators.map(({ icon: Icon, label }) => (
             <li key={label} className="flex items-center gap-3 text-sm font-medium text-forest">
@@ -115,7 +115,7 @@ export default async function SpicesPage() {
       />
 
       {/* Quality and sourcing highlights */}
-      <section className="bg-ivory-dark py-20 sm:py-28">
+      <section className="surface-white relative py-20 sm:py-28">
         <div className="container-lux">
           <RevealUp className="max-w-2xl">
             <p className="eyebrow text-gold-dark">Quality &amp; Sourcing</p>

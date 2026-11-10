@@ -177,7 +177,7 @@ function Monitor() {
 
 export function SoftwareHero() {
   return (
-    <section className="relative isolate overflow-hidden bg-forest pb-20 pt-32 text-ivory sm:pb-28 sm:pt-40">
+    <section className="surface-forest relative isolate overflow-hidden pb-24 pt-32 text-ivory sm:pb-28 sm:pt-40">
       <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_60%_at_78%_45%,rgba(6,75,56,0.9),transparent_70%)]" />
       <div
         aria-hidden

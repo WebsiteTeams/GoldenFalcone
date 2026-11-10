@@ -3,7 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { RevealUp } from "@/components/animations";
+import { easeLux } from "@/components/animations/motion";
 import { images } from "@/lib/content";
 import { cn } from "@/lib/utils";
 
@@ -48,112 +50,152 @@ const businessDivisions = [
 
 type Division = (typeof businessDivisions)[number];
 
-function Panel({ division, active, onActivate }: { division: Division; active: boolean; onActivate: () => void }) {
+const glass = "border border-white/20 bg-white/[0.08] backdrop-blur-2xl";
+const count = businessDivisions.length;
+
+/** Shortest signed distance from the active card, so the carousel wraps around. */
+const offsetOf = (i: number, active: number) => {
+  let d = i - active;
+  if (d > count / 2) d -= count;
+  if (d < -count / 2) d += count;
+  return d;
+};
+
+function Card({ division, offset, onSelect }: { division: Division; offset: number; onSelect: () => void }) {
+  const center = offset === 0;
   return (
-    <article
-      onMouseEnter={onActivate}
-      onFocusCapture={onActivate}
+    <motion.article
+      initial={false}
+      animate={{
+        x: `${offset * 74}%`,
+        scale: center ? 1 : 0.8,
+        rotateY: offset * -22,
+        opacity: center ? 1 : 0.7,
+      }}
+      transition={{ duration: 0.7, ease: easeLux }}
+      style={{ zIndex: center ? 10 : 5, transformStyle: "preserve-3d" }}
       className={cn(
-        "group relative isolate min-h-[27rem] overflow-hidden rounded-2xl border bg-black transition-[flex,border-color,box-shadow] duration-[800ms] ease-[var(--ease-lux)] lg:min-h-0 lg:rounded-3xl",
-        active ? "border-gold/50 shadow-[0_40px_90px_-30px_rgba(212,164,55,0.35)] lg:flex-[3.4]" : "border-white/10 lg:flex-1",
+        "absolute inset-y-0 left-1/2 ml-[calc(var(--cw)/-2)] w-[var(--cw)] overflow-hidden rounded-[2rem] border bg-black shadow-[0_50px_90px_-30px_rgba(0,0,0,0.9)]",
+        center ? "border-white/30 shadow-[0_50px_100px_-30px_rgba(212,164,55,0.35)]" : "border-white/15",
       )}
     >
-      <Image
-        src={division.image}
-        alt={division.imageAlt}
-        fill
-        sizes="(min-width: 1024px) 60vw, 100vw"
-        className={cn("-z-20 object-cover transition-all duration-[1200ms] ease-[var(--ease-lux)]", active ? "scale-100 opacity-70 saturate-100" : "scale-110 opacity-40 saturate-50")}
-      />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(to_top,rgba(2,12,9,0.95)_0%,rgba(2,12,9,0.55)_45%,rgba(2,12,9,0.2)_100%)]" />
-      <div aria-hidden className="absolute inset-0 -z-10 bg-[linear-gradient(90deg,rgba(6,47,37,0.55),transparent_60%)]" />
+      <Image src={division.image} alt={center ? division.imageAlt : ""} fill sizes="(min-width: 640px) 30vw, 80vw" className="object-cover" />
+      <div aria-hidden className="absolute inset-0 bg-[linear-gradient(to_top,rgba(3,6,5,0.9)_0%,rgba(3,6,5,0.15)_55%,rgba(3,6,5,0.2)_100%)]" />
 
-      {/* numeral, always visible */}
-      <span className={cn("absolute left-6 top-5 font-serif text-4xl leading-none transition-colors duration-500 sm:text-5xl", active ? "text-gold" : "text-ivory/50")}>{division.number}</span>
-
-      {/* collapsed label (desktop) */}
-      <span
-        aria-hidden
-        className={cn(
-          "absolute bottom-8 left-1/2 hidden font-serif text-2xl tracking-wide text-ivory transition-opacity duration-500 [writing-mode:vertical-rl] lg:block",
-          active ? "opacity-0" : "opacity-100 delay-300",
-        )}
-        style={{ transform: "translateX(-50%) rotate(180deg)" }}
-      >
-        {division.title}
-      </span>
-
-      {/* expanded content */}
-      <div
-        className={cn(
-          "absolute inset-x-0 bottom-0 flex flex-col p-6 transition-all duration-700 sm:p-9 lg:p-10",
-          active ? "translate-y-0 opacity-100 delay-300" : "lg:pointer-events-none lg:translate-y-4 lg:opacity-0",
-        )}
-      >
-        <p className="eyebrow flex items-center gap-3 text-gold">
-          <span aria-hidden className="h-px w-8 bg-gold" />
-          {division.kicker}
-        </p>
-        <h3 className="mt-4 text-[2rem] leading-[1.05] text-ivory sm:text-4xl xl:text-[2.8rem]">{division.title}</h3>
-        <p className="mt-4 max-w-md text-sm leading-relaxed text-ivory/75 sm:text-base">{division.description}</p>
-        <ul className="mt-5 flex flex-wrap gap-2">
-          {division.highlights.map((h) => (
-            <li key={h} className="rounded-full border border-white/20 bg-white/[0.06] px-3.5 py-1.5 text-[0.7rem] uppercase tracking-[0.14em] text-ivory/85 backdrop-blur-md">
-              {h}
-            </li>
-          ))}
-        </ul>
-        <Link
-          href={division.href}
-          className="group/cta mt-7 inline-flex w-fit items-center gap-3 rounded-full bg-gold py-2.5 pl-6 pr-2.5 text-sm font-semibold text-forest transition-colors duration-300 hover:bg-champagne"
-        >
-          {division.cta}
-          <span className="flex h-9 w-9 items-center justify-center rounded-full bg-forest text-gold transition-transform duration-300 group-hover/cta:translate-x-0.5">
-            <svg viewBox="0 0 16 16" aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 8h10M9 4l4 4-4 4" />
-            </svg>
-          </span>
-        </Link>
-      </div>
-    </article>
+      {center ? (
+        <>
+          <span className={`absolute left-1/2 top-14 -translate-x-1/2 whitespace-nowrap rounded-full px-4 py-1.5 text-[0.68rem] font-medium uppercase tracking-[0.16em] text-ivory ${glass}`}>{division.kicker}</span>
+          <div className="absolute inset-x-3 bottom-3 rounded-[1.5rem] border border-white/15 bg-black/40 p-4 backdrop-blur-xl sm:p-5">
+            <div className="flex items-start justify-between gap-4">
+              <h3 className="text-[1.5rem] leading-tight text-ivory">{division.title}</h3>
+              {/* <span className="pt-2 text-xs tabular-nums text-ivory/60">
+                {division.number} / {String(count).padStart(2, "0")}
+              </span> */}
+            </div>
+            {/* <p className="mt-2 line-clamp-2 text-[0.8rem] leading-relaxed text-ivory/75">{division.description}</p> */}
+            {/* <ul className="mt-3 flex flex-wrap gap-1.5">
+              {division.highlights.slice(0, 3).map((h) => (
+                <li key={h} className="rounded-full border border-gold/30 bg-black/30 px-3 py-1 text-[0.62rem] uppercase tracking-[0.14em] text-champagne">
+                  {h}
+                </li>
+              ))}
+            </ul> */}
+            <Link
+              href={division.href}
+              className="group/cta mt-4 inline-flex w-full items-center justify-between rounded-full bg-gold-foil py-2 pl-6 pr-2 text-sm font-semibold text-black shadow-[0_14px_30px_-10px_rgba(212,164,55,0.6)] transition-all hover:brightness-110"
+            >
+              {division.cta}
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-gold transition-transform group-hover/cta:translate-x-0.5">
+                <svg viewBox="0 0 16 16" aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+              </span>
+            </Link>
+          </div>
+        </>
+      ) : (
+        <button type="button" onClick={onSelect} aria-label={`Show ${division.title}`} className="absolute inset-0 flex flex-col justify-end p-6 text-left">
+          <span className="font-serif text-xl text-ivory">{division.title}</span>
+          <span className="mt-1 text-[0.65rem] uppercase tracking-[0.16em] text-ivory/60">{division.kicker}</span>
+        </button>
+      )}
+    </motion.article>
   );
 }
 
 export function Ventures() {
   const [active, setActive] = useState(0);
+  const go = (d: number) => setActive((a) => (a + d + count) % count);
+  const current = businessDivisions[active];
 
   return (
-    <section id="businesses" aria-label="Our business ventures" className="grain relative overflow-hidden bg-[#031610] py-24 sm:py-32">
-      <div aria-hidden className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(11,107,80,0.45),transparent_70%),radial-gradient(ellipse_50%_40%_at_100%_100%,rgba(212,164,55,0.1),transparent_70%)]" />
+    <section id="businesses" aria-label="Our business ventures" className="surface-black fade-from-white fade-to-white grain relative flex min-h-[130svh] flex-col justify-center overflow-hidden py-14 sm:py-16">
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
 
       <div className="container-lux relative">
-        <header className="mb-14 grid items-end gap-8 sm:mb-20 lg:grid-cols-12">
-          <div className="lg:col-span-7">
-            <RevealUp distance={14}>
-              <p className="eyebrow flex items-center gap-4 text-gold">
-                <span aria-hidden className="h-px w-12 bg-gold" />
-                Our Business Ventures
-              </p>
-            </RevealUp>
-            <RevealUp delay={0.1}>
-              <h2 className="mt-6 text-[2.8rem] leading-[1.02] text-ivory sm:text-6xl xl:text-[4.6rem]">
-                Three Dimensions.
-                <span className="block italic text-gold"> One Vision.</span>
-              </h2>
-            </RevealUp>
-          </div>
-          <RevealUp delay={0.15} className="lg:col-span-4 lg:col-start-9">
-            <p className="border-l border-gold/50 pl-6 leading-relaxed text-ivory/65 sm:text-lg">
+        <header className="mx-auto mb-6 max-w-2xl text-center sm:mb-8">
+          <RevealUp distance={14}>
+            <p className="eyebrow inline-flex items-center gap-4 text-gold">
+              <span aria-hidden className="h-px w-12 bg-gradient-to-r from-transparent to-gold" />
+              <span aria-hidden className="h-1.5 w-1.5 rotate-45 bg-gold" />
+              Our Business Ventures
+              <span aria-hidden className="h-1.5 w-1.5 rotate-45 bg-gold" />
+              <span aria-hidden className="h-px w-12 bg-gradient-to-l from-transparent to-gold" />
+            </p>
+          </RevealUp>
+          <RevealUp delay={0.1}>
+            <h2 className="mt-4 text-[1.9rem] leading-[1.06] text-ivory sm:text-4xl xl:text-[2.8rem]">
+              Three Dimensions.
+              <span className="block italic gold-text"> One Vision.</span>
+            </h2>
+          </RevealUp>
+          <RevealUp delay={0.15}>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-relaxed text-ivory/65 [@media(max-height:820px)]:hidden">
               Discover the diverse business ventures of Goldenfalcone, each built around a shared commitment to purpose, quality, and growth.
             </p>
           </RevealUp>
         </header>
 
         <RevealUp delay={0.1}>
-          <div className="flex flex-col gap-4 lg:h-[34rem] lg:flex-row lg:gap-5">
+          <div
+            role="group"
+            aria-roledescription="carousel"
+            aria-label="Business ventures"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "ArrowLeft") go(-1);
+              if (e.key === "ArrowRight") go(1);
+            }}
+            style={{ "--h": "clamp(19rem, calc(100svh - 23rem), 34rem)", "--cw": "min(80vw, 30vw, calc(var(--h) / 1.25))" } as React.CSSProperties}
+            className="relative mx-auto h-[var(--h)] max-w-5xl [perspective:1400px] focus-visible:outline-none"
+          >
+            <div aria-hidden className="absolute inset-x-[10%] bottom-0 top-[28%] rounded-[3rem] bg-[radial-gradient(ellipse_at_center,rgba(212,164,55,0.14),transparent_70%)]" />
             {businessDivisions.map((d, i) => (
-              <Panel key={d.key} division={d} active={active === i} onActivate={() => setActive(i)} />
+              <Card key={d.key} division={d} offset={offsetOf(i, active)} onSelect={() => setActive(i)} />
+            ))}
+          </div>
+
+          {/* glass control bar */}
+          <div className={`mx-auto mt-5 flex max-w-xs items-center gap-3 rounded-full p-2 ${glass}`}>
+            <button type="button" onClick={() => go(-1)} aria-label="Previous venture" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-ivory transition-colors hover:border-gold hover:text-gold">
+              <svg viewBox="0 0 16 16" aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M10 3 5 8l5 5" />
+              </svg>
+            </button>
+            <Image src={current.image} alt="" width={48} height={48} className="h-12 w-12 shrink-0 rounded-full border border-gold/40 object-cover" />
+            <div className="min-w-0 flex-1" aria-live="polite">
+              <p className="truncate text-sm font-medium text-ivory">{current.title}</p>
+              <p className="truncate text-xs text-ivory/60">{current.kicker}</p>
+            </div>
+            <button type="button" onClick={() => go(1)} aria-label="Next venture" className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-white/20 text-ivory transition-colors hover:border-gold hover:text-gold">
+              <svg viewBox="0 0 16 16" aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="m6 3 5 5-5 5" />
+              </svg>
+            </button>
+          </div>
+          <div className="mt-3 flex justify-center gap-2" aria-hidden>
+            {businessDivisions.map((d, i) => (
+              <span key={d.key} className={cn("h-1.5 rounded-full transition-all duration-500", i === active ? "w-6 bg-gold" : "w-1.5 bg-white/30")} />
             ))}
           </div>
         </RevealUp>

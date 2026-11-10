@@ -7,27 +7,21 @@ import { divisions } from "@/lib/content";
 
 const numerals = ["I", "II", "III", "IV", "V"];
 
-/** A tall arched plate: the emblem framed by concentric gold arches, like a museum niche. */
-function EmblemPlate({ logo }: { logo: string }) {
+/** Gold corner brackets that frame a panel like a presentation case. */
+function Corners() {
+  const c = "absolute h-6 w-6 border-gold/70";
   return (
-    <div className="relative mx-auto w-full max-w-[26rem] lg:max-w-none">
-      <div aria-hidden className="absolute -inset-4 rounded-t-full border border-gold/30" />
-      <div aria-hidden className="absolute -inset-8 rounded-t-full border border-gold/15" />
-      <div className="relative aspect-[4/5] overflow-hidden rounded-t-full bg-[radial-gradient(ellipse_80%_60%_at_50%_38%,#0e6b52_0%,#062f25_60%,#041f19_100%)] shadow-[0_40px_80px_-30px_rgba(6,47,37,0.7)]">
-        <div aria-hidden className="absolute inset-0 opacity-[0.07] [background:repeating-linear-gradient(90deg,#fff_0_1px,transparent_1px_26px)]" />
-        <div aria-hidden className="absolute left-1/2 top-[40%] aspect-square w-[78%] -translate-x-1/2 -translate-y-1/2 rounded-full border border-gold/40" />
-        <div aria-hidden className="absolute left-1/2 top-[40%] aspect-square w-[64%] -translate-x-1/2 -translate-y-1/2 rounded-full bg-gold/10 blur-2xl" />
-        <div className="absolute left-1/2 top-[40%] aspect-square w-[62%] -translate-x-1/2 -translate-y-1/2">
-          <Image src={logo} alt="Goldenfalcone emblem: a golden eagle encircling a tree" fill sizes="(min-width: 1024px) 24vw, 70vw" className="object-contain drop-shadow-[0_20px_30px_rgba(0,0,0,0.5)]" />
-        </div>
-        <p className="absolute inset-x-0 bottom-7 text-center text-[0.6rem] font-semibold uppercase tracking-[0.34em] text-champagne/80">Est. Vision · Strength · Legacy</p>
-      </div>
-      {/* hanging tag */}
-      <div className="absolute -bottom-5 left-1/2 w-[82%] -translate-x-1/2 rounded-sm border border-gold/40 bg-ivory px-5 py-3 text-center shadow-[0_18px_40px_-20px_rgba(6,47,37,0.5)]">
-        <p className="font-serif text-base italic leading-snug text-gold-deep sm:text-lg">The eagle for vision and strength; the tree for roots, growth and legacy.</p>
-      </div>
-    </div>
+    <>
+      <span aria-hidden className={`${c} left-4 top-4 border-l border-t`} />
+      <span aria-hidden className={`${c} right-4 top-4 border-r border-t`} />
+      <span aria-hidden className={`${c} bottom-4 left-4 border-b border-l`} />
+      <span aria-hidden className={`${c} bottom-4 right-4 border-b border-r`} />
+    </>
   );
+}
+
+function Diamond() {
+  return <span aria-hidden className="h-1.5 w-1.5 rotate-45 bg-gold" />;
 }
 
 export async function BrandIntro() {
@@ -35,47 +29,72 @@ export async function BrandIntro() {
   const title = lines(home.introTitle);
 
   return (
-    <section className="relative scroll-mt-20 overflow-hidden bg-ivory py-24 sm:py-32">
+    <section className="surface-white fade-from-black relative scroll-mt-20 overflow-hidden py-28 sm:py-40">
+      {/* fine vertical linework, fading at top and bottom */}
+      <div aria-hidden className="absolute inset-0 [background:repeating-linear-gradient(90deg,rgba(10,61,46,0.035)_0_1px,transparent_1px_88px)] [mask-image:linear-gradient(to_bottom,transparent,#000_25%,#000_75%,transparent)]" />
+      {/* oversized watermark */}
+      <span aria-hidden className="pointer-events-none absolute left-1/2 top-24 -translate-x-1/2 select-none whitespace-nowrap font-serif text-[16rem] italic leading-none text-forest/[0.035] max-lg:hidden">
+        Goldenfalcone
+      </span>
+
       <div className="container-lux relative">
-        <div className="grid items-center gap-20 lg:grid-cols-12 lg:gap-12">
-          <div className="lg:col-span-7">
-            <RevealUp distance={14}>
-              <p className="eyebrow flex items-center gap-4 text-gold-deep">
-                <span aria-hidden className="h-px w-12 bg-gold" />
-                About Goldenfalcone
-              </p>
-            </RevealUp>
-            <TextReveal
-              lines={title}
-              accentIndex={title.length - 1}
-              accentClassName="italic text-gold-dark"
-              className="mt-7 text-[2.6rem] font-medium leading-[1.05] text-forest sm:text-6xl xl:text-[4.6rem]"
-            />
+        {/* centred statement */}
+        <div className="mx-auto max-w-4xl text-center">
+          <RevealUp distance={14}>
+            <p className="eyebrow inline-flex items-center gap-4 text-gold-deep">
+              <span aria-hidden className="h-px w-12 bg-gradient-to-r from-transparent to-gold" />
+              <Diamond />
+              About Goldenfalcone
+              <Diamond />
+              <span aria-hidden className="h-px w-12 bg-gradient-to-l from-transparent to-gold" />
+            </p>
+          </RevealUp>
+          <TextReveal
+            lines={title}
+            accentIndex={title.length - 1}
+            accentClassName="italic gold-text-dark"
+            className="mt-8 text-[2.7rem] font-medium leading-[1.04] text-forest sm:text-6xl xl:text-[4.8rem]"
+          />
+          <RevealUp delay={0.1}>
+            <p className="mx-auto mt-10 max-w-3xl font-serif text-2xl italic leading-snug text-ink/80 sm:text-[1.9rem]">{home.introLead}</p>
+          </RevealUp>
+        </div>
 
-            <div className="mt-10 grid gap-8 sm:grid-cols-[1fr_auto] sm:gap-10">
-              <RevealUp>
-                <p className="border-l-2 border-gold pl-6 font-serif text-2xl leading-snug text-forest sm:text-[1.7rem]">{home.introLead}</p>
-              </RevealUp>
-            </div>
-            {home.introBody ? (
-              <RevealUp delay={0.1}>
-                <p className="mt-7 max-w-xl pl-6 text-base leading-relaxed text-muted sm:pl-[1.65rem]">{home.introBody}</p>
-              </RevealUp>
-            ) : null}
+        {/* manifesto + ledger */}
+        <div className="mt-20 grid gap-8 lg:mt-28 lg:grid-cols-12 lg:gap-10">
+          <RevealUp className="lg:col-span-5">
+            <aside className="surface-black relative h-full overflow-hidden rounded-[2rem] border border-gold/40 p-10 text-ivory shadow-[0_50px_90px_-40px_rgba(5,7,6,0.85)] sm:p-12">
+              <Corners />
+              <div aria-hidden className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-gold/10 blur-3xl" />
+              <div className="relative flex h-full flex-col">
+                <span className="relative flex h-20 w-20 items-center justify-center rounded-full border border-gold/50 bg-white/[0.04] shadow-[0_0_0_6px_rgba(212,164,55,0.08)]">
+                  <Image src={config.logo} alt="Goldenfalcone emblem: a golden eagle encircling a tree" width={56} height={56} className="h-14 w-14 object-contain" />
+                </span>
+                <p className="mt-8 font-serif text-3xl leading-tight text-champagne sm:text-[2.2rem]">
+                  Vision <span className="text-gold">&amp;</span> Strength.
+                  <span className="block italic gold-text">Roots &amp; Legacy.</span>
+                </p>
+                <span aria-hidden className="mt-7 h-px w-16 bg-gold-foil" />
+                {home.introBody ? <p className="mt-7 leading-relaxed text-ivory/70">{home.introBody}</p> : null}
+                <p className="mt-auto pt-10 text-[0.65rem] font-semibold uppercase tracking-[0.34em] text-gold/80">The eagle for vision · The tree for legacy</p>
+              </div>
+            </aside>
+          </RevealUp>
 
-            {/* the three dimensions as a numbered ledger */}
-            <RevealUp delay={0.15}>
-              <ol className="mt-12 border-t border-forest/15">
+          <RevealUp delay={0.1} className="lg:col-span-7">
+            <div className="flex h-full flex-col justify-center">
+              <p className="eyebrow text-gold-deep">Three dimensions of one group</p>
+              <ol className="mt-6 divide-y divide-forest/15 border-y border-forest/15">
                 {divisions.map((d) => (
-                  <li key={d.key} className="border-b border-forest/15">
-                    <Link href={d.href} className="group flex items-center gap-5 py-5 transition-colors sm:gap-8">
-                      <span className="w-12 shrink-0 font-serif text-3xl leading-none text-gold-dark/70 transition-colors group-hover:text-gold-dark sm:text-4xl">{d.number}</span>
+                  <li key={d.key}>
+                    <Link href={d.href} className="group relative flex items-center gap-5 px-2 py-7 transition-all duration-500 hover:bg-forest hover:px-6 sm:gap-8">
+                      <span className="w-14 shrink-0 font-serif text-4xl leading-none gold-text-dark transition-opacity group-hover:opacity-90 sm:text-5xl">{d.number}</span>
                       <span className="min-w-0 flex-1">
-                        <span className="block font-serif text-xl text-forest sm:text-2xl">{d.title}</span>
-                        <span className="mt-1 line-clamp-1 block text-sm text-muted">{d.description}</span>
+                        <span className="block font-serif text-2xl text-forest transition-colors duration-500 group-hover:text-champagne sm:text-[1.9rem]">{d.title}</span>
+                        <span className="mt-1.5 line-clamp-2 block text-sm leading-relaxed text-muted transition-colors duration-500 group-hover:text-ivory/70">{d.description}</span>
                       </span>
-                      <span aria-hidden className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-forest/20 text-forest transition-all duration-300 group-hover:border-gold group-hover:bg-gold group-hover:text-forest">
-                        <svg viewBox="0 0 16 16" className="h-4 w-4 -rotate-45 transition-transform duration-300 group-hover:rotate-0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                      <span aria-hidden className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-forest/25 text-forest transition-all duration-500 group-hover:border-gold group-hover:bg-gold">
+                        <svg viewBox="0 0 16 16" className="h-4 w-4 -rotate-45 transition-transform duration-500 group-hover:rotate-0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                           <path d="M3 8h10M9 4l4 4-4 4" />
                         </svg>
                       </span>
@@ -83,21 +102,17 @@ export async function BrandIntro() {
                   </li>
                 ))}
               </ol>
-            </RevealUp>
-          </div>
-
-          <RevealUp className="lg:col-span-4 lg:col-start-9">
-            <EmblemPlate logo={config.logo} />
+            </div>
           </RevealUp>
         </div>
 
-        {/* values strip */}
+        {/* values band */}
         <RevealUp delay={0.1}>
-          <ul className="mt-28 grid grid-cols-2 gap-y-8 border-t border-gold/40 pt-10 sm:grid-cols-3 lg:grid-cols-5">
+          <ul className="surface-forest relative mt-20 grid grid-cols-2 overflow-hidden rounded-[2rem] border border-gold/40 shadow-[0_40px_80px_-40px_rgba(6,42,32,0.8)] sm:grid-cols-3 lg:mt-28 lg:grid-cols-5">
             {values.map((v, i) => (
-              <li key={v.name} className="pr-6">
-                <span className="font-serif text-sm italic text-gold-dark">{numerals[i] ?? i + 1}</span>
-                <p className="mt-1 text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-forest">{v.name}</p>
+              <li key={v.name} className="relative flex flex-col items-center gap-2 border-gold/20 px-4 py-9 text-center [&:not(:last-child)]:border-r max-sm:[&:nth-child(2n)]:border-r-0">
+                <span className="font-serif text-lg italic gold-text">{numerals[i] ?? i + 1}</span>
+                <span className="text-[0.7rem] font-semibold uppercase tracking-[0.3em] text-ivory">{v.name}</span>
               </li>
             ))}
           </ul>

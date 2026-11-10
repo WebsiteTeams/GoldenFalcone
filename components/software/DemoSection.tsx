@@ -5,7 +5,7 @@ import { DemoRequestForm } from "./DemoRequestForm";
 
 export function DemoSection({ software, defaultSoftwareId, productName }: { software: { id: string; name: string }[]; defaultSoftwareId?: string; productName?: string }) {
   return (
-    <section id="demo" aria-label="Request a demo" className="scroll-mt-20 bg-ivory py-24 sm:py-32">
+    <section id="demo" aria-label="Request a demo" className="surface-white relative scroll-mt-20 py-28 sm:py-36">
       <div className="container-lux grid gap-14 lg:grid-cols-12">
         <div className="lg:col-span-4">
           <SectionHeading

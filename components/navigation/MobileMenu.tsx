@@ -65,7 +65,7 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
       {open ? (
         <div className="fixed inset-0 z-[60] lg:hidden">
           <motion.div
-            className="absolute inset-0 bg-forest-deep/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -78,7 +78,8 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
             role="dialog"
             aria-modal="true"
             aria-label="Site menu"
-            className="grain absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-y-auto bg-forest-deep px-6 pb-8 pt-5 text-ivory text-base"
+            data-lenis-prevent
+            className="surface-black grain absolute inset-y-0 right-0 flex w-full max-w-sm flex-col overflow-y-auto border-l border-gold/30 px-6 pb-8 pt-5 text-ivory text-base"
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
@@ -90,7 +91,7 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
                 type="button"
                 onClick={onClose}
                 aria-label="Close menu"
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-ivory/25"
+                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-gold/40 transition-colors hover:border-gold hover:text-gold"
               >
                 <X aria-hidden className="h-5 w-5" />
               </button>
@@ -138,13 +139,25 @@ export function MobileMenu({ open, onClose, pathname, logo }: MobileMenuProps) {
                         active(d.href) ? "text-gold" : "text-ivory/90 hover:text-champagne",
                       )}
                     >
-                      <span className="eyebrow text-gold">{d.number}</span>
+                      <span className="font-serif text-xl gold-text">{d.number}</span>
                       <span className="text-base">{d.title}</span>
                     </Link>
                   </motion.li>
                 ))}
               </ul>
             </motion.nav>
+
+            <Link
+              href="/contact"
+              className="mt-8 flex items-center justify-between rounded-full bg-gold-foil py-2.5 pl-7 pr-2.5 text-sm font-semibold uppercase tracking-[0.14em] text-black"
+            >
+              Get in Touch
+              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black text-gold">
+                <svg viewBox="0 0 16 16" aria-hidden className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 8h10M9 4l4 4-4 4" />
+                </svg>
+              </span>
+            </Link>
 
             <p className="mt-8 text-center text-xs tracking-[0.2em] text-champagne/60 uppercase">
               {site.values.join(" · ")}

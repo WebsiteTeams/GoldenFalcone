@@ -31,18 +31,18 @@ export function SpicesFaq() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
 
   return (
-    <section className="py-20 sm:py-28 bg-[#FAF7F2] border-b border-line/60">
+    <section className="py-20 sm:py-28 surface-white relative">
       <div className="container-lux max-w-3xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-14">
-          <h2 className="font-serif text-3xl sm:text-4xl text-[#2A1E17] font-semibold tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-4xl text-[#0A0A0A] font-semibold tracking-tight">
             FAQs
           </h2>
-          <p className="mt-2 font-serif italic text-base text-[#8C6D53]">
+          <p className="mt-2 font-serif italic text-base text-[#6B6F6C]">
             &ldquo;Got Questions? We Have Answers&rdquo;
           </p>
         </div>
 
-        <div className="divide-y divide-[#E6DDD0] border-y border-[#E6DDD0]">
+        <div className="divide-y divide-[#E5E5E2] border-y border-[#E5E5E2]">
           {faqs.map((item, i) => {
             const isOpen = openIdx === i;
 
@@ -51,14 +51,14 @@ export function SpicesFaq() {
                 <button
                   type="button"
                   onClick={() => setOpenIdx(isOpen ? null : i)}
-                  className="flex w-full items-center justify-between gap-4 text-left font-serif text-lg sm:text-xl text-[#2A1E17] hover:text-[#8C6D53] transition-colors"
+                  className="flex w-full items-center justify-between gap-4 text-left font-serif text-lg sm:text-xl text-[#0A0A0A] hover:text-[#6B6F6C] transition-colors"
                 >
                   <span className="font-medium">
                     {i + 1}. {item.q}
                   </span>
                   <span
-                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#D8CEBF] transition-transform duration-300 ${
-                      isOpen ? "rotate-180 bg-[#1E3A2B] text-white border-[#1E3A2B]" : "text-[#736357]"
+                    className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-[#D9D9D5] transition-transform duration-300 ${
+                      isOpen ? "rotate-180 bg-[#0A3D2E] text-white border-[#0A3D2E]" : "text-[#5F6662]"
                     }`}
                   >
                     <ChevronDown className="h-4 w-4" />
@@ -66,7 +66,7 @@ export function SpicesFaq() {
                 </button>
 
                 {isOpen && (
-                  <div className="mt-3 text-sm text-[#736357] leading-relaxed pl-5 pr-4 animate-in fade-in duration-200">
+                  <div className="mt-3 text-sm text-[#5F6662] leading-relaxed pl-5 pr-4 animate-in fade-in duration-200">
                     <p>{item.a}</p>
                   </div>
                 )}

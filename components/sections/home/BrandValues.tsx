@@ -15,7 +15,7 @@ const numerals = ["I", "II", "III", "IV", "V"];
 /** Each value stands as a pillar; the row steps down in a gentle stagger on large screens. */
 export function BrandValues({ values }: { values: BrandValue[] }) {
   return (
-    <section className="relative overflow-hidden bg-ivory py-24 sm:py-32">
+    <section className="surface-white fade-from-white relative overflow-hidden py-28 sm:py-40">
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       <div aria-hidden className="absolute -right-40 top-10 h-[34rem] w-[34rem] rounded-full bg-gold/[0.07] blur-3xl" />
 
@@ -31,7 +31,7 @@ export function BrandValues({ values }: { values: BrandValue[] }) {
             <TextReveal
               lines={["Built on Values.", "Driven by Vision."]}
               accentIndex={1}
-              accentClassName="italic text-gold-dark"
+              accentClassName="italic gold-text-dark"
               className="mt-7 text-[2.75rem] leading-[1.03] text-forest xs:text-5xl sm:text-7xl"
             />
           </div>
@@ -47,7 +47,7 @@ export function BrandValues({ values }: { values: BrandValue[] }) {
             const Icon = icons[value.name.toLowerCase()] ?? Gem;
             return (
               <StaggerItem key={value.name} className={i % 2 === 1 ? "lg:mt-14" : ""}>
-                <article className="group relative flex h-full min-h-[22rem] flex-col overflow-hidden rounded-t-[5rem] rounded-b-2xl border border-gold/30 bg-[linear-gradient(180deg,#0b4a39_0%,#062f25_55%,#031c15_100%)] px-6 pb-8 pt-12 shadow-[0_30px_60px_-30px_rgba(6,47,37,0.8)] transition-all duration-500 hover:-translate-y-2 hover:border-gold/70 hover:shadow-[0_40px_80px_-25px_rgba(212,164,55,0.35)] motion-reduce:hover:translate-y-0">
+                <article className="group relative flex h-full min-h-[22rem] flex-col overflow-hidden rounded-t-[5rem] rounded-b-2xl border border-gold/40 bg-[linear-gradient(180deg,#0d4d3a_0%,#0a3d2e_50%,#050706_100%)] ring-1 ring-inset ring-white/5 px-6 pb-8 pt-12 shadow-[0_30px_60px_-30px_rgba(6,47,37,0.8)] transition-all duration-500 hover:-translate-y-2 hover:border-gold/70 hover:shadow-[0_40px_80px_-25px_rgba(212,164,55,0.35)] motion-reduce:hover:translate-y-0">
                   <div aria-hidden className="absolute inset-x-6 top-3 h-px bg-gradient-to-r from-transparent via-gold/70 to-transparent" />
                   <span aria-hidden className="absolute -right-2 bottom-0 select-none font-serif text-[7rem] italic leading-none text-gold/[0.08] transition-colors duration-500 group-hover:text-gold/[0.16]">
                     {numerals[i] ?? i + 1}

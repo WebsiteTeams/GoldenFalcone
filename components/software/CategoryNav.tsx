@@ -23,7 +23,7 @@ export function CategoryNav() {
   };
 
   return (
-    <section aria-label="Software categories" className="bg-ivory py-24 sm:py-28">
+    <section aria-label="Software categories" className="surface-white fade-from-forest relative py-28 sm:py-32">
       <div className="container-lux">
         <SectionHeading eyebrow="Software Categories" title={["Find software for", "the way you trade."]} intro="Browse by the kind of market or workflow a product is built for." />
         <ul className="mt-14 grid gap-px overflow-hidden rounded-[1.5rem] border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">

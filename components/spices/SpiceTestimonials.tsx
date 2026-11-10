@@ -43,17 +43,17 @@ export function SpiceTestimonials() {
   const current = reviews[index];
 
   return (
-    <section className="py-20 sm:py-28 bg-[#FAF7F2] border-b border-line/60">
+    <section className="py-20 sm:py-28 surface-white relative">
       <div className="container-lux max-w-4xl mx-auto px-4 sm:px-6 text-center">
-        <h2 className="font-serif text-3xl sm:text-4xl text-[#2A1E17] font-semibold tracking-tight">
+        <h2 className="font-serif text-3xl sm:text-4xl text-[#0A0A0A] font-semibold tracking-tight">
           Testimonials
         </h2>
-        <p className="mt-2 font-serif italic text-base text-[#8C6D53]">
+        <p className="mt-2 font-serif italic text-base text-[#6B6F6C]">
           &ldquo;Our Customers Say It Best&rdquo;
         </p>
 
         {/* Big quote mark decoration */}
-        <div className="mt-8 flex justify-center text-[#D4AF37]/50">
+        <div className="mt-8 flex justify-center text-[#D4A437]/50">
           <Quote className="h-10 w-10 rotate-180" />
         </div>
 
@@ -63,28 +63,28 @@ export function SpiceTestimonials() {
             type="button"
             onClick={prev}
             aria-label="Previous testimonial"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D8CEBF] bg-white text-[#2A1E17] shadow-sm transition-all hover:border-[#D4AF37] hover:bg-[#1E3A2B] hover:text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D9D9D5] bg-white text-[#0A0A0A] shadow-sm transition-all hover:border-[#D4A437] hover:bg-[#0A3D2E] hover:text-white"
           >
             <ChevronLeft className="h-5 w-5" />
           </button>
 
           <div className="max-w-2xl mx-auto px-2 min-h-[160px] flex flex-col justify-center">
             {/* Stars */}
-            <div className="flex justify-center gap-1 mb-4 text-[#D4AF37]">
+            <div className="flex justify-center gap-1 mb-4 text-[#D4A437]">
               {Array.from({ length: current.stars }).map((_, i) => (
                 <Star key={i} className="h-4 w-4 fill-current" />
               ))}
             </div>
 
-            <p className="font-serif text-lg sm:text-2xl text-[#2A1E17] font-normal leading-relaxed italic">
+            <p className="font-serif text-lg sm:text-2xl text-[#0A0A0A] font-normal leading-relaxed italic">
               &ldquo;{current.quote}&rdquo;
             </p>
 
             <div className="mt-5">
-              <span className="font-serif text-base font-semibold text-[#8C6D53]">
+              <span className="font-serif text-base font-semibold text-[#6B6F6C]">
                 {current.author}
               </span>
-              <span className="text-sm text-[#736357]">, {current.location}</span>
+              <span className="text-sm text-[#5F6662]">, {current.location}</span>
             </div>
           </div>
 
@@ -92,7 +92,7 @@ export function SpiceTestimonials() {
             type="button"
             onClick={next}
             aria-label="Next testimonial"
-            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D8CEBF] bg-white text-[#2A1E17] shadow-sm transition-all hover:border-[#D4AF37] hover:bg-[#1E3A2B] hover:text-white"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-[#D9D9D5] bg-white text-[#0A0A0A] shadow-sm transition-all hover:border-[#D4A437] hover:bg-[#0A3D2E] hover:text-white"
           >
             <ChevronRight className="h-5 w-5" />
           </button>
@@ -107,7 +107,7 @@ export function SpiceTestimonials() {
               onClick={() => setIndex(i)}
               aria-label={`Go to slide ${i + 1}`}
               className={`h-2 rounded-full transition-all duration-300 ${
-                index === i ? "w-6 bg-[#1E3A2B]" : "w-2 bg-[#D8CEBF]"
+                index === i ? "w-6 bg-[#0A3D2E]" : "w-2 bg-[#D9D9D5]"
               }`}
             />
           ))}

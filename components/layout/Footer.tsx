@@ -27,7 +27,8 @@ export async function Footer() {
   const hasContact = Boolean(email || phone || address || whatsapp);
 
   return (
-    <footer className="grain relative isolate overflow-hidden bg-forest text-ivory">
+    <footer className="grain relative isolate overflow-hidden bg-[#031a13] text-ivory">
+      <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(10,61,46,0.55),transparent_70%),linear-gradient(to_bottom,#041f17,#020f0b)]" />
       <div aria-hidden className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-gold/60 to-transparent" />
       <Image src={config.logo} alt="" width={620} height={620} aria-hidden className="pointer-events-none absolute bottom-12 right-10 -z-10 h-[14rem] w-[14rem] opacity-[0.07] sm:h-[20rem] sm:w-[20rem]" />
       {/* <div className="container-lux relative pt-16 sm:pt-24">
@@ -47,7 +48,7 @@ export async function Footer() {
               className="group inline-flex items-center gap-5 rounded-full border border-gold/50 bg-gold/[0.07] py-3 pl-8 pr-3 font-serif text-xl text-ivory backdrop-blur-sm transition-colors duration-300 hover:border-gold hover:bg-gold hover:text-forest"
             >
               Start a conversation
-              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold text-forest transition-all duration-300 group-hover:bg-forest group-hover:text-gold">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-gold text-forest transition-all duration-300 group-hover:bg-[#031a13] group-hover:text-gold">
                 <svg viewBox="0 0 16 16" aria-hidden className="h-5 w-5 -rotate-45 transition-transform duration-300 group-hover:rotate-0" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M3 8h10M9 4l4 4-4 4" />
                 </svg>

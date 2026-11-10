@@ -109,7 +109,7 @@ function WhatsAppOrderDialog({
                 href={placed.waHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="mt-6 flex items-center justify-center gap-2 rounded-full bg-[#128c4b] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#0f7a41]"
+                className="mt-6 flex items-center justify-center gap-2 rounded-full bg-[#0a3d2e] px-6 py-3.5 text-sm font-semibold text-white transition-colors hover:bg-[#062a20]"
               >
                 <MessageCircle aria-hidden className="h-4 w-4" /> Send order on WhatsApp <ExternalLink aria-hidden className="h-3.5 w-3.5" />
               </a>
@@ -314,7 +314,7 @@ export function QualityPurchasePanel({ spice, whatsappEnabled, initialLevel }: {
             onClick={() => setOrdering(true)}
             className="flex flex-1 items-center justify-center gap-2 rounded-full border border-forest/25 px-6 py-4 text-sm font-semibold text-forest transition-colors hover:border-gold hover:bg-champagne/20"
           >
-            <MessageCircle aria-hidden className="h-4 w-4 text-[#128c4b]" /> WhatsApp Order
+            <MessageCircle aria-hidden className="h-4 w-4 text-[#0a3d2e]" /> WhatsApp Order
           </button>
         ) : null}
       </div>

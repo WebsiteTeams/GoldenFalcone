@@ -57,7 +57,7 @@ export function SoftwareCatalogue() {
   ].filter(Boolean) as { key: keyof SoftwareFilters; label: string }[];
 
   return (
-    <section id="catalogue" aria-label="Software collection" className="scroll-mt-20 bg-ivory-dark/60 py-24 sm:py-32">
+    <section id="catalogue" aria-label="Software collection" className="surface-white relative scroll-mt-20 py-28 sm:py-36">
       <div className="container-lux">
         <SectionHeading eyebrow="Software Collection" title={["Explore Our", "Software Collection"]} intro="Filter by category, market, platform or licence, and sort by price or newest." />
 

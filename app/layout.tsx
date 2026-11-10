@@ -1,19 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, Manrope } from "next/font/google";
+import { Inter, Playfair_Display } from "next/font/google";
 import { Providers } from "@/components/layout/Providers";
 import { getSiteConfig } from "@/lib/cms";
 import { site } from "@/lib/site";
 import "./globals.css";
 
-const cormorant = Cormorant_Garamond({
+const cormorant = Playfair_Display({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   style: ["normal", "italic"],
   variable: "--font-cormorant",
   display: "swap",
 });
 
-const manrope = Manrope({
+const manrope = Inter({
   subsets: ["latin"],
   variable: "--font-manrope",
   display: "swap",
@@ -38,7 +38,7 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
-  themeColor: "#062F25",
+  themeColor: "#0A3D2E",
   width: "device-width",
   initialScale: 1,
 };

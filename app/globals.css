@@ -1,20 +1,22 @@
 @import "tailwindcss";
 
 @theme {
-  --color-forest: #062f25;
-  --color-forest-deep: #041f19;
-  --color-emerald: #064b38;
+  /* Palette: white, black, forest green, gold. */
+  --color-forest: #0a3d2e;
+  --color-forest-deep: #062a20;
+  --color-emerald: #0d4d3a;
   --color-gold: #d4a437;
   --color-gold-dark: #a87d1e;
-  --color-champagne: #e8d5a3;
-  --color-ivory: #faf8f2;
-  --color-ivory-dark: #f1ede2;
-  --color-ink: #17221d;
-  --color-muted: #69756e;
-  --color-line: #e4dfd2;
+  --color-champagne: #ecd9a4;
+  --color-ivory: #ffffff;
+  --color-ivory-dark: #f5f5f3;
+  --color-ink: #0a0a0a;
+  --color-muted: #5f6662;
+  --color-line: #e5e5e2;
+  --color-black-rich: #070807;
 
-  --font-serif: var(--font-cormorant), "Cormorant Garamond", Georgia, serif;
-  --font-sans: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: var(--font-cormorant), "Playfair Display", Georgia, serif;
+  --font-sans: var(--font-manrope), "Inter", ui-sans-serif, system-ui, sans-serif;
 
   --ease-lux: cubic-bezier(0.22, 1, 0.36, 1);
 
@@ -40,8 +42,9 @@
   h3,
   h4 {
     font-family: var(--font-serif);
-    font-weight: 500;
-    letter-spacing: -0.01em;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    line-height: 1.12;
     text-wrap: balance;
   }
 
@@ -115,95 +118,30 @@
   }
 }
 
-/* ---------- Digital Solutions page ----------
-   Remaps the site tokens inside this page only, so shared forms, buttons and headings
-   take on the navy/blue palette without changing any other page. */
+/* Legacy "tech" tokens, mapped onto the brand palette. */
 @theme {
-  --color-navy: #06152e;
-  --color-navy-2: #071d3a;
-  --color-tech-blue: #0866d9;
-  --color-tech-blue-dark: #0757ba;
-  --color-tech-bright: #168bfa;
-  --color-tech-light: #eaf4ff;
-  --color-tech-soft: #f7fafe;
+  --color-navy: #070807;
+  --color-navy-2: #0a3d2e;
+  --color-tech-blue: #0a3d2e;
+  --color-tech-blue-dark: #062a20;
+  --color-tech-bright: #d4a437;
+  --color-tech-light: #ecd9a4;
+  --color-tech-soft: #f5f5f3;
 }
 
 @layer components {
-  .digital-theme {
-    --color-forest: #06152e;
-    --color-forest-deep: #040f22;
-    --color-emerald: #0757ba;
-    --color-gold-dark: #0866d9;
-    --color-champagne: #bcdcff;
-    --color-ivory: #ffffff;
-    --color-ivory-dark: #f7fafe;
-    --color-ink: #152238;
-    --color-muted: #64748b;
-    --color-line: #dde7f3;
-    --font-serif: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
-    background: #ffffff;
-    color: var(--color-ink);
-  }
-  .digital-theme :is(h1, h2, h3, h4) {
-    font-weight: 700;
-    letter-spacing: -0.025em;
-  }
-  .digital-grid {
-    background-image:
-      linear-gradient(rgba(148, 197, 255, 0.09) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(148, 197, 255, 0.09) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse 75% 70% at 50% 35%, #000 25%, transparent 100%);
-  }
-  .digital-chart-text {
-    font-family: var(--font-manrope), "Manrope", ui-sans-serif, system-ui, sans-serif;
-  }
-
   @media (prefers-reduced-motion: no-preference) {
-    .digital-grid {
-      animation: digital-drift 28s linear infinite;
-    }
-    .digital-node {
-      animation: digital-pulse 4.5s ease-in-out infinite;
-    }
-    .digital-float {
-      animation: digital-float 7s ease-in-out infinite;
-    }
-    .digital-flow {
-      stroke-dasharray: 5 7;
-      animation: digital-flow 2.4s linear infinite;
-    }
+    .digital-grid { animation: digital-drift 28s linear infinite; }
+    .digital-node { animation: digital-pulse 4.5s ease-in-out infinite; }
+    .digital-float { animation: digital-float 7s ease-in-out infinite; }
+    .digital-flow { stroke-dasharray: 5 7; animation: digital-flow 2.4s linear infinite; }
   }
 }
 
-@keyframes digital-drift {
-  to {
-    background-position: 56px 56px;
-  }
-}
-@keyframes digital-pulse {
-  0%,
-  100% {
-    opacity: 0.3;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-@keyframes digital-float {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-10px);
-  }
-}
-@keyframes digital-flow {
-  to {
-    stroke-dashoffset: -24;
-  }
-}
+@keyframes digital-drift { to { background-position: 56px 56px; } }
+@keyframes digital-pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+@keyframes digital-float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes digital-flow { to { stroke-dashoffset: -24; } }
 
 /* ---------- Homepage ---------- */
 @theme {
@@ -214,15 +152,15 @@
 @layer components {
   /* Re-themes the shared product mockups to the brand palette. */
   .mock-forest {
-    --mock-navy: #062f25;
-    --mock-navy-2: #064b38;
-    --mock-blue: #0b6a50;
+    --mock-navy: #0a3d2e;
+    --mock-navy-2: #0d4d3a;
+    --mock-blue: #0d4d3a;
     --mock-bright: #d4a437;
-    --mock-light: #e9f1ec;
-    --mock-soft: #faf8f2;
-    --mock-line: #e4dfd2;
-    --mock-text: #17221d;
-    --mock-muted: #69756e;
+    --mock-light: #eef3f0;
+    --mock-soft: #ffffff;
+    --mock-line: #e5e5e2;
+    --mock-text: #0a0a0a;
+    --mock-muted: #5f6662;
   }
   .outline-numeral {
     -webkit-text-fill-color: transparent;
@@ -272,3 +210,83 @@
     transform: translateY(-14px);
   }
 }
+
+/* ---------- Premium surfaces & section joins ---------- */
+@layer components {
+  /* Gold foil text for accent words. */
+  .gold-text {
+    background-image: linear-gradient(100deg, #a87d1e 0%, #e6c46a 38%, #d4a437 55%, #f2dc9b 78%, #b8891f 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .gold-text-dark {
+    background-image: linear-gradient(100deg, #8a6412 0%, #c9962b 45%, #e0b84f 60%, #9a7118 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .bg-gold-foil {
+    background-image: linear-gradient(120deg, #b8891f 0%, #f0d58c 35%, #d4a437 60%, #a87d1e 100%);
+  }
+
+  /* Black surface with a forest bloom and a gold glint. */
+  .surface-black {
+    background-color: #050706;
+    background-image:
+      radial-gradient(ellipse 70% 55% at 15% 0%, rgba(13, 77, 58, 0.55), transparent 70%),
+      radial-gradient(ellipse 55% 45% at 100% 100%, rgba(212, 164, 55, 0.12), transparent 70%);
+  }
+  /* White surface with a faint gold wash and fine linework. */
+  .surface-white {
+    background-color: #ffffff;
+    background-image:
+      radial-gradient(ellipse 60% 40% at 100% 0%, rgba(212, 164, 55, 0.09), transparent 70%),
+      radial-gradient(ellipse 50% 40% at 0% 100%, rgba(10, 61, 46, 0.06), transparent 70%);
+  }
+  .surface-forest {
+    background-color: #062a20;
+    background-image:
+      radial-gradient(ellipse 60% 50% at 80% 0%, rgba(212, 164, 55, 0.14), transparent 70%),
+      radial-gradient(ellipse 70% 60% at 0% 100%, rgba(0, 0, 0, 0.55), transparent 70%);
+  }
+
+  /* Dissolves the previous section's colour into this one. */
+  .fade-from-white::before,
+  .fade-from-black::before,
+  .fade-to-white::after,
+  .fade-to-black::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    height: 9rem;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .fade-from-white::before { top: 0; background: linear-gradient(to bottom, #fff, transparent); }
+  .fade-from-black::before { top: 0; background: linear-gradient(to bottom, #050706, transparent); }
+  .fade-to-white::after { bottom: 0; background: linear-gradient(to top, #fff, transparent); }
+  .fade-to-black::after { bottom: 0; background: linear-gradient(to top, #050706, transparent); }
+
+  .lux-card {
+    border: 1px solid rgba(212, 164, 55, 0.28);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.9) inset, 0 30px 60px -34px rgba(6, 42, 32, 0.45);
+  }
+}
+
+@layer components {
+  .fade-from-forest::before { content: ""; position: absolute; inset-inline: 0; top: 0; height: 9rem; pointer-events: none; z-index: 1; background: linear-gradient(to bottom, #062a20, transparent); }
+  .fade-to-forest::after { content: ""; position: absolute; inset-inline: 0; bottom: 0; height: 9rem; pointer-events: none; z-index: 1; background: linear-gradient(to top, #062a20, transparent); }
+  [class*="fade-from-"] > *,
+  [class*="fade-to-"] > * { position: relative; z-index: 2; }
+}
+
+/* Lenis smooth scrolling */
+html.lenis,
+html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+.lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
+.lenis.lenis-stopped { overflow: hidden; }
